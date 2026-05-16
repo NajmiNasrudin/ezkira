@@ -25,7 +25,7 @@ $suggested = ['opex' => 20, 'marketing' => 10, 'cogs' => 40];
 $cats = [
     'opex' => [
         'label'    => 'OPEX',
-        'subtitle' => 'Operational Expenses',
+        'subtitle' => 'Sewa, Utiliti, Gaji & Kos Operasi Harian',
         'pct'      => $pcts['opex'],
         'ring'     => 'ring-blue-500',
         'bg'       => 'bg-blue-50 dark:bg-blue-900/20',
@@ -36,7 +36,7 @@ $cats = [
     ],
     'marketing' => [
         'label'    => 'Marketing Expenses',
-        'subtitle' => 'Advertising & Promotions',
+        'subtitle' => 'Iklan, Promosi & Kos Pemasaran',
         'pct'      => $pcts['marketing'],
         'ring'     => 'ring-purple-500',
         'bg'       => 'bg-purple-50 dark:bg-purple-900/20',
@@ -47,7 +47,7 @@ $cats = [
     ],
     'cogs' => [
         'label'    => 'COGS',
-        'subtitle' => 'Cost of Goods Sold',
+        'subtitle' => 'Bahan Mentah, Pengeluaran & Kos Langsung Produk',
         'pct'      => $pcts['cogs'],
         'ring'     => 'ring-amber-500',
         'bg'       => 'bg-amber-50 dark:bg-amber-900/20',
@@ -252,7 +252,7 @@ function fmtMoney(float $v): string {
             <div class="w-2 h-8 rounded-full <?= $cat['bar'] ?>"></div>
             <div>
                 <h3 class="font-semibold text-gray-900 dark:text-white"><?= $cat['label'] ?></h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400"><?= $count ?> <?= __('records') ?></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400"><?= $cat['subtitle'] ?> &bull; <?= $count ?> <?= __('records') ?></p>
             </div>
         </div>
         <button onclick="toggleExpenseForm('<?= $key ?>')"
