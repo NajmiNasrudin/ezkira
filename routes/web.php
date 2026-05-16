@@ -34,9 +34,11 @@ $router->get('/revenue/export-pnl',             'RevenueController@exportPnl', [
 $router->get('/expenses',                        'ExpenseController@index',       [AuthMiddleware::class]);
 $router->post('/expenses/store',                 'ExpenseController@store',       [AuthMiddleware::class]);
 $router->post('/expenses/budget-pct',            'ExpenseController@saveBudgetPct',[AuthMiddleware::class]);
-$router->get('/expenses/receipt/{id}',           'ExpenseController@receipt',  [AuthMiddleware::class]);
-$router->post('/expenses/{id}/update',           'ExpenseController@update',   [AuthMiddleware::class]);
-$router->post('/expenses/{id}/delete',           'ExpenseController@delete',   [AuthMiddleware::class]);
+$router->get('/expenses/receipt/{id}',           'ExpenseController@receipt',       [AuthMiddleware::class]);
+$router->get('/expenses/file/{id}',              'ExpenseController@receiptFile',   [AuthMiddleware::class]);
+$router->post('/expenses/receipt/{id}/delete',   'ExpenseController@deleteReceipt', [AuthMiddleware::class]);
+$router->post('/expenses/{id}/update',           'ExpenseController@update',        [AuthMiddleware::class]);
+$router->post('/expenses/{id}/delete',           'ExpenseController@delete',        [AuthMiddleware::class]);
 
 // Profile
 $router->get('/profile',                 'ProfileController@index',       [AuthMiddleware::class]);

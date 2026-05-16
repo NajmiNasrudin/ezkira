@@ -135,4 +135,47 @@ class Expense
         $stmt = $this->db->prepare('DELETE FROM expenses WHERE id = ?');
         return $stmt->execute([$id]);
     }
+
+    // -------------------------------------------------------------------------
+    // Multiple Receipts
+    // -------------------------------------------------------------------------
+
+    public function addReceipt(int $expenseId, string $path, string $name): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO expense_receipts (expense_id, path, name) VALUES (?, ?, ?)'
+        );
+        $stmt->execute([$expenseId, $path, $name]);
+    }
+
+    public function getReceipts(int $expenseId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT * FROM expense_receipts WHERE expense_id = ? ORDER BY id ASC'
+        );
+        $stmt->execute([$expenseId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function deleteReceipts(int $expenseId): array
+    {
+        $receipts = $this->getReceipts($expenseId);
+        $stmt = $this->db->prepare('DELETE FROM expense_receipts WHERE expense_id = ?');
+        $stmt->execute([$expenseId]);
+        return $receipts; // return paths so controller can delete files
+    }
+
+    public function findReceiptById(int $receiptId): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM expense_receipts WHERE id = ?');
+        $stmt->execute([$receiptId]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function deleteReceiptById(int $receiptId): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM expense_receipts WHERE id = ?');
+        return $stmt->execute([$receiptId]);
+    }
 }

@@ -12,7 +12,7 @@ use Models\Setting;
 
 class ExpenseController extends Controller
 {
-    private const CATEGORIES = ['opex', 'marketing', 'cogs'];
+    private const CATEGORIES = ['opex', 'marketing', 'cogs', 'liability'];
 
     public const SUGGESTED_PCT = ['opex' => 20, 'marketing' => 10, 'cogs' => 40];
 
@@ -35,20 +35,30 @@ class ExpenseController extends Controller
 
         $userId = Auth::id();
 
+        // Load receipts for each expense
+        $loadWithReceipts = function(array $entries) use ($model): array {
+            foreach ($entries as &$e) {
+                $e['receipts'] = $model->getReceipts((int)$e['id']);
+            }
+            return $entries;
+        };
+
         $data = [
             'year'          => $year,
             'month'         => $month,
             'targetRevenue' => $targetRevenue,
             'pcts'          => $pcts,
             'expenses' => [
-                'opex'      => $model->byCategory('opex',      $userId, $year, $month),
-                'marketing' => $model->byCategory('marketing', $userId, $year, $month),
-                'cogs'      => $model->byCategory('cogs',      $userId, $year, $month),
+                'opex'      => $loadWithReceipts($model->byCategory('opex',      $userId, $year, $month)),
+                'marketing' => $loadWithReceipts($model->byCategory('marketing', $userId, $year, $month)),
+                'cogs'      => $loadWithReceipts($model->byCategory('cogs',      $userId, $year, $month)),
+                'liability' => $loadWithReceipts($model->byCategory('liability', $userId, $year, $month)),
             ],
             'totals' => [
                 'opex'      => $model->totalByCategory('opex',      $userId, $year, $month),
                 'marketing' => $model->totalByCategory('marketing', $userId, $year, $month),
                 'cogs'      => $model->totalByCategory('cogs',      $userId, $year, $month),
+                'liability' => $model->totalByCategory('liability', $userId, $year, $month),
             ],
         ];
 
@@ -82,28 +92,36 @@ class ExpenseController extends Controller
             $this->redirect('/expenses' . $qs . '#' . $category);
         }
 
-        $receiptPath = null;
-        $receiptName = null;
-
-        if (!empty($_FILES['receipt']['name'])) {
-            $upload = $this->uploadReceipt($_FILES['receipt']);
-            if (isset($upload['error'])) {
-                Session::flash('error', $upload['error']);
-                $this->redirect('/expenses#' . $category);
-            }
-            $receiptPath = $upload['path'];
-            $receiptName = $upload['name'];
-        }
-
-        (new Expense())->create([
+        $expenseModel = new Expense();
+        $expenseId = $expenseModel->create([
             'user_id'      => Auth::id(),
             'category'     => $category,
             'amount'       => (float)$amount,
             'description'  => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
             'expense_date' => $date,
-            'receipt_path' => $receiptPath,
-            'receipt_name' => $receiptName,
+            'receipt_path' => null,
+            'receipt_name' => null,
         ]);
+
+        // Handle multiple file uploads
+        if (!empty($_FILES['receipts']['name'][0])) {
+            $files = $_FILES['receipts'];
+            $count = count($files['name']);
+            for ($i = 0; $i < $count; $i++) {
+                if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+                $single = [
+                    'name'     => $files['name'][$i],
+                    'tmp_name' => $files['tmp_name'][$i],
+                    'error'    => $files['error'][$i],
+                    'size'     => $files['size'][$i],
+                    'type'     => $files['type'][$i],
+                ];
+                $upload = $this->uploadReceipt($single);
+                if (!isset($upload['error'])) {
+                    $expenseModel->addReceipt($expenseId, $upload['path'], $upload['name']);
+                }
+            }
+        }
 
         $y = date('Y', strtotime($date));
         $m = date('n', strtotime($date));
@@ -165,14 +183,22 @@ class ExpenseController extends Controller
             $this->redirect('/expenses');
         }
 
+        $expenseModel = new Expense();
+
+        // Delete old single receipt
         if (!empty($expense['receipt_path'])) {
             $full = BASE_PATH . '/' . $expense['receipt_path'];
-            if (file_exists($full)) {
-                unlink($full);
-            }
+            if (file_exists($full)) unlink($full);
         }
 
-        (new Expense())->delete((int)$id);
+        // Delete new multiple receipts
+        $receipts = $expenseModel->deleteReceipts((int)$id);
+        foreach ($receipts as $r) {
+            $full = BASE_PATH . '/' . $r['path'];
+            if (file_exists($full)) unlink($full);
+        }
+
+        $expenseModel->delete((int)$id);
         Session::flash('success', 'Rekod berjaya dipadam.');
         $this->redirect('/expenses');
     }
@@ -199,6 +225,53 @@ class ExpenseController extends Controller
         header('Content-Length: ' . filesize($full));
         readfile($full);
         exit;
+    }
+
+    // Serve a file from expense_receipts table
+    public function receiptFile(string $id): void
+    {
+        $receipt = (new Expense())->findReceiptById((int)$id);
+        if (!$receipt) {
+            http_response_code(404);
+            exit('Fail tidak dijumpai.');
+        }
+
+        $full = BASE_PATH . '/' . $receipt['path'];
+        if (!file_exists($full)) {
+            http_response_code(404);
+            exit('Fail tidak dijumpai.');
+        }
+
+        $mime = mime_content_type($full) ?: 'application/octet-stream';
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: inline; filename="' . rawurlencode($receipt['name']) . '"');
+        header('Content-Length: ' . filesize($full));
+        readfile($full);
+        exit;
+    }
+
+    // Delete a single receipt from expense_receipts table
+    public function deleteReceipt(string $id): void
+    {
+        CSRF::check();
+
+        $model   = new Expense();
+        $receipt = $model->findReceiptById((int)$id);
+
+        if ($receipt) {
+            $expense = $model->findById((int)$receipt['expense_id']);
+            if ($expense && (int)$expense['user_id'] === Auth::id()) {
+                $full = BASE_PATH . '/' . $receipt['path'];
+                if (file_exists($full)) unlink($full);
+                $model->deleteReceiptById((int)$id);
+            }
+        }
+
+        $year  = $_POST['year']  ?? date('Y');
+        $month = $_POST['month'] ?? date('n');
+        $cat   = $_POST['category'] ?? '';
+        Session::flash('success', 'Fail berjaya dipadam.');
+        $this->redirect("/expenses?year={$year}&month={$month}" . ($cat ? '#' . $cat : ''));
     }
 
     public function saveBudgetPct(): void
