@@ -15,6 +15,12 @@ $router->post('/forgot-password', 'AuthController@forgotPassword',      [GuestMi
 $router->get('/reset-password',   'AuthController@resetPasswordForm',   [GuestMiddleware::class]);
 $router->post('/reset-password',  'AuthController@resetPassword',       [GuestMiddleware::class]);
 
+// Google OAuth
+$router->get('/auth/google',          'AuthController@googleLogin',        [GuestMiddleware::class]);
+$router->get('/auth/google/callback', 'AuthController@googleCallback',     [GuestMiddleware::class]);
+$router->get('/auth/google/complete', 'AuthController@googleComplete',     []);
+$router->post('/auth/google/complete','AuthController@googleCompleteSave', []);
+
 // ============================================================
 // Authenticated routes
 // ============================================================

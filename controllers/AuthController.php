@@ -142,8 +142,10 @@ class AuthController extends Controller
                                             : null,
             ]);
         } catch (\Throwable $e) {
-            error_log('[Register] Create failed: ' . $e->getMessage());
-            Session::flash('error', 'Ralat teknikal semasa mendaftar. Sila cuba lagi.');
+            $msg = $e->getMessage();
+            error_log('[Register] Create failed: ' . $msg);
+            // Show actual DB error to help diagnose the problem
+            Session::flash('error', 'Ralat teknikal: ' . htmlspecialchars(substr($msg, 0, 300), ENT_QUOTES, 'UTF-8'));
             $this->redirect('/register');
         }
 
@@ -356,6 +358,234 @@ class AuthController extends Controller
         Logger::log('password_reset', (int)$user['id'], 'Password reset via email link');
         Session::flash('success', __('reset_success'));
         $this->redirect('/login');
+    }
+
+    // -------------------------------------------------------------------------
+    // Google OAuth
+    // -------------------------------------------------------------------------
+
+    public function googleLogin(): void
+    {
+        if (!defined('GOOGLE_CLIENT_ID') || GOOGLE_CLIENT_ID === '') {
+            Session::flash('error', __('google_not_configured'));
+            $this->redirect('/login');
+        }
+
+        $state = bin2hex(random_bytes(16));
+        Session::set('google_oauth_state', $state);
+
+        $params = http_build_query([
+            'client_id'     => GOOGLE_CLIENT_ID,
+            'redirect_uri'  => $this->googleRedirectUri(),
+            'response_type' => 'code',
+            'scope'         => 'openid email profile',
+            'state'         => $state,
+            'access_type'   => 'online',
+            'prompt'        => 'select_account',
+        ]);
+
+        $this->redirect('https://accounts.google.com/o/oauth2/v2/auth?' . $params);
+    }
+
+    public function googleCallback(): void
+    {
+        $state = $_GET['state'] ?? '';
+        $code  = $_GET['code']  ?? '';
+        $error = $_GET['error'] ?? '';
+
+        if ($error !== '' || $state === '' || $state !== Session::get('google_oauth_state')) {
+            Session::set('google_oauth_state', null);
+            Session::flash('error', __('google_login_failed'));
+            $this->redirect('/login');
+        }
+
+        Session::set('google_oauth_state', null);
+
+        // Exchange code for tokens
+        $tokenData = $this->googlePost('https://oauth2.googleapis.com/token', [
+            'code'          => $code,
+            'client_id'     => GOOGLE_CLIENT_ID,
+            'client_secret' => GOOGLE_CLIENT_SECRET,
+            'redirect_uri'  => $this->googleRedirectUri(),
+            'grant_type'    => 'authorization_code',
+        ]);
+
+        if (empty($tokenData['access_token'])) {
+            error_log('[GoogleCallback] Token exchange failed: ' . json_encode($tokenData));
+            Session::flash('error', __('google_login_failed'));
+            $this->redirect('/login');
+        }
+
+        // Fetch user info from Google
+        $userInfo = $this->googleGet('https://openidconnect.googleapis.com/v1/userinfo', $tokenData['access_token']);
+
+        if (empty($userInfo['sub'])) {
+            error_log('[GoogleCallback] UserInfo fetch failed: ' . json_encode($userInfo));
+            Session::flash('error', __('google_login_failed'));
+            $this->redirect('/login');
+        }
+
+        $googleId = (string)$userInfo['sub'];
+        $email    = strtolower(trim($userInfo['email'] ?? ''));
+        $name     = trim($userInfo['name'] ?? '');
+
+        if ($email === '') {
+            Session::flash('error', __('google_no_email'));
+            $this->redirect('/login');
+        }
+
+        $userModel = new User();
+
+        // Try to find existing user by google_id first, then by email
+        $user = $userModel->findByGoogleId($googleId)
+             ?? $userModel->findByEmail($email);
+
+        if ($user) {
+            // Link google_id if not yet set
+            if (empty($user['google_id'])) {
+                $userModel->update((int)$user['id'], ['google_id' => $googleId]);
+                $user['google_id'] = $googleId;
+            }
+            Auth::login($user);
+            Logger::log('login', (int)$user['id'], 'Google login');
+            Session::clearOldInput();
+            Session::flash('success', __('login_success'));
+            $this->redirect('/dashboard');
+        }
+
+        // New user — store pending data and redirect to complete profile
+        Session::set('google_pending', [
+            'google_id' => $googleId,
+            'email'     => $email,
+            'name'      => $name,
+        ]);
+
+        $this->redirect('/auth/google/complete');
+    }
+
+    public function googleComplete(): void
+    {
+        $pending = Session::get('google_pending');
+        if (!$pending) {
+            $this->redirect('/register');
+        }
+
+        $this->view('auth/google_complete', [
+            'pending'       => $pending,
+            'businessTypes' => User::BUSINESS_TYPES,
+        ], 'auth', __('create_account'));
+    }
+
+    public function googleCompleteSave(): void
+    {
+        CSRF::check();
+
+        $pending = Session::get('google_pending');
+        if (!$pending) {
+            $this->redirect('/register');
+        }
+
+        $whatsapp      = trim($_POST['whatsapp']            ?? '');
+        $businessType  = trim($_POST['business_type']       ?? '');
+        $businessOther = trim($_POST['business_type_other'] ?? '');
+
+        // Normalise WhatsApp: strip leading zeros/spaces, prepend +60
+        if ($whatsapp !== '' && !str_starts_with($whatsapp, '+')) {
+            $whatsapp = '+60' . ltrim($whatsapp, '0');
+        }
+
+        $errors = $this->validate(
+            ['whatsapp' => $whatsapp],
+            ['whatsapp' => 'required|regex:/^\+60[0-9]{8,11}$/']
+        );
+
+        if ($errors) {
+            Session::flash('errors', $errors);
+            $this->redirect('/auth/google/complete');
+        }
+
+        $userModel = new User();
+
+        try {
+            $id = $userModel->create([
+                'name'            => htmlspecialchars($pending['name'], ENT_QUOTES, 'UTF-8'),
+                'email'           => $pending['email'],
+                // Unusable password — Google users authenticate via OAuth only
+                'password'        => password_hash(bin2hex(random_bytes(32)), PASSWORD_BCRYPT, ['cost' => 10]),
+                'whatsapp_number' => $whatsapp,
+                'google_id'       => $pending['google_id'],
+                'role'            => 'client',
+                'language'        => 'en',
+                'dark_mode'       => 0,
+                'business_type'   => $businessType !== ''
+                                        ? htmlspecialchars($businessType, ENT_QUOTES, 'UTF-8')
+                                        : null,
+                'business_type_other' => ($businessType === 'other' && $businessOther !== '')
+                                            ? htmlspecialchars($businessOther, ENT_QUOTES, 'UTF-8')
+                                            : null,
+            ]);
+        } catch (\Throwable $e) {
+            $msg = $e->getMessage();
+            error_log('[GoogleComplete] Create failed: ' . $msg);
+            Session::flash('error', 'Ralat teknikal: ' . htmlspecialchars(substr($msg, 0, 300), ENT_QUOTES, 'UTF-8'));
+            $this->redirect('/auth/google/complete');
+        }
+
+        $newUser = $userModel->findById($id ?? 0);
+
+        if (!$newUser) {
+            Session::set('google_pending', null);
+            Session::flash('error', __('register_auto_login_failed'));
+            $this->redirect('/login');
+        }
+
+        Session::set('google_pending', null);
+        Auth::login($newUser);
+        Logger::log('register', $id, 'New user registered via Google');
+        Session::clearOldInput();
+        Session::flash('success', __('register_success'));
+        $this->redirect('/dashboard');
+    }
+
+    // -------------------------------------------------------------------------
+    // Google OAuth — private helpers
+    // -------------------------------------------------------------------------
+
+    private function googleRedirectUri(): string
+    {
+        $base = defined('APP_URL') ? rtrim(APP_URL, '/') : '';
+        $sub  = defined('BASE_URI') ? BASE_URI : '';
+        return $base . $sub . '/auth/google/callback';
+    }
+
+    private function googlePost(string $url, array $data): array
+    {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query($data),
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/x-www-form-urlencoded'],
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return json_decode((string)($response ?: '{}'), true) ?? [];
+    }
+
+    private function googleGet(string $url, string $accessToken): array
+    {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $accessToken],
+            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return json_decode((string)($response ?: '{}'), true) ?? [];
     }
 
     // -------------------------------------------------------------------------

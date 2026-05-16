@@ -38,17 +38,25 @@ class User
         return $stmt->fetch() ?: null;
     }
 
+    public function findByGoogleId(string $googleId): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM users WHERE google_id = :gid LIMIT 1');
+        $stmt->execute([':gid' => $googleId]);
+        return $stmt->fetch() ?: null;
+    }
+
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO users (name, email, password, whatsapp_number, business_type, business_type_other, role, language, dark_mode, created_at, updated_at)
-             VALUES (:name, :email, :password, :whatsapp, :business_type, :business_type_other, :role, :lang, :dark, NOW(), NOW())'
+            'INSERT INTO users (name, email, password, whatsapp_number, google_id, business_type, business_type_other, role, language, dark_mode, created_at, updated_at)
+             VALUES (:name, :email, :password, :whatsapp, :google_id, :business_type, :business_type_other, :role, :lang, :dark, NOW(), NOW())'
         );
         $stmt->execute([
             ':name'                => $data['name'],
             ':email'               => $data['email'],
             ':password'            => $data['password'],
             ':whatsapp'            => $data['whatsapp_number'],
+            ':google_id'           => $data['google_id']           ?? null,
             ':business_type'       => $data['business_type']       ?? null,
             ':business_type_other' => $data['business_type_other'] ?? null,
             ':role'                => $data['role']                ?? 'client',
@@ -61,7 +69,7 @@ class User
     public function update(int $id, array $data): bool
     {
         $allowed = [
-            'name', 'pic_name', 'email', 'password', 'whatsapp_number',
+            'name', 'pic_name', 'email', 'password', 'whatsapp_number', 'google_id',
             'business_type', 'business_type_other', 'role', 'language', 'dark_mode', 'profile_image',
         ];
 

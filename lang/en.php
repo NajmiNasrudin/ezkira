@@ -222,4 +222,15 @@ return [
     // ---- Business Type ----
     'business_type'              => 'Business Type',
     'business_type_other'        => 'Please specify',
+
+    // ---- Google OAuth ----
+    'sign_in_google'             => 'Continue with Google',
+    'or'                         => 'or',
+    'google_complete_title'      => 'Almost there!',
+    'google_complete_hint'       => 'We just need a couple more details to set up your account.',
+    'google_complete_btn'        => 'Create Account',
+    'google_not_configured'      => 'Google Sign-In is not configured. Please use email registration.',
+    'google_login_failed'        => 'Google authentication failed. Please try again.',
+    'google_no_email'            => 'Your Google account did not provide an email address.',
+    'register_auto_login_failed' => 'Account created but auto-login failed. Please log in manually.',
 ];

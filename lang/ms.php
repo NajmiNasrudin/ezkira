@@ -222,4 +222,15 @@ return [
     // ---- Business Type ----
     'business_type'              => 'Jenis Perniagaan',
     'business_type_other'        => 'Sila nyatakan',
+
+    // ---- Google OAuth ----
+    'sign_in_google'             => 'Teruskan dengan Google',
+    'or'                         => 'atau',
+    'google_complete_title'      => 'Hampir siap!',
+    'google_complete_hint'       => 'Kami perlukan beberapa maklumat tambahan untuk menyiapkan akaun anda.',
+    'google_complete_btn'        => 'Cipta Akaun',
+    'google_not_configured'      => 'Log masuk Google tidak dikonfigurasi. Sila daftar menggunakan emel.',
+    'google_login_failed'        => 'Pengesahan Google gagal. Sila cuba lagi.',
+    'google_no_email'            => 'Akaun Google anda tidak menyediakan alamat emel.',
+    'register_auto_login_failed' => 'Akaun berjaya dibuat tetapi gagal log masuk automatik. Sila log masuk secara manual.',
 ];
