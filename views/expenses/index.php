@@ -25,7 +25,7 @@ $suggested = ['opex' => 20, 'marketing' => 10, 'cogs' => 40];
 $cats = [
     'opex' => [
         'label'    => 'OPEX',
-        'subtitle' => 'Sewa, Utiliti, Gaji & Kos Operasi Harian',
+        'subtitle' => __('opex_subtitle'),
         'pct'      => $pcts['opex'],
         'ring'     => 'ring-blue-500',
         'bg'       => 'bg-blue-50 dark:bg-blue-900/20',
@@ -36,7 +36,7 @@ $cats = [
     ],
     'marketing' => [
         'label'    => 'Marketing Expenses',
-        'subtitle' => 'Iklan, Promosi & Kos Pemasaran',
+        'subtitle' => __('marketing_subtitle'),
         'pct'      => $pcts['marketing'],
         'ring'     => 'ring-purple-500',
         'bg'       => 'bg-purple-50 dark:bg-purple-900/20',
@@ -47,7 +47,7 @@ $cats = [
     ],
     'cogs' => [
         'label'    => 'COGS',
-        'subtitle' => 'Bahan Mentah, Pengeluaran & Kos Langsung Produk',
+        'subtitle' => __('cogs_subtitle'),
         'pct'      => $pcts['cogs'],
         'ring'     => 'ring-amber-500',
         'bg'       => 'bg-amber-50 dark:bg-amber-900/20',
