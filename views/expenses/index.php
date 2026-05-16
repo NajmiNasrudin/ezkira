@@ -316,7 +316,7 @@ function fmtMoney(float $v): string {
                         <span id="file-label-<?= $key ?>" class="text-sm text-gray-500 dark:text-gray-400 truncate">
                             <?= __('upload_receipt_hint') ?>
                         </span>
-                        <input type="file" name="receipt" class="hidden"
+                        <input type="file" name="receipts[]" class="hidden" multiple
                                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
                                onchange="updateFileLabel('<?= $key ?>', this)">
                     </label>
@@ -364,17 +364,30 @@ function fmtMoney(float $v): string {
                         <?= fmtMoney((float)$row['amount']) ?>
                     </td>
                     <td class="px-6 py-3 text-center">
-                        <?php if (!empty($row['receipt_path'])): ?>
-                            <a href="<?= BASE_URI ?>/expenses/receipt/<?= $row['id'] ?>"
-                               target="_blank"
-                               class="inline-flex items-center gap-1 text-xs text-brand-600 dark:text-brand-400 hover:underline"
-                               title="<?= htmlspecialchars($row['receipt_name'] ?? 'receipt', ENT_QUOTES) ?>">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                                </svg>
-                                <?= __('view') ?>
-                            </a>
+                        <?php if (!empty($row['receipts'])): ?>
+                            <div class="flex flex-col items-start gap-1 min-w-[100px]">
+                                <?php foreach ($row['receipts'] as $rcpt): ?>
+                                <div class="flex items-center gap-1 w-full">
+                                    <a href="<?= BASE_URI ?>/expenses/file/<?= $rcpt['id'] ?>"
+                                       target="_blank"
+                                       class="flex-1 inline-flex items-center gap-1 text-xs text-brand-600 dark:text-brand-400 hover:underline truncate max-w-[90px]"
+                                       title="<?= htmlspecialchars($rcpt['name'], ENT_QUOTES) ?>">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                        </svg>
+                                        <span class="truncate"><?= htmlspecialchars(mb_strimwidth($rcpt['name'], 0, 14, '…'), ENT_QUOTES) ?></span>
+                                    </a>
+                                    <form method="POST" action="<?= BASE_URI ?>/expenses/receipt/<?= $rcpt['id'] ?>/delete"
+                                          onsubmit="return confirm('Delete this file?')" class="shrink-0">
+                                        <?= \App\Core\CSRF::field() ?>
+                                        <input type="hidden" name="year"  value="<?= $year ?>">
+                                        <input type="hidden" name="month" value="<?= $month ?>">
+                                        <button type="submit" class="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 text-xs leading-none px-0.5 rounded transition-colors" title="Remove file">×</button>
+                                    </form>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
                         <?php else: ?>
                             <span class="text-gray-300 dark:text-gray-600">—</span>
                         <?php endif; ?>
@@ -436,6 +449,220 @@ function fmtMoney(float $v): string {
     <?php endif; ?>
 </div>
 <?php endforeach; ?>
+
+<!-- ===== LIABILITY SECTION ===== -->
+<?php
+    $liabilityEntries = $expenses['liability'] ?? [];
+    $liabilityCount   = count($liabilityEntries);
+    $liabilityTotal   = $totals['liability'] ?? 0.0;
+?>
+<div id="section-liability" class="bg-white dark:bg-gray-800 rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-sm mb-6 overflow-hidden">
+
+    <!-- Section Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-rose-100 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-900/20">
+        <div class="flex items-center gap-3">
+            <div class="w-2 h-8 rounded-full bg-rose-500"></div>
+            <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white"><?= __('liability') ?></h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <?= __('liability_subtitle') ?> &bull; <?= $liabilityCount ?> <?= __('records') ?>
+                </p>
+            </div>
+        </div>
+        <button onclick="toggleExpenseForm('liability')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors bg-rose-600 hover:bg-rose-700">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <?= __('add_liability') ?>
+        </button>
+    </div>
+
+    <!-- Add Liability Form (hidden by default) -->
+    <div id="form-liability" class="hidden border-b border-rose-100 dark:border-rose-900/40 bg-rose-50/60 dark:bg-rose-900/10 px-6 py-5">
+        <form method="POST" action="<?= BASE_URI ?>/expenses/store" enctype="multipart/form-data">
+            <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" name="category" value="liability">
+            <input type="hidden" name="year"     value="<?= $year ?>">
+            <input type="hidden" name="month"    value="<?= $month ?>">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="amount" step="0.01" min="0.01" required
+                           placeholder="0.00"
+                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
+                </div>
+
+                <!-- Date -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('expense_date') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="expense_date" required
+                           value="<?= date('Y-m-d') ?>"
+                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('description') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="description" required maxlength="500"
+                           placeholder="<?= __('liability_desc_placeholder') ?>"
+                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
+                </div>
+
+                <!-- File Upload (multiple) -->
+                <div class="md:col-span-2 lg:col-span-4">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('receipt') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
+                    </label>
+                    <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-rose-300 dark:border-rose-700 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-rose-400 transition-colors">
+                        <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                        </svg>
+                        <span id="file-label-liability" class="text-sm text-gray-500 dark:text-gray-400 truncate">
+                            <?= __('upload_files_hint') ?>
+                        </span>
+                        <input type="file" name="receipts[]" class="hidden" multiple
+                               accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                               onchange="updateFileLabel('liability', this)">
+                    </label>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 mt-4">
+                <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-rose-600 hover:bg-rose-700">
+                    <?= __('save_expense') ?>
+                </button>
+                <button type="button" onclick="toggleExpenseForm('liability')"
+                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
+                    <?= __('cancel') ?>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liability Table -->
+    <?php if ($liabilityCount > 0): ?>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-rose-100 dark:border-rose-900/40">
+                    <th class="px-6 py-3 text-left font-medium"><?= __('date') ?></th>
+                    <th class="px-6 py-3 text-left font-medium"><?= __('description') ?></th>
+                    <th class="px-6 py-3 text-right font-medium"><?= __('amount') ?></th>
+                    <th class="px-6 py-3 text-center font-medium"><?= __('receipt') ?></th>
+                    <th class="px-6 py-3 text-center font-medium"><?= __('added_by') ?></th>
+                    <th class="px-6 py-3 text-center font-medium"><?= __('action') ?></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-rose-50 dark:divide-rose-900/20">
+                <?php foreach ($liabilityEntries as $row): ?>
+                <tr class="hover:bg-rose-50/40 dark:hover:bg-rose-900/10 transition-colors">
+                    <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        <?= date('d M Y', strtotime($row['expense_date'])) ?>
+                    </td>
+                    <td class="px-6 py-3 text-gray-900 dark:text-gray-100 max-w-xs">
+                        <?= htmlspecialchars($row['description'], ENT_QUOTES) ?>
+                    </td>
+                    <td class="px-6 py-3 text-right font-semibold text-rose-700 dark:text-rose-400 whitespace-nowrap">
+                        <?= fmtMoney((float)$row['amount']) ?>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <?php if (!empty($row['receipts'])): ?>
+                            <div class="flex flex-col items-start gap-1 min-w-[100px]">
+                                <?php foreach ($row['receipts'] as $rcpt): ?>
+                                <div class="flex items-center gap-1 w-full">
+                                    <a href="<?= BASE_URI ?>/expenses/file/<?= $rcpt['id'] ?>"
+                                       target="_blank"
+                                       class="flex-1 inline-flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 hover:underline truncate max-w-[90px]"
+                                       title="<?= htmlspecialchars($rcpt['name'], ENT_QUOTES) ?>">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                                        </svg>
+                                        <span class="truncate"><?= htmlspecialchars(mb_strimwidth($rcpt['name'], 0, 14, '…'), ENT_QUOTES) ?></span>
+                                    </a>
+                                    <form method="POST" action="<?= BASE_URI ?>/expenses/receipt/<?= $rcpt['id'] ?>/delete"
+                                          onsubmit="return confirm('Delete this file?')" class="shrink-0">
+                                        <?= \App\Core\CSRF::field() ?>
+                                        <input type="hidden" name="year"  value="<?= $year ?>">
+                                        <input type="hidden" name="month" value="<?= $month ?>">
+                                        <button type="submit" class="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 text-xs leading-none px-0.5 rounded transition-colors" title="Remove file">×</button>
+                                    </form>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <span class="text-gray-300 dark:text-gray-600">—</span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="px-6 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                        <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <!-- Edit -->
+                            <button type="button"
+                                    onclick="openEditExpense(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
+                                    class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                                    title="<?= __('edit') ?>">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <!-- Delete -->
+                            <form method="POST" action="<?= BASE_URI ?>/expenses/<?= $row['id'] ?>/delete"
+                                  onsubmit="return confirm('<?= __('confirm_delete_liability') ?>')">
+                                <?= \App\Core\CSRF::field() ?>
+                                <button type="submit"
+                                        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        title="<?= __('delete') ?>">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr class="bg-rose-50 dark:bg-rose-900/20 border-t border-rose-200 dark:border-rose-900/40">
+                    <td class="px-6 py-3 text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase" colspan="2">
+                        <?= __('total') ?>
+                    </td>
+                    <td class="px-6 py-3 text-right font-bold text-rose-700 dark:text-rose-300">
+                        <?= fmtMoney($liabilityTotal) ?>
+                    </td>
+                    <td colspan="3"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <?php else: ?>
+    <div class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">
+        <svg class="w-10 h-10 mx-auto mb-2 opacity-40 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+        <p class="text-sm"><?= __('no_liability_yet') ?></p>
+    </div>
+    <?php endif; ?>
+</div>
+<!-- ===== END LIABILITY SECTION ===== -->
 
 <!-- Configure Budget % Modal -->
 <div id="budget-pct-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -578,7 +805,13 @@ function toggleExpenseForm(cat) {
 
 function updateFileLabel(cat, input) {
     const label = document.getElementById('file-label-' + cat);
-    label.textContent = input.files.length > 0 ? input.files[0].name : '<?= __('upload_receipt_hint') ?>';
+    if (input.files.length === 0) {
+        label.textContent = '<?= __('upload_receipt_hint') ?>';
+    } else if (input.files.length === 1) {
+        label.textContent = input.files[0].name;
+    } else {
+        label.textContent = input.files.length + ' files selected';
+    }
 }
 
 // Live calc in target modal
@@ -592,7 +825,7 @@ document.querySelector('input[name="target_revenue"]')?.addEventListener('input'
 // Auto-open form if anchor matches
 window.addEventListener('load', function() {
     const hash = location.hash.replace('#', '');
-    if (['opex','marketing','cogs'].includes(hash)) {
+    if (['opex','marketing','cogs','liability'].includes(hash)) {
         const form = document.getElementById('form-' + hash);
         if (form) form.classList.remove('hidden');
         document.getElementById('section-' + hash)?.scrollIntoView({ behavior: 'smooth' });
@@ -635,6 +868,7 @@ function openEditExpense(row) {
                         <option value="opex">OPEX</option>
                         <option value="marketing">Marketing</option>
                         <option value="cogs">COGS</option>
+                        <option value="liability"><?= __('liability') ?></option>
                     </select>
                 </div>
                 <div>
