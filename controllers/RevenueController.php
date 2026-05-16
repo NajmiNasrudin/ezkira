@@ -12,30 +12,31 @@ class RevenueController extends Controller
 {
     public function index(): void
     {
+        $userId = Auth::id();
         $model  = new Revenue();
         $year   = (int)($_GET['year']  ?? date('Y'));
         $month  = (int)($_GET['month'] ?? date('n'));
 
-        $month  = max(1, min(12, $month));
-        $year   = max(2020, min((int)date('Y') + 1, $year));
+        $month = max(1, min(12, $month));
+        $year  = max(2020, min((int)date('Y') + 1, $year));
 
-        $target    = $model->getTarget($year, $month);
-        $entries   = $model->byPeriod('monthly', $year, $month);
-        $total     = $model->totalByPeriod('monthly', $year, $month);
-        $platforms = $model->platformBreakdown('monthly', $year, $month);
-        $daily     = $model->dailyTotals($year, $month);
+        $target    = $model->getTarget($year, $month, $userId);
+        $entries   = $model->byPeriod('monthly', $year, $month, $userId);
+        $total     = $model->totalByPeriod('monthly', $year, $month, $userId);
+        $platforms = $model->platformBreakdown('monthly', $year, $month, $userId);
+        $daily     = $model->dailyTotals($year, $month, $userId);
 
         $pct = $target > 0 ? min(100, ($total / $target) * 100) : 0;
 
         $this->view('revenue/index', [
-            'year'      => $year,
-            'month'     => $month,
-            'target'    => $target,
-            'total'     => $total,
-            'pct'       => $pct,
-            'entries'   => $entries,
-            'platforms' => $platforms,
-            'daily'     => $daily,
+            'year'           => $year,
+            'month'          => $month,
+            'target'         => $target,
+            'total'          => $total,
+            'pct'            => $pct,
+            'entries'        => $entries,
+            'platforms'      => $platforms,
+            'daily'          => $daily,
             'platforms_list' => Revenue::PLATFORMS,
         ], 'main', __('revenue'));
     }
@@ -78,7 +79,7 @@ class RevenueController extends Controller
         CSRF::check();
 
         $entry = (new Revenue())->findById((int)$id);
-        if (!$entry) {
+        if (!$entry || (int)$entry['user_id'] !== Auth::id()) {
             Session::flash('error', 'Rekod tidak dijumpai.');
             $this->redirect('/revenue');
         }
@@ -101,13 +102,14 @@ class RevenueController extends Controller
             $this->redirect('/revenue');
         }
 
-        (new Revenue())->setTarget($year, $month, (float)$amount);
+        (new Revenue())->setTarget($year, $month, (float)$amount, Auth::id());
         Session::flash('success', __('revenue_target_saved'));
         $this->redirect("/revenue?year={$year}&month={$month}");
     }
 
     public function exportPnl(): void
     {
+        $userId = Auth::id();
         $period = $_GET['period'] ?? 'monthly';
         $year   = (int)($_GET['year']  ?? date('Y'));
         $month  = (int)($_GET['month'] ?? date('n'));
@@ -117,15 +119,15 @@ class RevenueController extends Controller
         $companyName = $user['name']     ?? 'My Business';
         $picName     = $user['pic_name'] ?? '';
 
-        $revenue = new Revenue();
-        $revTotal = $revenue->totalByPeriod($period, $year, $month, $week);
-        $revByPlatform = $revenue->platformBreakdown($period, $year, $month, $week);
+        $revenue       = new Revenue();
+        $revTotal      = $revenue->totalByPeriod($period, $year, $month, $userId, $week);
+        $revByPlatform = $revenue->platformBreakdown($period, $year, $month, $userId, $week);
 
-        $expense  = new \Models\Expense();
-        $opex     = $expense->totalByCategory('opex');
-        $marketing = $expense->totalByCategory('marketing');
-        $cogs     = $expense->totalByCategory('cogs');
-        $totalExp = $opex + $marketing + $cogs;
+        $expense   = new \Models\Expense();
+        $opex      = $expense->totalByCategory('opex',      $userId);
+        $marketing = $expense->totalByCategory('marketing', $userId);
+        $cogs      = $expense->totalByCategory('cogs',      $userId);
+        $totalExp  = $opex + $marketing + $cogs;
         $netProfit = $revTotal - $totalExp;
 
         $periodLabel = match($period) {
@@ -142,13 +144,11 @@ class RevenueController extends Controller
         header('Cache-Control: no-cache, no-store');
 
         $out = fopen('php://output', 'w');
-        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
         fputcsv($out, [$companyName . ' — Profit & Loss Statement']);
         fputcsv($out, ['Period:', $periodLabel]);
-        if ($picName !== '') {
-            fputcsv($out, ['Prepared by:', $picName]);
-        }
+        if ($picName !== '') fputcsv($out, ['Prepared by:', $picName]);
         fputcsv($out, ['Generated:', date('d M Y, H:i')]);
         fputcsv($out, ['Powered by:', APP_NAME]);
         fputcsv($out, []);

@@ -25,7 +25,7 @@ class ExpenseController extends Controller
 
         $model         = new Expense();
         $setting       = new Setting();
-        $targetRevenue = (new Revenue())->getTarget($year, $month);
+        $targetRevenue = (new Revenue())->getTarget($year, $month, Auth::id());
 
         $pcts = [
             'opex'      => (float)($setting->get('expense_pct_opex')      ?? self::SUGGESTED_PCT['opex']),
@@ -33,20 +33,22 @@ class ExpenseController extends Controller
             'cogs'      => (float)($setting->get('expense_pct_cogs')      ?? self::SUGGESTED_PCT['cogs']),
         ];
 
+        $userId = Auth::id();
+
         $data = [
             'year'          => $year,
             'month'         => $month,
             'targetRevenue' => $targetRevenue,
             'pcts'          => $pcts,
             'expenses' => [
-                'opex'      => $model->byCategory('opex',      $year, $month),
-                'marketing' => $model->byCategory('marketing', $year, $month),
-                'cogs'      => $model->byCategory('cogs',      $year, $month),
+                'opex'      => $model->byCategory('opex',      $userId, $year, $month),
+                'marketing' => $model->byCategory('marketing', $userId, $year, $month),
+                'cogs'      => $model->byCategory('cogs',      $userId, $year, $month),
             ],
             'totals' => [
-                'opex'      => $model->totalByCategory('opex',      $year, $month),
-                'marketing' => $model->totalByCategory('marketing', $year, $month),
-                'cogs'      => $model->totalByCategory('cogs',      $year, $month),
+                'opex'      => $model->totalByCategory('opex',      $userId, $year, $month),
+                'marketing' => $model->totalByCategory('marketing', $userId, $year, $month),
+                'cogs'      => $model->totalByCategory('cogs',      $userId, $year, $month),
             ],
         ];
 
@@ -107,6 +109,50 @@ class ExpenseController extends Controller
         $m = date('n', strtotime($date));
         Session::flash('success', 'Rekod perbelanjaan berjaya ditambah.');
         $this->redirect("/expenses?year={$y}&month={$m}#" . $category);
+    }
+
+    public function update(string $id): void
+    {
+        CSRF::check();
+
+        $expense = (new Expense())->findById((int)$id);
+        if (!$expense) {
+            Session::flash('error', 'Rekod tidak dijumpai.');
+            $this->redirect('/expenses');
+        }
+
+        $category    = $_POST['category']     ?? $expense['category'];
+        $amount      = trim($_POST['amount']  ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $date        = $_POST['expense_date'] ?? $expense['expense_date'];
+        $year        = $_POST['year']  ?? date('Y');
+        $month       = $_POST['month'] ?? date('n');
+
+        if (!in_array($category, self::CATEGORIES, true)) {
+            Session::flash('error', 'Kategori tidak sah.');
+            $this->redirect("/expenses?year={$year}&month={$month}");
+        }
+
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            Session::flash('error', 'Jumlah mesti nombor positif.');
+            $this->redirect("/expenses?year={$year}&month={$month}");
+        }
+
+        if ($description === '') {
+            Session::flash('error', 'Keterangan diperlukan.');
+            $this->redirect("/expenses?year={$year}&month={$month}");
+        }
+
+        (new Expense())->update((int)$id, [
+            'category'     => $category,
+            'amount'       => (float)$amount,
+            'description'  => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'expense_date' => $date,
+            'user_id'      => Auth::id(),
+        ]);
+
+        Session::flash('success', 'Rekod berjaya dikemaskini.');
+        $this->redirect("/expenses?year={$year}&month={$month}#" . $category);
     }
 
     public function delete(string $id): void

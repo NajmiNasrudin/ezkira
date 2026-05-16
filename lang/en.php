@@ -191,4 +191,23 @@ return [
     'expected_profit'            => 'Expected Profit',
     'after_all_expenses'         => 'Revenue after all expenses',
     'profit_margin'              => 'profit',
+
+    // ---- Forgot / Reset Password ----
+    'forgot_password'            => 'Forgot Password?',
+    'forgot_password_hint'       => 'Enter your registered email and we will send a reset link.',
+    'send_reset_link'            => 'Send Reset Link',
+    'back_to_login'              => 'Back to Login',
+    'reset_password'             => 'Reset Password',
+    'reset_password_hint'        => 'Enter your new password below.',
+    'reset_password_btn'         => 'Reset Password',
+    'reset_email_sent'           => 'If your email is registered, a reset link has been sent.',
+    'reset_token_invalid'        => 'Reset link is invalid or has expired.',
+    'reset_success'              => 'Password reset successfully. Please log in.',
+    'password_min'               => 'Password must be at least 8 characters.',
+    'password_mismatch'          => 'Passwords do not match.',
+    'password_min_hint'          => 'Min. 8 characters',
+
+    // ---- Business Type ----
+    'business_type'              => 'Business Type',
+    'business_type_other'        => 'Please specify',
 ];

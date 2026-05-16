@@ -14,7 +14,8 @@ class ProfileController extends Controller
     public function index(): void
     {
         $this->view('profile/index', [
-            'user' => Auth::user(),
+            'user'          => Auth::user(),
+            'businessTypes' => \Models\User::BUSINESS_TYPES,
         ], 'main', __('edit_profile'));
     }
 
@@ -27,10 +28,12 @@ class ProfileController extends Controller
         CSRF::check();
 
         $userId   = Auth::id();
-        $name     = trim($_POST['name']     ?? '');
-        $picName  = trim($_POST['pic_name'] ?? '');
-        $email    = strtolower(trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? ''));
-        $whatsapp = trim($_POST['whatsapp'] ?? '');
+        $name             = trim($_POST['name']     ?? '');
+        $picName          = trim($_POST['pic_name'] ?? '');
+        $email            = strtolower(trim(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL) ?? ''));
+        $whatsapp         = trim($_POST['whatsapp'] ?? '');
+        $businessType     = trim($_POST['business_type'] ?? '');
+        $businessOther    = trim($_POST['business_type_other'] ?? '');
 
         if ($whatsapp !== '' && !str_starts_with($whatsapp, '+')) {
             $whatsapp = '+60' . ltrim($whatsapp, '0');
@@ -59,10 +62,14 @@ class ProfileController extends Controller
         }
 
         $userModel->update($userId, [
-            'name'            => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
-            'pic_name'        => htmlspecialchars($picName, ENT_QUOTES, 'UTF-8'),
-            'email'           => $email,
-            'whatsapp_number' => $whatsapp,
+            'name'                => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
+            'pic_name'            => htmlspecialchars($picName, ENT_QUOTES, 'UTF-8'),
+            'email'               => $email,
+            'whatsapp_number'     => $whatsapp,
+            'business_type'       => $businessType !== '' ? htmlspecialchars($businessType, ENT_QUOTES, 'UTF-8') : null,
+            'business_type_other' => ($businessType === 'other' && $businessOther !== '')
+                                        ? htmlspecialchars($businessOther, ENT_QUOTES, 'UTF-8')
+                                        : null,
         ]);
 
         $updated = $userModel->findById($userId);

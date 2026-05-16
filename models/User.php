@@ -6,6 +6,19 @@ class User
 {
     private \PDO $db;
 
+    public const BUSINESS_TYPES = [
+        'fnb'           => 'Makanan & Minuman (F&B)',
+        'fashion'       => 'Fesyen & Pakaian',
+        'beauty'        => 'Kecantikan & Kesihatan',
+        'retail'        => 'Runcit / Kedai',
+        'services'      => 'Perkhidmatan',
+        'education'     => 'Pendidikan & Latihan',
+        'technology'    => 'Teknologi & IT',
+        'manufacturing' => 'Pembuatan',
+        'agriculture'   => 'Pertanian',
+        'other'         => 'Lain-lain',
+    ];
+
     public function __construct()
     {
         $this->db = getDB();
@@ -28,29 +41,28 @@ class User
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO users (name, email, password, whatsapp_number, role, language, dark_mode, created_at, updated_at)
-             VALUES (:name, :email, :password, :whatsapp, :role, :lang, :dark, NOW(), NOW())'
+            'INSERT INTO users (name, email, password, whatsapp_number, business_type, business_type_other, role, language, dark_mode, created_at, updated_at)
+             VALUES (:name, :email, :password, :whatsapp, :business_type, :business_type_other, :role, :lang, :dark, NOW(), NOW())'
         );
         $stmt->execute([
-            ':name'     => $data['name'],
-            ':email'    => $data['email'],
-            ':password' => $data['password'],
-            ':whatsapp' => $data['whatsapp_number'],
-            ':role'     => $data['role']      ?? 'client',
-            ':lang'     => $data['language']  ?? 'en',
-            ':dark'     => $data['dark_mode'] ?? 0,
+            ':name'                => $data['name'],
+            ':email'               => $data['email'],
+            ':password'            => $data['password'],
+            ':whatsapp'            => $data['whatsapp_number'],
+            ':business_type'       => $data['business_type']       ?? null,
+            ':business_type_other' => $data['business_type_other'] ?? null,
+            ':role'                => $data['role']                ?? 'client',
+            ':lang'                => $data['language']            ?? 'en',
+            ':dark'                => $data['dark_mode']           ?? 0,
         ]);
         return (int)$this->db->lastInsertId();
     }
 
-    /**
-     * Update only the allowed fields to prevent mass assignment.
-     */
     public function update(int $id, array $data): bool
     {
         $allowed = [
             'name', 'pic_name', 'email', 'password', 'whatsapp_number',
-            'role', 'language', 'dark_mode', 'profile_image',
+            'business_type', 'business_type_other', 'role', 'language', 'dark_mode', 'profile_image',
         ];
 
         $sets   = [];
@@ -58,7 +70,7 @@ class User
 
         foreach ($data as $key => $value) {
             if (in_array($key, $allowed, true)) {
-                $sets[]          = "`{$key}` = :{$key}";
+                $sets[]            = "`{$key}` = :{$key}";
                 $params[":{$key}"] = $value;
             }
         }
@@ -73,9 +85,6 @@ class User
         return $stmt->execute($params);
     }
 
-    /**
-     * Check if an email is already taken, optionally excluding a user ID (for updates).
-     */
     public function emailExists(string $email, ?int $excludeId = null): bool
     {
         if ($excludeId) {

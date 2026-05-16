@@ -71,6 +71,40 @@
         <p class="mt-1 text-xs text-gray-400"><?= __('whatsapp_hint') ?></p>
     </div>
 
+    <!-- Business Type -->
+    <div class="mb-4">
+        <label for="business_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            <?= __('business_type') ?>
+        </label>
+        <select id="business_type" name="business_type"
+                onchange="toggleOtherField(this.value)"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                       transition-colors text-sm">
+            <option value="">— Pilih jenis perniagaan —</option>
+            <?php foreach ($businessTypes as $key => $label): ?>
+                <option value="<?= htmlspecialchars($key, ENT_QUOTES) ?>"
+                    <?= Session::old('business_type') === $key ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($label, ENT_QUOTES) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <!-- "Other" free-text field -->
+        <div id="other-field" class="mt-2 <?= Session::old('business_type') === 'other' ? '' : 'hidden' ?>">
+            <input type="text"
+                   id="business_type_other"
+                   name="business_type_other"
+                   value="<?= htmlspecialchars(Session::old('business_type_other', ''), ENT_QUOTES) ?>"
+                   class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600
+                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                          placeholder-gray-400 dark:placeholder-gray-500
+                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                          transition-colors text-sm"
+                   placeholder="<?= __('business_type_other') ?>">
+        </div>
+    </div>
+
     <!-- Password -->
     <div class="mb-4">
         <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -136,6 +170,16 @@
 function togglePassword(id) {
     const input = document.getElementById(id);
     input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function toggleOtherField(value) {
+    const otherField = document.getElementById('other-field');
+    if (value === 'other') {
+        otherField.classList.remove('hidden');
+        document.getElementById('business_type_other').focus();
+    } else {
+        otherField.classList.add('hidden');
+    }
 }
 
 // Auto-prepend +60 handling: strip it from display, re-add on submit

@@ -358,18 +358,31 @@ function fmtMoney(float $v): string {
                         <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
                     </td>
                     <td class="px-6 py-3 text-center">
-                        <form method="POST" action="<?= BASE_URI ?>/expenses/<?= $row['id'] ?>/delete"
-                              onsubmit="return confirm('<?= __('confirm_delete_expense') ?>')">
-                            <?= \App\Core\CSRF::field() ?>
-                            <button type="submit"
-                                    class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                                    title="<?= __('delete') ?>">
+                        <div class="flex items-center justify-center gap-1">
+                            <!-- Edit -->
+                            <button type="button"
+                                    onclick="openEditExpense(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
+                                    class="text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 transition-colors p-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/20"
+                                    title="<?= __('edit') ?>">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </button>
-                        </form>
+                            <!-- Delete -->
+                            <form method="POST" action="<?= BASE_URI ?>/expenses/<?= $row['id'] ?>/delete"
+                                  onsubmit="return confirm('<?= __('confirm_delete_expense') ?>')">
+                                <?= \App\Core\CSRF::field() ?>
+                                <button type="submit"
+                                        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        title="<?= __('delete') ?>">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -530,4 +543,72 @@ window.addEventListener('load', function() {
         document.getElementById('section-' + hash)?.scrollIntoView({ behavior: 'smooth' });
     }
 });
+
+function openEditExpense(row) {
+    document.getElementById('edit-expense-id').value       = row.id;
+    document.getElementById('edit-expense-amount').value   = row.amount;
+    document.getElementById('edit-expense-desc').value     = row.description;
+    document.getElementById('edit-expense-date').value     = row.expense_date;
+    document.getElementById('edit-expense-cat').value      = row.category;
+    document.getElementById('edit-expense-action').action  = '<?= BASE_URI ?>/expenses/' + row.id + '/update';
+    document.getElementById('edit-expense-modal').classList.remove('hidden');
+}
 </script>
+
+<!-- Edit Expense Modal -->
+<div id="edit-expense-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Edit Expense</h3>
+            <button type="button" onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <form id="edit-expense-action" method="POST" action="">
+            <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" id="edit-expense-id" name="id" value="">
+            <input type="hidden" name="year"  value="<?= $year ?>">
+            <input type="hidden" name="month" value="<?= $month ?>">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                    <select id="edit-expense-cat" name="category"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="opex">OPEX</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="cogs">COGS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (RM)</label>
+                    <input type="number" id="edit-expense-amount" name="amount" step="0.01" min="0.01" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                    <input type="text" id="edit-expense-desc" name="description" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                    <input type="date" id="edit-expense-date" name="expense_date" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="submit"
+                        class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                    Save Changes
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
+                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

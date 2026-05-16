@@ -10,6 +10,10 @@ $router->get('/login',     'AuthController@loginForm',    [GuestMiddleware::clas
 $router->post('/login',    'AuthController@login',         [GuestMiddleware::class]);
 $router->get('/register',  'AuthController@registerForm', [GuestMiddleware::class]);
 $router->post('/register', 'AuthController@register',      [GuestMiddleware::class]);
+$router->get('/forgot-password',  'AuthController@forgotPasswordForm',  [GuestMiddleware::class]);
+$router->post('/forgot-password', 'AuthController@forgotPassword',      [GuestMiddleware::class]);
+$router->get('/reset-password',   'AuthController@resetPasswordForm',   [GuestMiddleware::class]);
+$router->post('/reset-password',  'AuthController@resetPassword',       [GuestMiddleware::class]);
 
 // ============================================================
 // Authenticated routes
@@ -31,6 +35,7 @@ $router->get('/expenses',                        'ExpenseController@index',     
 $router->post('/expenses/store',                 'ExpenseController@store',       [AuthMiddleware::class]);
 $router->post('/expenses/budget-pct',            'ExpenseController@saveBudgetPct',[AuthMiddleware::class]);
 $router->get('/expenses/receipt/{id}',           'ExpenseController@receipt',  [AuthMiddleware::class]);
+$router->post('/expenses/{id}/update',           'ExpenseController@update',   [AuthMiddleware::class]);
 $router->post('/expenses/{id}/delete',           'ExpenseController@delete',   [AuthMiddleware::class]);
 
 // Profile

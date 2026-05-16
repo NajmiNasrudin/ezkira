@@ -108,6 +108,40 @@ $tabClass = fn(string $tab) => $activeTab === $tab
                                       transition-colors text-sm"
                                placeholder="+60112345678">
                     </div>
+
+                    <!-- Business Type (full-width) -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            <?= __('business_type') ?>
+                        </label>
+                        <?php
+                            $currentBizType = Session::old('business_type', $user['business_type'] ?? '');
+                        ?>
+                        <select name="business_type"
+                                onchange="toggleProfileOtherField(this.value)"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600
+                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                                       transition-colors text-sm">
+                            <option value="">— Pilih jenis perniagaan —</option>
+                            <?php foreach ($businessTypes as $key => $label): ?>
+                                <option value="<?= htmlspecialchars($key, ENT_QUOTES) ?>"
+                                    <?= $currentBizType === $key ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($label, ENT_QUOTES) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div id="profile-other-field" class="mt-2 <?= $currentBizType === 'other' ? '' : 'hidden' ?>">
+                            <input type="text"
+                                   name="business_type_other"
+                                   value="<?= htmlspecialchars(Session::old('business_type_other', $user['business_type_other'] ?? ''), ENT_QUOTES) ?>"
+                                   class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600
+                                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                                          transition-colors text-sm"
+                                   placeholder="<?= __('business_type_other') ?>">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-5 flex justify-end">
@@ -272,4 +306,13 @@ $tabClass = fn(string $tab) => $activeTab === $tab
 <script>
 // Initialise with server-determined tab
 switchTab('<?= htmlspecialchars($activeTab, ENT_QUOTES) ?>');
+
+function toggleProfileOtherField(value) {
+    const field = document.getElementById('profile-other-field');
+    if (value === 'other') {
+        field.classList.remove('hidden');
+    } else {
+        field.classList.add('hidden');
+    }
+}
 </script>

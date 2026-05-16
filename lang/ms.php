@@ -191,4 +191,23 @@ return [
     'expected_profit'            => 'Jangkaan Untung',
     'after_all_expenses'         => 'Pendapatan selepas semua perbelanjaan',
     'profit_margin'              => 'untung',
+
+    // ---- Forgot / Reset Password ----
+    'forgot_password'            => 'Lupa Kata Laluan?',
+    'forgot_password_hint'       => 'Masukkan emel berdaftar anda dan kami akan hantar pautan reset.',
+    'send_reset_link'            => 'Hantar Pautan Reset',
+    'back_to_login'              => 'Kembali ke Log Masuk',
+    'reset_password'             => 'Reset Kata Laluan',
+    'reset_password_hint'        => 'Masukkan kata laluan baru anda di bawah.',
+    'reset_password_btn'         => 'Reset Kata Laluan',
+    'reset_email_sent'           => 'Jika emel anda berdaftar, pautan reset telah dihantar.',
+    'reset_token_invalid'        => 'Pautan reset tidak sah atau telah tamat tempoh.',
+    'reset_success'              => 'Kata laluan berjaya direset. Sila log masuk.',
+    'password_min'               => 'Kata laluan mestilah sekurang-kurangnya 8 aksara.',
+    'password_mismatch'          => 'Kata laluan tidak sepadan.',
+    'password_min_hint'          => 'Min. 8 aksara',
+
+    // ---- Business Type ----
+    'business_type'              => 'Jenis Perniagaan',
+    'business_type_other'        => 'Sila nyatakan',
 ];
