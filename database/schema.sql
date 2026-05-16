@@ -84,7 +84,7 @@ INSERT IGNORE INTO `settings` (`key`, `value`) VALUES
 CREATE TABLE IF NOT EXISTS `expenses` (
   `id`           INT UNSIGNED       NOT NULL AUTO_INCREMENT,
   `user_id`      INT UNSIGNED       NOT NULL,
-  `category`     ENUM('opex','marketing','cogs') NOT NULL,
+  `category`     ENUM('opex','marketing','cogs','liability') NOT NULL,
   `amount`       DECIMAL(15,2)      NOT NULL DEFAULT 0.00,
   `description`  VARCHAR(500)       NOT NULL DEFAULT '',
   `expense_date` DATE               NOT NULL,
@@ -101,13 +101,29 @@ CREATE TABLE IF NOT EXISTS `expenses` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Table: expense_receipts  (multiple files per expense)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `expense_receipts` (
+  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `expense_id` INT UNSIGNED NOT NULL,
+  `path`       VARCHAR(500) NOT NULL,
+  `name`       VARCHAR(255) NOT NULL,
+  `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_expense_id` (`expense_id`),
+  CONSTRAINT `fk_receipts_expense` FOREIGN KEY (`expense_id`)
+    REFERENCES `expenses` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- Table: revenue
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `revenue` (
+CREATE TABLE IF NOT EXISTS `revenues` (
   `id`          INT UNSIGNED   NOT NULL AUTO_INCREMENT,
   `user_id`     INT UNSIGNED   NOT NULL,
   `platform`    VARCHAR(100)   NOT NULL DEFAULT '',
   `amount`      DECIMAL(15,2)  NOT NULL DEFAULT 0.00,
+  `description` VARCHAR(500)   NOT NULL DEFAULT '',
   `sale_date`   DATE           NOT NULL,
   `notes`       TEXT           NULL DEFAULT NULL,
   `created_at`  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -115,7 +131,7 @@ CREATE TABLE IF NOT EXISTS `revenue` (
   PRIMARY KEY (`id`),
   KEY `idx_user_id`   (`user_id`),
   KEY `idx_sale_date` (`sale_date`),
-  CONSTRAINT `fk_revenue_user` FOREIGN KEY (`user_id`)
+  CONSTRAINT `fk_revenues_user` FOREIGN KEY (`user_id`)
     REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

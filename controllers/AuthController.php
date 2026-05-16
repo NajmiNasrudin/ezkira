@@ -126,21 +126,35 @@ class AuthController extends Controller
         }
 
         $userModel = $userModel ?? new User();
-        $id = $userModel->create([
-            'name'            => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
-            'email'           => $email,
-            'password'        => password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]),
-            'whatsapp_number' => $whatsapp,
-            'role'            => 'client',
-            'language'        => 'en',
-            'dark_mode'       => 0,
-            'business_type'   => $businessType !== '' ? htmlspecialchars($businessType, ENT_QUOTES, 'UTF-8') : null,
-            'business_type_other' => ($businessType === 'other' && $businessOther !== '')
-                                        ? htmlspecialchars($businessOther, ENT_QUOTES, 'UTF-8')
-                                        : null,
-        ]);
 
-        $newUser = $userModel->findById($id);
+        try {
+            $id = $userModel->create([
+                'name'            => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
+                'email'           => $email,
+                'password'        => password_hash($password, PASSWORD_BCRYPT, ['cost' => 10]),
+                'whatsapp_number' => $whatsapp,
+                'role'            => 'client',
+                'language'        => 'en',
+                'dark_mode'       => 0,
+                'business_type'   => $businessType !== '' ? htmlspecialchars($businessType, ENT_QUOTES, 'UTF-8') : null,
+                'business_type_other' => ($businessType === 'other' && $businessOther !== '')
+                                            ? htmlspecialchars($businessOther, ENT_QUOTES, 'UTF-8')
+                                            : null,
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[Register] Create failed: ' . $e->getMessage());
+            Session::flash('error', 'Ralat teknikal semasa mendaftar. Sila cuba lagi.');
+            $this->redirect('/register');
+        }
+
+        $newUser = $userModel->findById($id ?? 0);
+
+        if (!$newUser) {
+            error_log('[Register] findById returned null for id=' . ($id ?? 0));
+            Session::flash('error', 'Akaun berjaya dibuat tetapi gagal log masuk. Sila log masuk secara manual.');
+            $this->redirect('/login');
+        }
+
         Auth::login($newUser);
 
         Logger::log('register', $id, 'New user registered');
