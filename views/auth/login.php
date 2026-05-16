@@ -77,24 +77,27 @@
 <!-- Divider -->
 <div class="flex items-center gap-3 my-5">
     <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
-    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium"><?= __('or') ?></span>
+    <span class="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide"><?= __('or') ?></span>
     <div class="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
 </div>
 
-<!-- Google Sign-In -->
+<!-- Google Sign-In Button -->
 <a href="<?= BASE_URI ?>/auth/google"
-   class="flex items-center justify-center gap-3 w-full py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-600
-          bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600
-          text-gray-700 dark:text-gray-200 font-medium text-sm transition-colors
+   class="group relative flex items-center justify-center gap-3 w-full py-2.5 px-4 rounded-xl
+          border border-gray-300 dark:border-gray-600
+          bg-white dark:bg-gray-800
+          hover:bg-gray-50 dark:hover:bg-gray-750 hover:border-gray-400 dark:hover:border-gray-500
+          hover:shadow-md
+          text-gray-700 dark:text-gray-200 font-medium text-sm
+          transition-all duration-200
           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800">
-    <!-- Google logo SVG -->
-    <svg class="w-4.5 h-4.5 shrink-0" viewBox="0 0 48 48">
+    <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0">
         <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13 17.8 9.5 24 9.5z"/>
         <path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.2-10 7.2-17z"/>
         <path fill="#FBBC05" d="M10.6 28.6A14.7 14.7 0 0 1 9.5 24c0-1.6.3-3.2.7-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.9-6.1z"/>
         <path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.5-5.7l-7.5-5.8c-2.1 1.4-4.8 2.2-8 2.2-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/>
     </svg>
-    <?= __('sign_in_google') ?>
+    <span><?= __('sign_in_google') ?></span>
 </a>
 
 <!-- Forgot password link -->
