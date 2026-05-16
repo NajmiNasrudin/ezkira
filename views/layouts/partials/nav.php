@@ -67,7 +67,7 @@ function navActive(string $path, string $current): string {
             <div class="flex items-center gap-3">
 
                 <!-- Language Switcher -->
-                <form method="POST" action="<?= BASE_URI ?>/lang/switch" class="hidden sm:block">
+                <form method="POST" action="<?= BASE_URI ?>/set-lang" class="hidden sm:block">
                     <?= CSRF::field() ?>
                     <?php $lang = Session::get('lang', 'en'); ?>
                     <input type="hidden" name="lang" value="<?= $lang === 'en' ? 'ms' : 'en' ?>">
@@ -172,7 +172,7 @@ function navActive(string $path, string $current): string {
                 </a>
             <?php endforeach; ?>
             <!-- Mobile language switcher -->
-            <form method="POST" action="<?= BASE_URI ?>/lang/switch" class="px-3 pt-1">
+            <form method="POST" action="<?= BASE_URI ?>/set-lang" class="px-3 pt-1">
                 <?= CSRF::field() ?>
                 <?php $lang = Session::get('lang', 'en'); ?>
                 <input type="hidden" name="lang" value="<?= $lang === 'en' ? 'ms' : 'en' ?>">

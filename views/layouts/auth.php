@@ -55,7 +55,7 @@
 
         <!-- Language + Dark mode controls -->
         <div class="flex justify-end gap-2 mb-4">
-            <form method="POST" action="<?= BASE_URI ?>/lang/switch" class="inline">
+            <form method="POST" action="<?= BASE_URI ?>/set-lang" class="inline">
                 <?= \App\Core\CSRF::field() ?>
                 <?php $currentLang = \App\Core\Session::get('lang', 'en'); ?>
                 <input type="hidden" name="lang" value="<?= $currentLang === 'en' ? 'ms' : 'en' ?>">

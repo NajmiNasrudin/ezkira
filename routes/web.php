@@ -51,7 +51,7 @@ $router->post('/profile/preferences',    'ProfileController@preferences', [AuthM
 // ============================================================
 // Utility routes (no auth required — handle gracefully)
 // ============================================================
-$router->post('/lang/switch',   'AuthController@switchLang',   []);
+$router->post('/set-lang',       'AuthController@switchLang',   []);
 $router->post('/theme/toggle',  'AuthController@toggleTheme',  []);
 
 // ============================================================
