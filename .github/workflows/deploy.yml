@@ -3,7 +3,7 @@ name: Deploy to cPanel via FTP
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   deploy:
@@ -14,13 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy via FTP (FTPS)
+      - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server:      ${{ secrets.FTP_HOST }}
           username:    ${{ secrets.FTP_USER }}
           password:    ${{ secrets.FTP_PASS }}
-          protocol:    ${{ secrets.FTP_PROTOCOL }}
+          protocol:    ftps
           server-dir:  ${{ secrets.FTP_DIR }}
           local-dir:   ./
           exclude: |
@@ -29,14 +29,16 @@ jobs:
             **/.claude/**
             **/uploads/profiles/**
             !**/uploads/profiles/.gitkeep
+            **/uploads/receipts/**
+            !**/uploads/receipts/.gitkeep
             **/storage/logs/**
             !**/storage/logs/.gitkeep
             **/storage/sessions/**
             !**/storage/sessions/.gitkeep
+            **/config/config.php
             **/.env
             **/.env.*
             **/node_modules/**
-            **/config/config.php
           dangerous-clean-slate: false
           log-level: minimal
           timeout: 60000
