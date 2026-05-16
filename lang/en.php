@@ -177,6 +177,15 @@ return [
     'confirm_delete_expense' => 'Delete this expense record?',
     'expense_desc_placeholder' => 'e.g. Server hosting, Facebook Ads, Raw materials...',
 
+    // ---- Liability ----
+    'liability'               => 'Liability',
+    'liability_subtitle'      => 'Loans, Asset Financing & Financial Obligations',
+    'liability_desc_placeholder' => 'e.g. Bank loan payment, Asset instalment, Hire purchase...',
+    'no_liability_yet'        => 'No liability records yet. Click "Add Liability" to start.',
+    'add_liability'           => 'Add Liability',
+    'confirm_delete_liability'=> 'Delete this liability record?',
+    'upload_files_hint'       => 'Click to attach files (PDF, image, etc.) — multiple allowed',
+
     // ---- Budget % Configuration ----
     'configure_budget_pct'       => 'Configure Budget %',
     'configure_budget_pct_hint'  => 'Set the percentage of monthly revenue to allocate for each expense category.',

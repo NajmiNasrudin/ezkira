@@ -177,6 +177,15 @@ return [
     'confirm_delete_expense' => 'Padam rekod perbelanjaan ini?',
     'expense_desc_placeholder' => 'cth. Hosting server, Iklan Facebook, Bahan mentah...',
 
+    // ---- Liability ----
+    'liability'               => 'Liabiliti',
+    'liability_subtitle'      => 'Pinjaman, Pembiayaan Aset & Obligasi Kewangan',
+    'liability_desc_placeholder' => 'cth. Bayaran pinjaman bank, Ansuran aset, Sewa beli...',
+    'no_liability_yet'        => 'Tiada rekod liabiliti lagi. Klik "Tambah Liabiliti" untuk mula.',
+    'add_liability'           => 'Tambah Liabiliti',
+    'confirm_delete_liability'=> 'Padam rekod liabiliti ini?',
+    'upload_files_hint'       => 'Klik untuk lampirkan fail (PDF, gambar, dll.) — boleh pilih banyak',
+
     // ---- Budget % Configuration ----
     'configure_budget_pct'       => 'Tetapkan % Bajet',
     'configure_budget_pct_hint'  => 'Tetapkan peratusan pendapatan bulanan untuk diperuntukkan bagi setiap kategori perbelanjaan.',
