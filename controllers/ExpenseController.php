@@ -161,13 +161,34 @@ class ExpenseController extends Controller
             $this->redirect("/expenses?year={$year}&month={$month}");
         }
 
-        (new Expense())->update((int)$id, [
+        $expenseModel = new Expense();
+        $expenseModel->update((int)$id, [
             'category'     => $category,
             'amount'       => (float)$amount,
             'description'  => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
             'expense_date' => $date,
             'user_id'      => Auth::id(),
         ]);
+
+        // Handle new file uploads added via edit modal
+        if (!empty($_FILES['receipts']['name'][0])) {
+            $files = $_FILES['receipts'];
+            $count = count($files['name']);
+            for ($i = 0; $i < $count; $i++) {
+                if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+                $single = [
+                    'name'     => $files['name'][$i],
+                    'tmp_name' => $files['tmp_name'][$i],
+                    'error'    => $files['error'][$i],
+                    'size'     => $files['size'][$i],
+                    'type'     => $files['type'][$i],
+                ];
+                $upload = $this->uploadReceipt($single);
+                if (!isset($upload['error'])) {
+                    $expenseModel->addReceipt((int)$id, $upload['path'], $upload['name']);
+                }
+            }
+        }
 
         Session::flash('success', 'Rekod berjaya dikemaskini.');
         $this->redirect("/expenses?year={$year}&month={$month}#" . $category);
@@ -255,8 +276,12 @@ class ExpenseController extends Controller
     {
         CSRF::check();
 
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+                  && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
         $model   = new Expense();
         $receipt = $model->findReceiptById((int)$id);
+        $deleted = false;
 
         if ($receipt) {
             $expense = $model->findById((int)$receipt['expense_id']);
@@ -264,7 +289,14 @@ class ExpenseController extends Controller
                 $full = BASE_PATH . '/' . $receipt['path'];
                 if (file_exists($full)) unlink($full);
                 $model->deleteReceiptById((int)$id);
+                $deleted = true;
             }
+        }
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => $deleted]);
+            exit;
         }
 
         $year  = $_POST['year']  ?? date('Y');

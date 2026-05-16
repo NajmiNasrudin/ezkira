@@ -832,72 +832,195 @@ window.addEventListener('load', function() {
     }
 });
 
+var _editCsrf = <?= json_encode(\App\Core\CSRF::generate()) ?>;
+
 function openEditExpense(row) {
-    document.getElementById('edit-expense-id').value       = row.id;
-    document.getElementById('edit-expense-amount').value   = row.amount;
-    document.getElementById('edit-expense-desc').value     = row.description;
-    document.getElementById('edit-expense-date').value     = row.expense_date;
-    document.getElementById('edit-expense-cat').value      = row.category;
-    document.getElementById('edit-expense-action').action  = '<?= BASE_URI ?>/expenses/' + row.id + '/update';
+    document.getElementById('edit-expense-id').value      = row.id;
+    document.getElementById('edit-expense-amount').value  = row.amount;
+    document.getElementById('edit-expense-desc').value    = row.description;
+    document.getElementById('edit-expense-date').value    = row.expense_date;
+    document.getElementById('edit-expense-cat').value     = row.category;
+    document.getElementById('edit-expense-action').action = '<?= BASE_URI ?>/expenses/' + row.id + '/update';
+
+    // Reset file input label
+    document.getElementById('edit-file-label').textContent = '<?= __('upload_files_hint') ?>';
+    document.getElementById('edit-file-input').value = '';
+
+    // Render existing receipts
+    var list = document.getElementById('edit-receipts-list');
+    list.innerHTML = '';
+    var receipts = row.receipts || [];
+    if (receipts.length === 0) {
+        list.innerHTML = '<p class="text-xs text-gray-400 dark:text-gray-500 italic">No attachments yet.</p>';
+    } else {
+        receipts.forEach(function(r) {
+            var item = document.createElement('div');
+            item.className = 'receipt-item flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg';
+            item.setAttribute('data-id', r.id);
+            item.innerHTML =
+                '<a href="<?= BASE_URI ?>/expenses/file/' + r.id + '" target="_blank" ' +
+                '   class="flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:underline truncate flex-1 min-w-0">' +
+                '  <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">' +
+                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>' +
+                '  </svg>' +
+                '  <span class="truncate">' + escHtml(r.name) + '</span>' +
+                '</a>' +
+                '<button type="button" onclick="deleteReceiptInModal(this, ' + r.id + ')" ' +
+                '        class="shrink-0 p-1 rounded text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" ' +
+                '        title="Remove">' +
+                '  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">' +
+                '    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
+                '  </svg>' +
+                '</button>';
+            list.appendChild(item);
+        });
+    }
+
     document.getElementById('edit-expense-modal').classList.remove('hidden');
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateEditFileLabel(input) {
+    var label = document.getElementById('edit-file-label');
+    if (input.files.length === 0) {
+        label.textContent = '<?= __('upload_files_hint') ?>';
+    } else if (input.files.length === 1) {
+        label.textContent = input.files[0].name;
+    } else {
+        label.textContent = input.files.length + ' files selected';
+    }
+}
+
+function deleteReceiptInModal(btn, receiptId) {
+    if (!confirm('<?= __('confirm_delete_expense') ?? 'Delete this file?' ?>')) return;
+    btn.disabled = true;
+    fetch('<?= BASE_URI ?>/expenses/receipt/' + receiptId + '/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'csrf_token=' + encodeURIComponent(_editCsrf)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            var item = btn.closest('.receipt-item');
+            if (item) {
+                item.style.opacity = '0';
+                item.style.transition = 'opacity 0.2s';
+                setTimeout(function() {
+                    item.remove();
+                    var list = document.getElementById('edit-receipts-list');
+                    if (list && list.children.length === 0) {
+                        list.innerHTML = '<p class="text-xs text-gray-400 dark:text-gray-500 italic">No attachments yet.</p>';
+                    }
+                }, 200);
+            }
+        } else {
+            btn.disabled = false;
+            alert('Failed to delete file.');
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        alert('Network error. Please try again.');
+    });
 }
 </script>
 
 <!-- Edit Expense Modal -->
 <div id="edit-expense-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex items-center justify-between mb-5">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Edit Expense</h3>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('edit') ?? 'Edit Expense' ?></h3>
             <button type="button" onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
-        <form id="edit-expense-action" method="POST" action="">
-            <?= \App\Core\CSRF::field() ?>
-            <input type="hidden" id="edit-expense-id" name="id" value="">
-            <input type="hidden" name="year"  value="<?= $year ?>">
-            <input type="hidden" name="month" value="<?= $month ?>">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                    <select id="edit-expense-cat" name="category"
-                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                        <option value="opex">OPEX</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="cogs">COGS</option>
-                        <option value="liability"><?= __('liability') ?></option>
-                    </select>
+
+        <!-- Scrollable body -->
+        <div class="overflow-y-auto flex-1 px-6 py-5">
+            <form id="edit-expense-action" method="POST" action="" enctype="multipart/form-data">
+                <?= \App\Core\CSRF::field() ?>
+                <input type="hidden" id="edit-expense-id" name="id" value="">
+                <input type="hidden" name="year"  value="<?= $year ?>">
+                <input type="hidden" name="month" value="<?= $month ?>">
+
+                <div class="space-y-4">
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                        <select id="edit-expense-cat" name="category"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            <option value="opex">OPEX</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="cogs">COGS</option>
+                            <option value="liability"><?= __('liability') ?></option>
+                        </select>
+                    </div>
+                    <!-- Amount -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('amount') ?> (RM)</label>
+                        <input type="number" id="edit-expense-amount" name="amount" step="0.01" min="0.01" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('description') ?></label>
+                        <input type="text" id="edit-expense-desc" name="description" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('expense_date') ?></label>
+                        <input type="date" id="edit-expense-date" name="expense_date" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+
+                    <!-- Attachments -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2"><?= __('receipt') ?></label>
+
+                        <!-- Existing receipts list -->
+                        <div id="edit-receipts-list" class="space-y-1.5 mb-3"></div>
+
+                        <!-- Add new files -->
+                        <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-brand-400 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span id="edit-file-label" class="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">
+                                <?= __('upload_files_hint') ?>
+                            </span>
+                            <input type="file" name="receipts[]" id="edit-file-input" class="hidden" multiple
+                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                                   onchange="updateEditFileLabel(this)">
+                        </label>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount (RM)</label>
-                    <input type="number" id="edit-expense-amount" name="amount" step="0.01" min="0.01" required
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+
+                <!-- Actions inside form so submit works -->
+                <div class="flex gap-3 mt-6">
+                    <button type="submit"
+                            class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                        <?= __('save_changes') ?>
+                    </button>
+                    <button type="button"
+                            onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
+                            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <?= __('cancel') ?>
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                    <input type="text" id="edit-expense-desc" name="description" required
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-                    <input type="date" id="edit-expense-date" name="expense_date" required
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                </div>
-            </div>
-            <div class="flex gap-3 mt-6">
-                <button type="submit"
-                        class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
-                    Save Changes
-                </button>
-                <button type="button"
-                        onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
-                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                    Cancel
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
