@@ -233,4 +233,5 @@ return [
     'google_login_failed'        => 'Google authentication failed. Please try again.',
     'google_no_email'            => 'Your Google account did not provide an email address.',
     'register_auto_login_failed' => 'Account created but auto-login failed. Please log in manually.',
+    'register_failed'            => 'A technical error occurred during registration. Please try again.',
 ];

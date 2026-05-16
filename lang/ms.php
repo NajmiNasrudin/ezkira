@@ -233,4 +233,5 @@ return [
     'google_login_failed'        => 'Pengesahan Google gagal. Sila cuba lagi.',
     'google_no_email'            => 'Akaun Google anda tidak menyediakan alamat emel.',
     'register_auto_login_failed' => 'Akaun berjaya dibuat tetapi gagal log masuk automatik. Sila log masuk secara manual.',
+    'register_failed'            => 'Ralat teknikal semasa mendaftar. Sila cuba lagi.',
 ];

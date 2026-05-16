@@ -142,10 +142,8 @@ class AuthController extends Controller
                                             : null,
             ]);
         } catch (\Throwable $e) {
-            $msg = $e->getMessage();
-            error_log('[Register] Create failed: ' . $msg);
-            // Show actual DB error to help diagnose the problem
-            Session::flash('error', 'Ralat teknikal: ' . htmlspecialchars(substr($msg, 0, 300), ENT_QUOTES, 'UTF-8'));
+            error_log('[Register] Create failed: ' . $e->getMessage());
+            Session::flash('error', __('register_failed'));
             $this->redirect('/register');
         }
 
