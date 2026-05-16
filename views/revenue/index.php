@@ -10,6 +10,11 @@
  * @var array  $daily         [['sale_date'=>'...','total'=>X], ...]
  * @var array  $platforms_list
  */
+?>
+<!-- Flatpickr: month picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+<?php
 
 $monthName = date('F Y', mktime(0, 0, 0, $month, 1, $year));
 $prevMonth = $month === 1 ? 12 : $month - 1;
@@ -60,23 +65,40 @@ $platformColors = [
 
 <!-- Month Navigator -->
 <div class="flex items-center justify-between mb-5">
+    <!-- Prev arrow -->
     <a href="<?= BASE_URI ?>/revenue?year=<?= $prevYear ?>&month=<?= $prevMonth ?>"
        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
     </a>
-    <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><?= $monthName ?></h3>
-    <?php if (!$isCurrentMonth): ?>
+
+    <!-- Month/Year picker (Flatpickr) -->
+    <div class="relative flex items-center gap-1.5 cursor-pointer" onclick="document.getElementById('rev-month-picker').click()">
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <input id="rev-month-picker"
+               type="text"
+               readonly
+               data-year="<?= $year ?>"
+               data-month="<?= $month ?>"
+               value="<?= $monthName ?>"
+               class="text-lg font-semibold text-gray-900 dark:text-white bg-transparent border-none outline-none cursor-pointer
+                      hover:text-brand-600 dark:hover:text-brand-400 transition-colors min-w-[130px] text-center">
+        <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </div>
+
+    <!-- Next arrow -->
     <a href="<?= BASE_URI ?>/revenue?year=<?= $nextYear ?>&month=<?= $nextMonth ?>"
        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
         </svg>
     </a>
-    <?php else: ?>
-    <div class="w-9"></div>
-    <?php endif; ?>
 </div>
 
 <!-- Progress Card -->
@@ -327,6 +349,8 @@ $platformColors = [
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
 function toggleSaleForm() {
     var form = document.getElementById('sale-form');
@@ -335,4 +359,32 @@ function toggleSaleForm() {
         form.querySelector('input[name="amount"]').focus();
     }
 }
+
+// Revenue month/year picker
+(function() {
+    var input = document.getElementById('rev-month-picker');
+    var initYear  = parseInt(input.getAttribute('data-year'));
+    var initMonth = parseInt(input.getAttribute('data-month')); // 1-based
+
+    flatpickr(input, {
+        plugins: [
+            new monthSelectPlugin({
+                shorthand: false,
+                dateFormat: 'F Y',
+                altFormat:  'F Y',
+                theme:      'light',
+            })
+        ],
+        defaultDate: new Date(initYear, initMonth - 1, 1),
+        maxDate: new Date(),
+        disableMobile: true,
+        onChange: function(selectedDates) {
+            if (!selectedDates.length) return;
+            var d = selectedDates[0];
+            var y = d.getFullYear();
+            var m = d.getMonth() + 1;
+            window.location.href = window.BASE_URI + '/revenue?year=' + y + '&month=' + m;
+        }
+    });
+})();
 </script>
