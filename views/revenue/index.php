@@ -152,7 +152,7 @@ $platformColors = [
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-<?= min(count($platforms), 6) ?> gap-3 mb-6">
     <?php foreach ($platforms as $p):
         $key   = $p['platform'];
-        $label = $platforms_list[$key] ?? ucfirst($key);
+        $label = $platforms_list[$key] ?? $key;
         $clr   = $platformColors[$key] ?? $platformColors['other'];
         $pPct  = $total > 0 ? ($p['total'] / $total) * 100 : 0;
     ?>
@@ -199,12 +199,17 @@ $platformColors = [
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         <?= __('platform') ?> <span class="text-red-500">*</span>
                     </label>
-                    <select name="platform" required
+                    <select name="platform" id="add-platform-select" required
+                            onchange="togglePlatformOther('add-platform-other', this.value)"
                             class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                         <?php foreach ($platforms_list as $key => $label): ?>
                             <option value="<?= $key ?>"><?= htmlspecialchars($label, ENT_QUOTES) ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <input type="text" name="platform_custom" id="add-platform-other"
+                           placeholder="e.g. Facebook Shop, Direct Order..."
+                           maxlength="100"
+                           class="hidden mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                 </div>
                 <!-- Date -->
                 <div>
@@ -254,7 +259,7 @@ $platformColors = [
                 <?php foreach ($entries as $row):
                     $key = $row['platform'];
                     $clr = $platformColors[$key] ?? $platformColors['other'];
-                    $pLabel = $platforms_list[$key] ?? ucfirst($key);
+                    $pLabel = $platforms_list[$key] ?? $key;
                 ?>
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
@@ -357,6 +362,23 @@ function toggleSaleForm() {
     form.classList.toggle('hidden');
     if (!form.classList.contains('hidden')) {
         form.querySelector('input[name="amount"]').focus();
+        // Reset platform select + custom input
+        var sel = document.getElementById('add-platform-select');
+        if (sel) { sel.value = sel.options[0].value; togglePlatformOther('add-platform-other', sel.value); }
+    }
+}
+
+function togglePlatformOther(inputId, val) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    if (val === 'other') {
+        input.classList.remove('hidden');
+        input.required = true;
+        input.focus();
+    } else {
+        input.classList.add('hidden');
+        input.required = false;
+        input.value = '';
     }
 }
 

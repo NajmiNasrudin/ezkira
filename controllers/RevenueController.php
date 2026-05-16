@@ -45,12 +45,16 @@ class RevenueController extends Controller
     {
         CSRF::check();
 
-        $platform    = $_POST['platform']    ?? 'other';
-        $amount      = trim($_POST['amount'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $date        = $_POST['sale_date']   ?? date('Y-m-d');
+        $platform       = $_POST['platform']        ?? 'other';
+        $platformCustom = trim($_POST['platform_custom'] ?? '');
+        $amount         = trim($_POST['amount'] ?? '');
+        $description    = trim($_POST['description'] ?? '');
+        $date           = $_POST['sale_date']   ?? date('Y-m-d');
 
-        if (!array_key_exists($platform, Revenue::PLATFORMS)) {
+        // If "Other" chosen and custom name provided, store the custom name directly
+        if ($platform === 'other' && $platformCustom !== '') {
+            $platform = substr(htmlspecialchars($platformCustom, ENT_QUOTES, 'UTF-8'), 0, 100);
+        } elseif (!array_key_exists($platform, Revenue::PLATFORMS)) {
             $platform = 'other';
         }
 
