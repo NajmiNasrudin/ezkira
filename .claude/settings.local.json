@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"/mnt/c/Users/useer/Desktop/Claude code/Webapps/fikira\" -type f | sort)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(Copy-Item \"C:\\\\Users\\\\useer\\\\Desktop\\\\Claude code\\\\Webapps\\\\fikira\\\\assets\\\\js\\\\app.js\" \"C:\\\\xampp\\\\htdocs\\\\fikira\\\\assets\\\\js\\\\app.js\" -Force)",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__computer",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\useer\\\\Desktop\\\\Claude code\\\\Webapps\\\\fikira\\\\uploads\\\\receipts\")",
+      "PowerShell(New-Item -ItemType File -Force -Path \"C:\\\\Users\\\\useer\\\\Desktop\\\\Claude code\\\\Webapps\\\\fikira\\\\uploads\\\\receipts\\\\.gitkeep\")",
+      "Bash(dir \"C:\\\\Users\\\\useer\\\\Desktop\\\\Claude code\\\\Webapps\\\\fikira\")",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

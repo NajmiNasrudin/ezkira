@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "PHP Built-in Server",
+      "runtimeExecutable": "C:\\xampp\\php\\php.exe",
+      "runtimeArgs": ["-S", "localhost:8001", "-t", "C:\\Users\\useer\\Desktop\\Claude code\\Webapps\\fikira", "C:\\Users\\useer\\Desktop\\Claude code\\Webapps\\fikira\\router.php"],
+      "port": 8001
+    },
+    {
+      "name": "XAMPP Apache",
+      "runtimeExecutable": "C:\\xampp\\apache\\bin\\httpd.exe",
+      "runtimeArgs": [],
+      "port": 80
+    },
+    {
+      "name": "XAMPP MySQL",
+      "runtimeExecutable": "C:\\xampp\\mysql\\bin\\mysqld.exe",
+      "runtimeArgs": ["--console"],
+      "port": 3306
+    }
+  ]
+}

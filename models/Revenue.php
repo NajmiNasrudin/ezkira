@@ -1,0 +1,181 @@
+<?php
+
+namespace Models;
+
+class Revenue
+{
+    private \PDO $db;
+
+    public const PLATFORMS = [
+        'shopee'   => 'Shopee',
+        'lazada'   => 'Lazada',
+        'tiktok'   => 'TikTok Shop',
+        'website'  => 'Website',
+        'walkin'   => 'Walk-in / Counter',
+        'whatsapp' => 'WhatsApp',
+        'other'    => 'Other',
+    ];
+
+    public function __construct()
+    {
+        $this->db = getDB();
+    }
+
+    // -------------------------------------------------------------------------
+    // Entries
+    // -------------------------------------------------------------------------
+
+    public function monthlyTotals(int $year, int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT MONTH(sale_date) AS m, COALESCE(SUM(amount), 0) AS total
+             FROM revenues WHERE YEAR(sale_date) = ? AND user_id = ?
+             GROUP BY MONTH(sale_date)'
+        );
+        $stmt->execute([$year, $userId]);
+        $result = array_fill(1, 12, 0.0);
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $result[(int)$row['m']] = (float)$row['total'];
+        }
+        return $result;
+    }
+
+    public function recentTransactions(int $userId, int $limit = 10): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, amount, platform AS category, description, sale_date AS txn_date, "revenue" AS type
+             FROM revenues
+             WHERE user_id = ?
+             ORDER BY sale_date DESC, created_at DESC
+             LIMIT ?'
+        );
+        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit,  \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function byPeriod(string $period, int $year, int $month, int $userId, int $week = 0, string $date = ''): array
+    {
+        [$where, $params] = $this->periodWhere($period, $year, $month, $week, $userId, $date);
+        $stmt = $this->db->prepare(
+            "SELECT r.*, u.name AS added_by
+             FROM revenues r
+             JOIN users u ON r.user_id = u.id
+             WHERE {$where}
+             ORDER BY r.sale_date DESC, r.created_at DESC"
+        );
+        $stmt->execute($params);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function totalByPeriod(string $period, int $year, int $month, int $userId, int $week = 0, string $date = ''): float
+    {
+        [$where, $params] = $this->periodWhere($period, $year, $month, $week, $userId, $date);
+        $stmt = $this->db->prepare(
+            "SELECT COALESCE(SUM(amount), 0) FROM revenues WHERE {$where}"
+        );
+        $stmt->execute($params);
+        return (float) $stmt->fetchColumn();
+    }
+
+    public function platformBreakdown(string $period, int $year, int $month, int $userId, int $week = 0, string $date = ''): array
+    {
+        [$where, $params] = $this->periodWhere($period, $year, $month, $week, $userId, $date);
+        $stmt = $this->db->prepare(
+            "SELECT platform, COALESCE(SUM(amount), 0) AS total
+             FROM revenues WHERE {$where}
+             GROUP BY platform ORDER BY total DESC"
+        );
+        $stmt->execute($params);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function dailyTotals(int $year, int $month, int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT sale_date, COALESCE(SUM(amount), 0) AS total
+             FROM revenues
+             WHERE YEAR(sale_date) = ? AND MONTH(sale_date) = ? AND user_id = ?
+             GROUP BY sale_date ORDER BY sale_date ASC"
+        );
+        $stmt->execute([$year, $month, $userId]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function create(array $data): int
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO revenues (user_id, platform, amount, description, sale_date)
+             VALUES (:user_id, :platform, :amount, :description, :sale_date)'
+        );
+        $stmt->execute([
+            ':user_id'     => $data['user_id'],
+            ':platform'    => $data['platform'],
+            ':amount'      => $data['amount'],
+            ':description' => $data['description'],
+            ':sale_date'   => $data['sale_date'],
+        ]);
+        return (int) $this->db->lastInsertId();
+    }
+
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM revenues WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM revenues WHERE id = ?');
+        return $stmt->execute([$id]);
+    }
+
+    public function countAll(int $userId): int
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM revenues WHERE user_id = ?');
+        $stmt->execute([$userId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    // -------------------------------------------------------------------------
+    // Monthly Targets
+    // -------------------------------------------------------------------------
+
+    public function getTarget(int $year, int $month, int $userId): float
+    {
+        $stmt = $this->db->prepare(
+            'SELECT target_amount FROM revenue_targets WHERE user_id = ? AND year = ? AND month = ? LIMIT 1'
+        );
+        $stmt->execute([$userId, $year, $month]);
+        $row = $stmt->fetch();
+        return $row ? (float) $row['target_amount'] : 0;
+    }
+
+    public function setTarget(int $year, int $month, float $amount, int $userId): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO revenue_targets (user_id, year, month, target_amount)
+             VALUES (:u, :y, :m, :a)
+             ON DUPLICATE KEY UPDATE target_amount = :a2, updated_at = NOW()'
+        );
+        $stmt->execute([':u' => $userId, ':y' => $year, ':m' => $month, ':a' => $amount, ':a2' => $amount]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private function periodWhere(string $period, int $year, int $month, int $week, int $userId, string $date = ''): array
+    {
+        $dailyDate = ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) ? $date : date('Y-m-d');
+        return match($period) {
+            'annual'  => ['YEAR(sale_date) = ? AND user_id = ?', [$year, $userId]],
+            'weekly'  => ['YEAR(sale_date) = ? AND WEEK(sale_date, 1) = ? AND user_id = ?', [$year, $week, $userId]],
+            'daily'   => ['sale_date = ? AND user_id = ?', [$dailyDate, $userId]],
+            default   => ['YEAR(sale_date) = ? AND MONTH(sale_date) = ? AND user_id = ?', [$year, $month, $userId]],
+        };
+    }
+}

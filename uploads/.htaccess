@@ -1,0 +1,10 @@
+# Deny execution of PHP and scripting files in uploads directory
+<FilesMatch "\.(php|php3|php4|php5|php7|php8|phtml|phar|pl|py|cgi|sh)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+Options -ExecCGI -Indexes
+
+# Force files to be treated as plain text/binary (no execution)
+AddType text/plain .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
