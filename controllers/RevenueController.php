@@ -78,6 +78,48 @@ class RevenueController extends Controller
         $this->redirect("/revenue?year={$y}&month={$m}");
     }
 
+    public function update(string $id): void
+    {
+        CSRF::check();
+
+        $model = new Revenue();
+        $entry = $model->findById((int)$id);
+        if (!$entry || (int)$entry['user_id'] !== Auth::id()) {
+            Session::flash('error', 'Rekod tidak dijumpai.');
+            $this->redirect('/revenue');
+        }
+
+        $platform       = $_POST['platform']         ?? 'other';
+        $platformCustom = trim($_POST['platform_custom'] ?? '');
+        $amount         = trim($_POST['amount']       ?? '');
+        $description    = trim($_POST['description']  ?? '');
+        $date           = $_POST['sale_date']         ?? $entry['sale_date'];
+        $year           = $_POST['year']              ?? date('Y');
+        $month          = $_POST['month']             ?? date('n');
+
+        if ($platform === 'other' && $platformCustom !== '') {
+            $platform = substr(htmlspecialchars($platformCustom, ENT_QUOTES, 'UTF-8'), 0, 100);
+        } elseif (!array_key_exists($platform, Revenue::PLATFORMS)) {
+            $platform = 'other';
+        }
+
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            Session::flash('error', __('revenue_amount_invalid'));
+            $this->redirect("/revenue?year={$year}&month={$month}");
+        }
+
+        $model->update((int)$id, [
+            'platform'    => $platform,
+            'amount'      => (float)$amount,
+            'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'sale_date'   => $date,
+            'user_id'     => Auth::id(),
+        ]);
+
+        Session::flash('success', 'Rekod jualan berjaya dikemaskini.');
+        $this->redirect("/revenue?year={$year}&month={$month}");
+    }
+
     public function delete(string $id): void
     {
         CSRF::check();

@@ -127,6 +127,22 @@ class Revenue
         return $row ?: null;
     }
 
+    public function update(int $id, array $data): bool
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE revenues SET platform=:platform, amount=:amount, description=:description, sale_date=:sale_date
+             WHERE id=:id AND user_id=:user_id'
+        );
+        return $stmt->execute([
+            ':platform'    => $data['platform'],
+            ':amount'      => $data['amount'],
+            ':description' => $data['description'],
+            ':sale_date'   => $data['sale_date'],
+            ':id'          => $id,
+            ':user_id'     => $data['user_id'],
+        ]);
+    }
+
     public function delete(int $id): bool
     {
         $stmt = $this->db->prepare('DELETE FROM revenues WHERE id = ?');

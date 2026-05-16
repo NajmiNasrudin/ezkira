@@ -27,6 +27,7 @@ $router->get('/dashboard', 'DashboardController@index',    [AuthMiddleware::clas
 $router->get('/revenue',                         'RevenueController@index',     [AuthMiddleware::class]);
 $router->post('/revenue/store',                  'RevenueController@store',     [AuthMiddleware::class]);
 $router->post('/revenue/target',                 'RevenueController@setTarget', [AuthMiddleware::class]);
+$router->post('/revenue/{id}/update',            'RevenueController@update',    [AuthMiddleware::class]);
 $router->post('/revenue/{id}/delete',            'RevenueController@delete',    [AuthMiddleware::class]);
 $router->get('/revenue/export-pnl',             'RevenueController@exportPnl', [AuthMiddleware::class]);
 

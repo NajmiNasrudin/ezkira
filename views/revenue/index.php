@@ -281,17 +281,31 @@ $platformColors = [
                         <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
                     </td>
                     <td class="px-6 py-3 text-center">
-                        <form method="POST" action="<?= BASE_URI ?>/revenue/<?= $row['id'] ?>/delete"
-                              onsubmit="return confirm('<?= __('confirm_delete_sale') ?>')">
-                            <?= \App\Core\CSRF::field() ?>
-                            <button type="submit"
-                                    class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <div class="flex items-center justify-center gap-1">
+                            <!-- Edit -->
+                            <button type="button"
+                                    onclick="openEditSale(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
+                                    class="text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 p-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
+                                    title="<?= __('edit') ?? 'Edit' ?>">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </button>
-                        </form>
+                            <!-- Delete -->
+                            <form method="POST" action="<?= BASE_URI ?>/revenue/<?= $row['id'] ?>/delete"
+                                  onsubmit="return confirm('<?= __('confirm_delete_sale') ?>')">
+                                <?= \App\Core\CSRF::field() ?>
+                                <button type="submit"
+                                        class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                        title="<?= __('delete') ?>">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -354,6 +368,81 @@ $platformColors = [
     </div>
 </div>
 
+<!-- Edit Sale Modal -->
+<div id="edit-sale-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
+        <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('edit') ?? 'Edit Sale' ?></h3>
+            <button type="button" onclick="document.getElementById('edit-sale-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <form id="edit-sale-form" method="POST" action="" class="px-6 py-5">
+            <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" name="year"  value="<?= $year ?>">
+            <input type="hidden" name="month" value="<?= $month ?>">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" id="edit-sale-amount" name="amount" step="0.01" min="0.01" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+                <!-- Sale Date -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('sale_date') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" id="edit-sale-date" name="sale_date" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+                <!-- Platform -->
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('platform') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <select id="edit-sale-platform" name="platform" required
+                            onchange="togglePlatformOther('edit-platform-other', this.value)"
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                        <?php foreach ($platforms_list as $k => $lbl): ?>
+                            <option value="<?= $k ?>"><?= htmlspecialchars($lbl, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="text" name="platform_custom" id="edit-platform-other"
+                           placeholder="e.g. Facebook Shop, Direct Order..."
+                           maxlength="100"
+                           class="hidden mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+                <!-- Notes -->
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('notes') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
+                    </label>
+                    <input type="text" id="edit-sale-notes" name="description" maxlength="500"
+                           placeholder="<?= __('sale_notes_placeholder') ?>"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-5">
+                <button type="submit"
+                        class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                    <?= __('save_changes') ?>
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('edit-sale-modal').classList.add('hidden')"
+                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <?= __('cancel') ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
@@ -366,6 +455,34 @@ function toggleSaleForm() {
         var sel = document.getElementById('add-platform-select');
         if (sel) { sel.value = sel.options[0].value; togglePlatformOther('add-platform-other', sel.value); }
     }
+}
+
+// Known platform keys from PHP
+var _knownPlatforms = <?= json_encode(array_keys(\Models\Revenue::PLATFORMS)) ?>;
+
+function openEditSale(row) {
+    document.getElementById('edit-sale-amount').value = row.amount;
+    document.getElementById('edit-sale-date').value   = row.sale_date;
+    document.getElementById('edit-sale-notes').value  = row.description || '';
+    document.getElementById('edit-sale-form').action  = '<?= BASE_URI ?>/revenue/' + row.id + '/update';
+
+    // Platform: if stored value is a known key, select it; otherwise select 'other' + show custom
+    var sel = document.getElementById('edit-sale-platform');
+    var customInput = document.getElementById('edit-platform-other');
+    if (_knownPlatforms.includes(row.platform)) {
+        sel.value = row.platform;
+        customInput.classList.add('hidden');
+        customInput.required = false;
+        customInput.value = '';
+    } else {
+        sel.value = 'other';
+        customInput.classList.remove('hidden');
+        customInput.required = true;
+        customInput.value = row.platform; // pre-fill with stored custom name
+    }
+
+    document.getElementById('edit-sale-modal').classList.remove('hidden');
+    document.getElementById('edit-sale-amount').focus();
 }
 
 function togglePlatformOther(inputId, val) {
