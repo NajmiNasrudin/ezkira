@@ -61,18 +61,32 @@ class Expense
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public function totalByCategory(string $category, int $userId, int $year = 0, int $month = 0, string $date = ''): float
+    public function totalByCategory(string $category, int $userId, int $year = 0, int $month = 0, string $date = '', int $week = 0): float
     {
         $where  = 'category = ? AND user_id = ?';
         $params = [$category, $userId];
+
         if ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            // Daily — exact date
             $where .= ' AND expense_date = ?';
             $params[] = $date;
+        } elseif ($year > 0 && $week > 0) {
+            // Weekly — ISO week number within a year
+            $where .= ' AND YEAR(expense_date) = ? AND WEEK(expense_date, 3) = ?';
+            $params[] = $year;
+            $params[] = $week;
         } elseif ($year > 0 && $month > 0) {
+            // Monthly
             $where .= ' AND YEAR(expense_date) = ? AND MONTH(expense_date) = ?';
             $params[] = $year;
             $params[] = $month;
+        } elseif ($year > 0) {
+            // Annual — full year
+            $where .= ' AND YEAR(expense_date) = ?';
+            $params[] = $year;
         }
+        // else: no date filter (all-time) — should not happen on dashboard
+
         $stmt = $this->db->prepare(
             "SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE {$where}"
         );

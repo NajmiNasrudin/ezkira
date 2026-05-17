@@ -31,10 +31,16 @@ class DashboardController extends Controller
         $expense = new Expense();
 
         $dailyDate = $period === 'daily' ? $date : '';
+
+        // Determine expense filter parameters based on selected period
+        $expYear  = $year;
+        $expMonth = $period === 'monthly' ? $month : 0;
+        $expWeek  = $period === 'weekly'  ? $week  : 0;
+
         $revTotal  = $revenue->totalByPeriod($period, $year, $month, $userId, $week, $dailyDate);
-        $opex      = $expense->totalByCategory('opex',      $userId, 0, 0, $dailyDate);
-        $marketing = $expense->totalByCategory('marketing', $userId, 0, 0, $dailyDate);
-        $cogs      = $expense->totalByCategory('cogs',      $userId, 0, 0, $dailyDate);
+        $opex      = $expense->totalByCategory('opex',      $userId, $expYear, $expMonth, $dailyDate, $expWeek);
+        $marketing = $expense->totalByCategory('marketing', $userId, $expYear, $expMonth, $dailyDate, $expWeek);
+        $cogs      = $expense->totalByCategory('cogs',      $userId, $expYear, $expMonth, $dailyDate, $expWeek);
         $totalExp  = $opex + $marketing + $cogs;
         $profit    = $revTotal - $totalExp;
 
