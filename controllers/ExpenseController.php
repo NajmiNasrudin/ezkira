@@ -306,6 +306,63 @@ class ExpenseController extends Controller
         $this->redirect("/expenses?year={$year}&month={$month}" . ($cat ? '#' . $cat : ''));
     }
 
+    public function exportCsv(): void
+    {
+        $userId = Auth::id();
+        $mode   = $_GET['mode'] ?? 'month';
+
+        if ($mode === 'range') {
+            $from = $_GET['from'] ?? date('Y-m-01');
+            $to   = $_GET['to']   ?? date('Y-m-d');
+            // Sanitise
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) $from = date('Y-m-01');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $to))   $to   = date('Y-m-d');
+            if ($from > $to) [$from, $to] = [$to, $from];
+        } else {
+            $year  = (int)($_GET['year']  ?? date('Y'));
+            $month = (int)($_GET['month'] ?? date('n'));
+            $month = max(1, min(12, $month));
+            $from  = sprintf('%04d-%02d-01', $year, $month);
+            $to    = date('Y-m-t', strtotime($from));   // last day of month
+        }
+
+        $expenses = (new Expense())->getByDateRange($userId, $from, $to);
+
+        $categoryLabels = [
+            'opex'      => 'OPEX',
+            'marketing' => 'Marketing',
+            'cogs'      => 'COGS',
+            'liability' => 'Liability',
+        ];
+
+        $filename = 'expenses_' . $from . '_to_' . $to . '.csv';
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+
+        $out = fopen('php://output', 'w');
+        fputs($out, "\xEF\xBB\xBF");  // UTF-8 BOM — fixes Excel encoding
+        fputcsv($out, ['Date', 'Category', 'Description', 'Amount (RM)']);
+
+        $grandTotal = 0.0;
+        foreach ($expenses as $e) {
+            $amt = (float)$e['amount'];
+            $grandTotal += $amt;
+            fputcsv($out, [
+                $e['expense_date'],
+                $categoryLabels[$e['category']] ?? strtoupper($e['category']),
+                $e['description'],
+                number_format($amt, 2, '.', ''),
+            ]);
+        }
+
+        // Grand total row
+        fputcsv($out, ['', '', 'TOTAL', number_format($grandTotal, 2, '.', '')]);
+        fclose($out);
+        exit;
+    }
+
     public function saveBudgetPct(): void
     {
         CSRF::check();

@@ -62,6 +62,21 @@ class Expense
         return $result;
     }
 
+    /**
+     * Fetch all expenses for a user within a date range, all categories.
+     */
+    public function getByDateRange(int $userId, string $from, string $to): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT expense_date, category, description, amount
+             FROM expenses
+             WHERE user_id = ? AND expense_date BETWEEN ? AND ?
+             ORDER BY expense_date ASC, category ASC, created_at ASC"
+        );
+        $stmt->execute([$userId, $from, $to]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function byCategory(string $category, int $userId, int $year = 0, int $month = 0): array
     {
         $where  = 'e.category = ? AND e.user_id = ?';

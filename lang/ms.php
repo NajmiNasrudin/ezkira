@@ -226,6 +226,15 @@ return [
     'business_type'              => 'Jenis Perniagaan',
     'business_type_other'        => 'Sila nyatakan',
 
+    // ---- Export ----
+    'export_csv'        => 'Eksport CSV',
+    'export_by_month'   => 'Mengikut Bulan',
+    'export_by_range'   => 'Julat Tarikh',
+    'select_month'      => 'Pilih Bulan',
+    'date_from'         => 'Dari',
+    'date_to'           => 'Hingga',
+    'download_csv'      => 'Muat Turun CSV',
+
     // ---- Google OAuth ----
     'sign_in_google'             => 'Teruskan dengan Google',
     'or'                         => 'atau',

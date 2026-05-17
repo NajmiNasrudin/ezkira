@@ -226,6 +226,15 @@ return [
     'business_type'              => 'Business Type',
     'business_type_other'        => 'Please specify',
 
+    // ---- Export ----
+    'export_csv'        => 'Export CSV',
+    'export_by_month'   => 'By Month',
+    'export_by_range'   => 'Date Range',
+    'select_month'      => 'Select Month',
+    'date_from'         => 'From',
+    'date_to'           => 'To',
+    'download_csv'      => 'Download CSV',
+
     // ---- Google OAuth ----
     'sign_in_google'             => 'Continue with Google',
     'or'                         => 'or',

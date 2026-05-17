@@ -70,6 +70,15 @@ function fmtMoney(float $v): string {
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"><?= __('expenses_subtitle') ?></p>
     </div>
     <div class="flex items-center gap-2">
+        <!-- Export CSV button -->
+        <button onclick="document.getElementById('export-modal').classList.remove('hidden')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <?= __('export_csv') ?>
+        </button>
         <!-- Configure % button -->
         <button onclick="document.getElementById('budget-pct-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
@@ -663,6 +672,114 @@ function fmtMoney(float $v): string {
     <?php endif; ?>
 </div>
 <!-- ===== END LIABILITY SECTION ===== -->
+
+<!-- ===== EXPORT CSV MODAL ===== -->
+<div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('export-modal').classList.add('hidden')"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><?= __('export_csv') ?></h3>
+            <button onclick="document.getElementById('export-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Mode toggle -->
+        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5 mb-5">
+            <button id="exp-btn-month" onclick="switchExportMode('month')"
+                    class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
+                <?= __('export_by_month') ?>
+            </button>
+            <button id="exp-btn-range" onclick="switchExportMode('range')"
+                    class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <?= __('export_by_range') ?>
+            </button>
+        </div>
+
+        <!-- By Month -->
+        <div id="exp-month-panel">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"><?= __('select_month') ?></label>
+            <div class="flex gap-2">
+                <select id="exp-month" class="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <?php for ($m = 1; $m <= 12; $m++): ?>
+                        <option value="<?= $m ?>" <?= $m === (int)date('n') ? 'selected' : '' ?>>
+                            <?= date('F', mktime(0,0,0,$m,1)) ?>
+                        </option>
+                    <?php endfor; ?>
+                </select>
+                <select id="exp-year" class="w-24 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <?php for ($y = (int)date('Y'); $y >= 2020; $y--): ?>
+                        <option value="<?= $y ?>" <?= $y === (int)date('Y') ? 'selected' : '' ?>><?= $y ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+        </div>
+
+        <!-- By Date Range -->
+        <div id="exp-range-panel" class="hidden">
+            <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"><?= __('date_from') ?></label>
+                <input type="date" id="exp-from"
+                       value="<?= date('Y-m-01') ?>"
+                       max="<?= date('Y-m-d') ?>"
+                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5"><?= __('date_to') ?></label>
+                <input type="date" id="exp-to"
+                       value="<?= date('Y-m-d') ?>"
+                       max="<?= date('Y-m-d') ?>"
+                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            </div>
+        </div>
+
+        <button onclick="doExport()"
+                class="mt-5 w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors text-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <?= __('download_csv') ?>
+        </button>
+    </div>
+</div>
+
+<script>
+var _exportMode = 'month';
+var _expBtnActive   = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+var _expBtnInactive = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
+
+function switchExportMode(m) {
+    _exportMode = m;
+    document.getElementById('exp-btn-month').className = m === 'month' ? _expBtnActive : _expBtnInactive;
+    document.getElementById('exp-btn-range').className = m === 'range' ? _expBtnActive : _expBtnInactive;
+    document.getElementById('exp-month-panel').classList.toggle('hidden', m !== 'month');
+    document.getElementById('exp-range-panel').classList.toggle('hidden', m !== 'range');
+}
+
+function doExport() {
+    var base = '<?= BASE_URI ?>/expenses/export';
+    var url;
+    if (_exportMode === 'month') {
+        var m = document.getElementById('exp-month').value;
+        var y = document.getElementById('exp-year').value;
+        url = base + '?mode=month&year=' + y + '&month=' + m;
+    } else {
+        var from = document.getElementById('exp-from').value;
+        var to   = document.getElementById('exp-to').value;
+        if (!from || !to) { alert('Sila pilih tarikh.'); return; }
+        if (from > to) { alert('Tarikh mula mesti sebelum tarikh tamat.'); return; }
+        url = base + '?mode=range&from=' + from + '&to=' + to;
+    }
+    window.location.href = url;
+    document.getElementById('export-modal').classList.add('hidden');
+}
+</script>
+<!-- ===== END EXPORT CSV MODAL ===== -->
 
 <!-- Configure Budget % Modal -->
 <div id="budget-pct-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
