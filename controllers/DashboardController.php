@@ -110,8 +110,8 @@ class DashboardController extends Controller
             'month_label' => $monthLabel,
         ];
 
-        $recentRev    = $revenue->recentTransactions($userId, 15);
-        $recentExp    = $expense->recentTransactions($userId, 15);
+        $recentRev    = $revenue->recentTransactions($userId, 15, $period, $year, $month, $week, $dailyDate);
+        $recentExp    = $expense->recentTransactions($userId, 15, $period, $year, $month, $week, $dailyDate);
         $transactions = array_merge($recentRev, $recentExp);
         usort($transactions, fn($a, $b) => strcmp($b['txn_date'], $a['txn_date']));
         $transactions = array_slice($transactions, 0, 15);

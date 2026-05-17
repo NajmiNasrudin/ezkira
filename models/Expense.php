@@ -26,18 +26,34 @@ class Expense
         return $result;
     }
 
-    public function recentTransactions(int $userId, int $limit = 10): array
+    public function recentTransactions(int $userId, int $limit = 10, string $period = '', int $year = 0, int $month = 0, int $week = 0, string $date = ''): array
     {
-        $stmt = $this->db->prepare(
-            'SELECT id, amount, category, description, expense_date AS txn_date, "expense" AS type
-             FROM expenses
-             WHERE user_id = ?
-             ORDER BY expense_date DESC, created_at DESC
-             LIMIT ?'
+        $where  = 'user_id = ?';
+        $params = [$userId];
+
+        if ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $where .= ' AND expense_date = ?';
+            $params[] = $date;
+        } elseif ($period === 'weekly' && $year > 0 && $week > 0) {
+            $where .= ' AND YEAR(expense_date) = ? AND WEEK(expense_date, 3) = ?';
+            $params[] = $year;
+            $params[] = $week;
+        } elseif ($period === 'monthly' && $year > 0 && $month > 0) {
+            $where .= ' AND YEAR(expense_date) = ? AND MONTH(expense_date) = ?';
+            $params[] = $year;
+            $params[] = $month;
+        } elseif ($period === 'annual' && $year > 0) {
+            $where .= ' AND YEAR(expense_date) = ?';
+            $params[] = $year;
+        }
+
+        $limit = max(1, (int)$limit);
+        $stmt  = $this->db->prepare(
+            "SELECT id, amount, category, description, expense_date AS txn_date, 'expense' AS type
+             FROM expenses WHERE {$where}
+             ORDER BY expense_date DESC, created_at DESC LIMIT {$limit}"
         );
-        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
-        $stmt->bindValue(2, $limit,  \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
