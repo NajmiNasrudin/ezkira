@@ -133,8 +133,11 @@ return [
     'revenue_amount_invalid' => 'Amount must be a positive number.',
 
     // ---- Dashboard Charts ----
+    'compare_day_title'      => 'Daily Overview',
+    'compare_day_subtitle'   => 'Last 7 days — Revenue vs Expenses',
     'compare_month_title'    => 'Month Comparison',
     'compare_year_title'     => 'Year Comparison',
+    'compare_day'            => 'Day',
     'compare_month'          => 'Month',
     'compare_year'           => 'Year',
     'expenses_overview'      => 'Expenses Overview',

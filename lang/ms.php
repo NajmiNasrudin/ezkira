@@ -133,8 +133,11 @@ return [
     'revenue_amount_invalid' => 'Jumlah mesti nombor positif.',
 
     // ---- Dashboard Charts ----
+    'compare_day_title'      => 'Gambaran Harian',
+    'compare_day_subtitle'   => '7 hari lepas — Pendapatan vs Perbelanjaan',
     'compare_month_title'    => 'Perbandingan Bulanan',
     'compare_year_title'     => 'Perbandingan Tahunan',
+    'compare_day'            => 'Hari',
     'compare_month'          => 'Bulan',
     'compare_year'           => 'Tahun',
     'expenses_overview'      => 'Gambaran Perbelanjaan',

@@ -79,6 +79,15 @@ class DashboardController extends Controller
             'last_year' => $curYear - 1,
         ];
 
+        // Last 7 days daily comparison
+        $revDailyMap = $revenue->lastNDaysTotals(7, $userId);
+        $expDailyMap = $expense->lastNDaysTotals(7, $userId);
+        $compareDay = [
+            'labels' => array_map(fn($d) => date('j M', strtotime($d)), array_keys($revDailyMap)),
+            'rev'    => array_values($revDailyMap),
+            'exp'    => array_values($expDailyMap),
+        ];
+
         $recentRev    = $revenue->recentTransactions($userId, 15);
         $recentExp    = $expense->recentTransactions($userId, 15);
         $transactions = array_merge($recentRev, $recentExp);
@@ -98,6 +107,7 @@ class DashboardController extends Controller
             'transactions'  => $transactions,
             'compareMonth'  => $compareMonth,
             'compareYear'   => $compareYear,
+            'compareDay'    => $compareDay,
             'period'        => $period,
             'year'          => $year,
             'month'         => $month,

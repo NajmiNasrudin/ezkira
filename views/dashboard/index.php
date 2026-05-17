@@ -464,6 +464,10 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
             </p>
         </div>
         <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5">
+            <button id="btn-day" onclick="switchCompare('day')"
+                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700">
+                <?= __('compare_day') ?>
+            </button>
             <button id="btn-month" onclick="switchCompare('month')"
                     class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
                 <?= __('compare_month') ?>
@@ -584,17 +588,18 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
 (function () {
     var compareMonth = <?= json_encode($compareMonth) ?>;
     var compareYear  = <?= json_encode($compareYear) ?>;
+    var compareDay   = <?= json_encode($compareDay) ?>;
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var mode = 'month';
 
+    var btnActive   = 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+    var btnInactive = 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700';
+
     window.switchCompare = function(m) {
         mode = m;
-        document.getElementById('btn-month').className = m === 'month'
-            ? 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-            : 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700';
-        document.getElementById('btn-year').className = m === 'year'
-            ? 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
-            : 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700';
+        document.getElementById('btn-day').className   = m === 'day'   ? btnActive : btnInactive;
+        document.getElementById('btn-month').className = m === 'month' ? btnActive : btnInactive;
+        document.getElementById('btn-year').className  = m === 'year'  ? btnActive : btnInactive;
         renderCompare();
     };
 
@@ -617,7 +622,22 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
         var chartW = W - padL - padR;
         var chartH = H - padT - padB;
 
-        if (mode === 'month') {
+        if (mode === 'day') {
+            document.getElementById('compare-title').textContent = '<?= __('compare_day_title') ?>';
+            document.getElementById('compare-subtitle').textContent = '<?= __('compare_day_subtitle') ?>';
+            document.getElementById('leg-rev-a').textContent = 'Revenue';
+            document.getElementById('leg-rev-b').textContent = '';
+            document.getElementById('leg-exp-a').textContent = 'Expenses';
+            document.getElementById('leg-exp-b').textContent = '';
+
+            drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
+                compareDay.labels,
+                [
+                    { data: compareDay.rev, color: '#458458' },
+                    { data: compareDay.exp, color: '#f87171' },
+                ],
+                isDark);
+        } else if (mode === 'month') {
             document.getElementById('compare-title').textContent = '<?= __('compare_month_title') ?>';
             document.getElementById('compare-subtitle').textContent = compareMonth.prev_label + ' vs ' + compareMonth.cur_label;
             document.getElementById('leg-rev-a').textContent = compareMonth.prev_label + ' Revenue';
@@ -628,8 +648,8 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 [compareMonth.prev_label, compareMonth.cur_label],
                 [
-                    { data: [compareMonth.prev_rev, compareMonth.cur_rev],  color: '#458458' },
-                    { data: [compareMonth.prev_exp, compareMonth.cur_exp],  color: '#f87171' },
+                    { data: [compareMonth.prev_rev, compareMonth.cur_rev], color: '#458458' },
+                    { data: [compareMonth.prev_exp, compareMonth.cur_exp], color: '#f87171' },
                 ],
                 isDark);
         } else {

@@ -41,6 +41,32 @@ class Expense
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Returns daily expense totals (opex+marketing+cogs) for the last $days days.
+     * Result: [ 'Y-m-d' => float, ... ] ordered oldest → newest
+     */
+    public function lastNDaysTotals(int $days, int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT DATE_FORMAT(expense_date,'%Y-%m-%d') AS d, COALESCE(SUM(amount),0) AS total
+             FROM expenses
+             WHERE user_id = ? AND category IN ('opex','marketing','cogs')
+               AND expense_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+             GROUP BY DATE(expense_date)"
+        );
+        $stmt->execute([$userId, $days - 1]);
+        $rows = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $r) {
+            $rows[$r['d']] = (float)$r['total'];
+        }
+        $result = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $d = date('Y-m-d', strtotime("-{$i} days"));
+            $result[$d] = $rows[$d] ?? 0.0;
+        }
+        return $result;
+    }
+
     public function byCategory(string $category, int $userId, int $year = 0, int $month = 0): array
     {
         $where  = 'e.category = ? AND e.user_id = ?';
