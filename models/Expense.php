@@ -42,27 +42,22 @@ class Expense
     }
 
     /**
-     * Returns daily expense totals (opex+marketing+cogs) for the last $days days.
-     * Result: [ 'Y-m-d' => float, ... ] ordered oldest → newest
+     * Returns daily expense totals (opex+marketing+cogs) keyed by 'Y-m-d' for a given month.
+     * Only returns rows that have data; caller fills zeros for missing days.
      */
-    public function lastNDaysTotals(int $days, int $userId): array
+    public function dailyTotals(int $year, int $month, int $userId): array
     {
         $stmt = $this->db->prepare(
             "SELECT DATE_FORMAT(expense_date,'%Y-%m-%d') AS d, COALESCE(SUM(amount),0) AS total
              FROM expenses
              WHERE user_id = ? AND category IN ('opex','marketing','cogs')
-               AND expense_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+               AND YEAR(expense_date) = ? AND MONTH(expense_date) = ?
              GROUP BY DATE(expense_date)"
         );
-        $stmt->execute([$userId, $days - 1]);
-        $rows = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $r) {
-            $rows[$r['d']] = (float)$r['total'];
-        }
+        $stmt->execute([$userId, $year, $month]);
         $result = [];
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $d = date('Y-m-d', strtotime("-{$i} days"));
-            $result[$d] = $rows[$d] ?? 0.0;
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $r) {
+            $result[$r['d']] = (float)$r['total'];
         }
         return $result;
     }

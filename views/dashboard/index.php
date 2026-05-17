@@ -624,7 +624,7 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
 
         if (mode === 'day') {
             document.getElementById('compare-title').textContent = '<?= __('compare_day_title') ?>';
-            document.getElementById('compare-subtitle').textContent = '<?= __('compare_day_subtitle') ?>';
+            document.getElementById('compare-subtitle').textContent = compareDay.month_label;
             document.getElementById('leg-rev-a').textContent = 'Revenue';
             document.getElementById('leg-rev-b').textContent = '';
             document.getElementById('leg-exp-a').textContent = 'Expenses';

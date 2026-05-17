@@ -79,13 +79,35 @@ class DashboardController extends Controller
             'last_year' => $curYear - 1,
         ];
 
-        // Last 7 days daily comparison
-        $revDailyMap = $revenue->lastNDaysTotals(7, $userId);
-        $expDailyMap = $expense->lastNDaysTotals(7, $userId);
+        // Current month daily comparison — all days in the month, zeros for missing
+        $daysInMonth  = (int)date('t', mktime(0, 0, 0, $curMonth, 1, $curYear));
+        $monthLabel   = date('F Y', mktime(0, 0, 0, $curMonth, 1, $curYear));
+
+        // Revenue dailyTotals returns [{sale_date, total}, ...] — convert to keyed array
+        $revDailyRaw  = $revenue->dailyTotals($curYear, $curMonth, $userId);
+        $revDailyKeyed = [];
+        foreach ($revDailyRaw as $row) {
+            $revDailyKeyed[$row['sale_date']] = (float)$row['total'];
+        }
+
+        // Expense dailyTotals already returns ['Y-m-d' => float]
+        $expDailyKeyed = $expense->dailyTotals($curYear, $curMonth, $userId);
+
+        $dayLabels = [];
+        $dayRev    = [];
+        $dayExp    = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $dateStr     = sprintf('%04d-%02d-%02d', $curYear, $curMonth, $d);
+            $dayLabels[] = $d;                          // just day number on x-axis
+            $dayRev[]    = $revDailyKeyed[$dateStr] ?? 0.0;
+            $dayExp[]    = $expDailyKeyed[$dateStr] ?? 0.0;
+        }
+
         $compareDay = [
-            'labels' => array_map(fn($d) => date('j M', strtotime($d)), array_keys($revDailyMap)),
-            'rev'    => array_values($revDailyMap),
-            'exp'    => array_values($expDailyMap),
+            'labels'      => $dayLabels,
+            'rev'         => $dayRev,
+            'exp'         => $dayExp,
+            'month_label' => $monthLabel,
         ];
 
         $recentRev    = $revenue->recentTransactions($userId, 15);

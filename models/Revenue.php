@@ -91,31 +91,6 @@ class Revenue
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Returns daily revenue totals for the last $days days (including today).
-     * Result: [ 'Y-m-d' => float, ... ] ordered oldest → newest
-     */
-    public function lastNDaysTotals(int $days, int $userId): array
-    {
-        $stmt = $this->db->prepare(
-            "SELECT DATE_FORMAT(sale_date,'%Y-%m-%d') AS d, COALESCE(SUM(amount),0) AS total
-             FROM revenues
-             WHERE user_id = ? AND sale_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-             GROUP BY DATE(sale_date)"
-        );
-        $stmt->execute([$userId, $days - 1]);
-        $rows = [];
-        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $r) {
-            $rows[$r['d']] = (float)$r['total'];
-        }
-        $result = [];
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $d = date('Y-m-d', strtotime("-{$i} days"));
-            $result[$d] = $rows[$d] ?? 0.0;
-        }
-        return $result;
-    }
-
     public function dailyTotals(int $year, int $month, int $userId): array
     {
         $stmt = $this->db->prepare(
