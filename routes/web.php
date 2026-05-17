@@ -39,7 +39,7 @@ $router->get('/revenue/export-pnl',             'RevenueController@exportPnl', [
 
 // Expenses
 $router->get('/expenses',                        'ExpenseController@index',       [AuthMiddleware::class]);
-$router->get('/expenses/export',                 'ExpenseController@exportCsv',   [AuthMiddleware::class]);
+$router->get('/expenses/export',                 'ExpenseController@export',      [AuthMiddleware::class]);
 $router->post('/expenses/store',                 'ExpenseController@store',       [AuthMiddleware::class]);
 $router->post('/expenses/budget-pct',            'ExpenseController@saveBudgetPct',[AuthMiddleware::class]);
 $router->get('/expenses/receipt/{id}',           'ExpenseController@receipt',       [AuthMiddleware::class]);

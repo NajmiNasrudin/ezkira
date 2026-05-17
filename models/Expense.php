@@ -64,11 +64,12 @@ class Expense
 
     /**
      * Fetch all expenses for a user within a date range, all categories.
+     * Returns id so receipts can be fetched per expense.
      */
     public function getByDateRange(int $userId, string $from, string $to): array
     {
         $stmt = $this->db->prepare(
-            "SELECT expense_date, category, description, amount
+            "SELECT id, expense_date, category, description, amount
              FROM expenses
              WHERE user_id = ? AND expense_date BETWEEN ? AND ?
              ORDER BY expense_date ASC, category ASC, created_at ASC"

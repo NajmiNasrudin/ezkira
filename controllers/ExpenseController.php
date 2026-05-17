@@ -306,7 +306,7 @@ class ExpenseController extends Controller
         $this->redirect("/expenses?year={$year}&month={$month}" . ($cat ? '#' . $cat : ''));
     }
 
-    public function exportCsv(): void
+    public function export(): void
     {
         $userId = Auth::id();
         $mode   = $_GET['mode'] ?? 'month';
@@ -314,7 +314,6 @@ class ExpenseController extends Controller
         if ($mode === 'range') {
             $from = $_GET['from'] ?? date('Y-m-01');
             $to   = $_GET['to']   ?? date('Y-m-d');
-            // Sanitise
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) $from = date('Y-m-01');
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $to))   $to   = date('Y-m-d');
             if ($from > $to) [$from, $to] = [$to, $from];
@@ -323,11 +322,11 @@ class ExpenseController extends Controller
             $month = (int)($_GET['month'] ?? date('n'));
             $month = max(1, min(12, $month));
             $from  = sprintf('%04d-%02d-01', $year, $month);
-            $to    = date('Y-m-t', strtotime($from));   // last day of month
+            $to    = date('Y-m-t', strtotime($from));
         }
 
-        $expenses = (new Expense())->getByDateRange($userId, $from, $to);
-
+        $expenseModel   = new Expense();
+        $expenses       = $expenseModel->getByDateRange($userId, $from, $to);
         $categoryLabels = [
             'opex'      => 'OPEX',
             'marketing' => 'Marketing',
@@ -335,32 +334,101 @@ class ExpenseController extends Controller
             'liability' => 'Liability',
         ];
 
-        $filename = 'expenses_' . $from . '_to_' . $to . '.csv';
-        header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
+        // ── Build CSV in memory ───────────────────────────────────────────────
+        $csvBuffer = "\xEF\xBB\xBF";  // UTF-8 BOM
+        $csvBuffer .= implode(',', ['Date', 'Category', 'Description', 'Amount (RM)', 'Attachments']) . "\r\n";
 
-        $out = fopen('php://output', 'w');
-        fputs($out, "\xEF\xBB\xBF");  // UTF-8 BOM — fixes Excel encoding
-        fputcsv($out, ['Date', 'Category', 'Description', 'Amount (RM)']);
+        $grandTotal   = 0.0;
+        $allReceipts  = [];   // [ ['path'=>..., 'name'=>..., 'zipName'=>...], ... ]
 
-        $grandTotal = 0.0;
         foreach ($expenses as $e) {
-            $amt = (float)$e['amount'];
+            $amt        = (float)$e['amount'];
             $grandTotal += $amt;
-            fputcsv($out, [
+            $catLabel   = $categoryLabels[$e['category']] ?? strtoupper($e['category']);
+
+            // Collect receipts for this expense
+            $receipts      = $expenseModel->getReceipts((int)$e['id']);
+            $receiptNames  = [];
+
+            foreach ($receipts as $idx => $r) {
+                $origExt   = strtolower(pathinfo($r['name'], PATHINFO_EXTENSION));
+                // Safe zip filename: date_category_index.ext
+                $safeName  = $e['expense_date'] . '_' . strtolower($catLabel) . '_' . ($idx + 1) . '.' . $origExt;
+                $receiptNames[] = $safeName;
+                $allReceipts[]  = [
+                    'path'    => BASE_PATH . '/' . $r['path'],
+                    'zipName' => 'receipts/' . $safeName,
+                ];
+            }
+
+            $attachStr = empty($receiptNames) ? '' : implode('; ', $receiptNames);
+
+            // Escape CSV fields manually to avoid issues with commas in descriptions
+            $csvBuffer .= $this->csvRow([
                 $e['expense_date'],
-                $categoryLabels[$e['category']] ?? strtoupper($e['category']),
+                $catLabel,
                 $e['description'],
                 number_format($amt, 2, '.', ''),
+                $attachStr,
             ]);
         }
 
-        // Grand total row
-        fputcsv($out, ['', '', 'TOTAL', number_format($grandTotal, 2, '.', '')]);
-        fclose($out);
+        $csvBuffer .= $this->csvRow(['', '', 'TOTAL', number_format($grandTotal, 2, '.', ''), '']);
+
+        $baseName = 'expenses_' . $from . '_to_' . $to;
+
+        // ── If no attachments → serve CSV directly ────────────────────────────
+        if (empty($allReceipts)) {
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="' . $baseName . '.csv"');
+            header('Cache-Control: no-cache');
+            echo $csvBuffer;
+            exit;
+        }
+
+        // ── With attachments → serve ZIP ──────────────────────────────────────
+        if (!class_exists('ZipArchive')) {
+            // Fallback: serve CSV only
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="' . $baseName . '.csv"');
+            header('Cache-Control: no-cache');
+            echo $csvBuffer;
+            exit;
+        }
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'ezkira_exp_');
+        $zip     = new \ZipArchive();
+        $zip->open($tmpFile, \ZipArchive::OVERWRITE);
+
+        // Add CSV
+        $zip->addFromString('expenses.csv', $csvBuffer);
+
+        // Add receipt files
+        foreach ($allReceipts as $r) {
+            if (file_exists($r['path'])) {
+                $zip->addFile($r['path'], $r['zipName']);
+            }
+        }
+
+        $zip->close();
+
+        $zipSize = filesize($tmpFile);
+        header('Content-Type: application/zip');
+        header('Content-Disposition: attachment; filename="' . $baseName . '.zip"');
+        header('Content-Length: ' . $zipSize);
+        header('Cache-Control: no-cache');
+        readfile($tmpFile);
+        unlink($tmpFile);
         exit;
+    }
+
+    private function csvRow(array $fields): string
+    {
+        $escaped = array_map(function ($f) {
+            $f = str_replace('"', '""', $f);
+            return '"' . $f . '"';
+        }, $fields);
+        return implode(',', $escaped) . "\r\n";
     }
 
     public function saveBudgetPct(): void

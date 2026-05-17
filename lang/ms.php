@@ -227,13 +227,13 @@ return [
     'business_type_other'        => 'Sila nyatakan',
 
     // ---- Export ----
-    'export_csv'        => 'Eksport CSV',
+    'export_csv'        => 'Eksport',
     'export_by_month'   => 'Mengikut Bulan',
     'export_by_range'   => 'Julat Tarikh',
     'select_month'      => 'Pilih Bulan',
     'date_from'         => 'Dari',
     'date_to'           => 'Hingga',
-    'download_csv'      => 'Muat Turun CSV',
+    'download_csv'      => 'Muat Turun (CSV / ZIP dengan resit)',
 
     // ---- Google OAuth ----
     'sign_in_google'             => 'Teruskan dengan Google',
