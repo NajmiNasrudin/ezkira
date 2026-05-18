@@ -127,10 +127,15 @@ return [
     'confirm_delete_sale'    => 'Delete this sale record?',
     'sale_notes_placeholder' => 'e.g. Promotion campaign, bulk order...',
     'revenue_added'          => 'Sale recorded successfully.',
+    'revenue_updated'        => 'Sale record updated successfully.',
     'revenue_deleted'        => 'Sale record deleted.',
     'revenue_target_saved'   => 'Monthly target saved.',
     'revenue_target_invalid' => 'Target amount is invalid.',
     'revenue_amount_invalid' => 'Amount must be a positive number.',
+    'entry_type'             => 'Type',
+    'entry_type_sale'        => 'Sale',
+    'entry_type_refund'      => 'Refund',
+    'refund_hint'            => 'Amount will be deducted from revenue total',
 
     // ---- Dashboard Charts ----
     'compare_day_title'      => 'Daily Overview',

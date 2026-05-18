@@ -16,6 +16,8 @@ class Revenue
         'other'    => 'Other',
     ];
 
+    public const ENTRY_TYPES = ['sale', 'refund'];
+
     public function __construct()
     {
         $this->db = getDB();
@@ -28,9 +30,10 @@ class Revenue
     public function monthlyTotals(int $year, int $userId): array
     {
         $stmt = $this->db->prepare(
-            'SELECT MONTH(sale_date) AS m, COALESCE(SUM(amount), 0) AS total
+            "SELECT MONTH(sale_date) AS m,
+                    COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN -amount ELSE amount END), 0) AS total
              FROM revenues WHERE YEAR(sale_date) = ? AND user_id = ?
-             GROUP BY MONTH(sale_date)'
+             GROUP BY MONTH(sale_date)"
         );
         $stmt->execute([$year, $userId]);
         $result = array_fill(1, 12, 0.0);
@@ -40,18 +43,34 @@ class Revenue
         return $result;
     }
 
-    public function recentTransactions(int $userId, int $limit = 10): array
+    public function recentTransactions(int $userId, int $limit = 10, string $period = '', int $year = 0, int $month = 0, int $week = 0, string $date = ''): array
     {
-        $stmt = $this->db->prepare(
-            'SELECT id, amount, platform AS category, description, sale_date AS txn_date, "revenue" AS type
-             FROM revenues
-             WHERE user_id = ?
-             ORDER BY sale_date DESC, created_at DESC
-             LIMIT ?'
+        $where  = 'user_id = ?';
+        $params = [$userId];
+
+        if ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $where .= ' AND sale_date = ?';
+            $params[] = $date;
+        } elseif ($period === 'weekly' && $year > 0 && $week > 0) {
+            $where .= ' AND YEAR(sale_date) = ? AND WEEK(sale_date, 3) = ?';
+            $params[] = $year;
+            $params[] = $week;
+        } elseif ($period === 'monthly' && $year > 0 && $month > 0) {
+            $where .= ' AND YEAR(sale_date) = ? AND MONTH(sale_date) = ?';
+            $params[] = $year;
+            $params[] = $month;
+        } elseif ($period === 'annual' && $year > 0) {
+            $where .= ' AND YEAR(sale_date) = ?';
+            $params[] = $year;
+        }
+
+        $limit = max(1, (int)$limit);
+        $stmt  = $this->db->prepare(
+            "SELECT id, amount, entry_type, platform AS category, description, sale_date AS txn_date, 'revenue' AS type
+             FROM revenues WHERE {$where}
+             ORDER BY sale_date DESC, created_at DESC LIMIT {$limit}"
         );
-        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
-        $stmt->bindValue(2, $limit,  \PDO::PARAM_INT);
-        $stmt->execute();
+        $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -73,7 +92,8 @@ class Revenue
     {
         [$where, $params] = $this->periodWhere($period, $year, $month, $week, $userId, $date);
         $stmt = $this->db->prepare(
-            "SELECT COALESCE(SUM(amount), 0) FROM revenues WHERE {$where}"
+            "SELECT COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN -amount ELSE amount END), 0)
+             FROM revenues WHERE {$where}"
         );
         $stmt->execute($params);
         return (float) $stmt->fetchColumn();
@@ -83,18 +103,19 @@ class Revenue
     {
         [$where, $params] = $this->periodWhere($period, $year, $month, $week, $userId, $date);
         $stmt = $this->db->prepare(
-            "SELECT platform, COALESCE(SUM(amount), 0) AS total
+            "SELECT platform, COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN -amount ELSE amount END), 0) AS total
              FROM revenues WHERE {$where}
              GROUP BY platform ORDER BY total DESC"
         );
         $stmt->execute($params);
+        // Filter out platforms with zero or negative total only if there are positive ones
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     public function dailyTotals(int $year, int $month, int $userId): array
     {
         $stmt = $this->db->prepare(
-            "SELECT sale_date, COALESCE(SUM(amount), 0) AS total
+            "SELECT sale_date, COALESCE(SUM(CASE WHEN entry_type = 'refund' THEN -amount ELSE amount END), 0) AS total
              FROM revenues
              WHERE YEAR(sale_date) = ? AND MONTH(sale_date) = ? AND user_id = ?
              GROUP BY sale_date ORDER BY sale_date ASC"
@@ -106,12 +127,13 @@ class Revenue
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO revenues (user_id, platform, amount, description, sale_date)
-             VALUES (:user_id, :platform, :amount, :description, :sale_date)'
+            'INSERT INTO revenues (user_id, platform, entry_type, amount, description, sale_date)
+             VALUES (:user_id, :platform, :entry_type, :amount, :description, :sale_date)'
         );
         $stmt->execute([
             ':user_id'     => $data['user_id'],
             ':platform'    => $data['platform'],
+            ':entry_type'  => $data['entry_type'] ?? 'sale',
             ':amount'      => $data['amount'],
             ':description' => $data['description'],
             ':sale_date'   => $data['sale_date'],
@@ -130,11 +152,12 @@ class Revenue
     public function update(int $id, array $data): bool
     {
         $stmt = $this->db->prepare(
-            'UPDATE revenues SET platform=:platform, amount=:amount, description=:description, sale_date=:sale_date
+            'UPDATE revenues SET platform=:platform, entry_type=:entry_type, amount=:amount, description=:description, sale_date=:sale_date
              WHERE id=:id AND user_id=:user_id'
         );
         return $stmt->execute([
             ':platform'    => $data['platform'],
+            ':entry_type'  => $data['entry_type'] ?? 'sale',
             ':amount'      => $data['amount'],
             ':description' => $data['description'],
             ':sale_date'   => $data['sale_date'],

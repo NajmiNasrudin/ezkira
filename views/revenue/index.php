@@ -138,7 +138,7 @@ $platformColors = [
     <?php if ($target > 0): ?>
     <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-3 mb-1">
         <div class="<?= $barColor ?> h-3 rounded-full transition-all duration-700"
-             style="width: <?= number_format($pct, 2) ?>%"></div>
+             style="width: <?= number_format(min(100, $pct), 2) ?>%"></div>
     </div>
     <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500">
         <span>RM 0</span>
@@ -168,7 +168,7 @@ $platformColors = [
 </div>
 <?php endif; ?>
 
-<!-- Add Sale Row -->
+<!-- Sales History Card -->
 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 overflow-hidden">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
         <h3 class="font-semibold text-gray-900 dark:text-white text-sm"><?= __('sales_history') ?></h3>
@@ -181,10 +181,33 @@ $platformColors = [
         </button>
     </div>
 
-    <!-- Add Sale Form -->
+    <!-- Add Sale / Refund Form -->
     <div id="sale-form" class="hidden border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-6 py-5">
-        <form method="POST" action="<?= BASE_URI ?>/revenue/store">
+        <form method="POST" action="<?= BASE_URI ?>/revenue/store" id="add-sale-form">
             <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" name="entry_type" id="add-entry-type" value="sale">
+
+            <!-- Sale / Refund toggle -->
+            <div class="flex items-center gap-3 mb-4">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400"><?= __('entry_type') ?>:</span>
+                <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden text-sm font-medium">
+                    <button type="button" id="add-btn-sale"
+                            onclick="setEntryType('add','sale')"
+                            class="px-4 py-1.5 bg-emerald-600 text-white transition-colors">
+                        <?= __('entry_type_sale') ?>
+                    </button>
+                    <button type="button" id="add-btn-refund"
+                            onclick="setEntryType('add','refund')"
+                            class="px-4 py-1.5 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors">
+                        <?= __('entry_type_refund') ?>
+                    </button>
+                </div>
+                <!-- refund hint shown when refund selected -->
+                <span id="add-refund-hint" class="hidden text-xs text-red-500 dark:text-red-400">
+                    <?= __('refund_hint') ?? 'Amount will be deducted from revenue' ?>
+                </span>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Amount -->
                 <div>
@@ -229,7 +252,7 @@ $platformColors = [
                 </div>
             </div>
             <div class="flex items-center gap-3 mt-4">
-                <button type="submit"
+                <button type="submit" id="add-submit-btn"
                         class="px-4 py-2 text-sm font-medium text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-colors">
                     <?= __('save_sale') ?>
                 </button>
@@ -257,25 +280,36 @@ $platformColors = [
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <?php foreach ($entries as $row):
-                    $key = $row['platform'];
-                    $clr = $platformColors[$key] ?? $platformColors['other'];
-                    $pLabel = $platforms_list[$key] ?? $key;
+                    $key      = $row['platform'];
+                    $clr      = $platformColors[$key] ?? $platformColors['other'];
+                    $pLabel   = $platforms_list[$key] ?? $key;
+                    $isRefund = ($row['entry_type'] ?? 'sale') === 'refund';
                 ?>
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors <?= $isRefund ? 'bg-red-50/40 dark:bg-red-900/10' : '' ?>">
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         <?= date('d M Y', strtotime($row['sale_date'])) ?>
                     </td>
                     <td class="px-6 py-3">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full <?= $clr['badge'] ?>">
-                            <span class="w-1.5 h-1.5 rounded-full <?= $clr['dot'] ?>"></span>
-                            <?= htmlspecialchars($pLabel, ENT_QUOTES) ?>
-                        </span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full <?= $clr['badge'] ?>">
+                                <span class="w-1.5 h-1.5 rounded-full <?= $clr['dot'] ?>"></span>
+                                <?= htmlspecialchars($pLabel, ENT_QUOTES) ?>
+                            </span>
+                            <?php if ($isRefund): ?>
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                </svg>
+                                <?= __('entry_type_refund') ?>
+                            </span>
+                            <?php endif; ?>
+                        </div>
                     </td>
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
                         <?= $row['description'] !== '' ? htmlspecialchars($row['description'], ENT_QUOTES) : '<span class="text-gray-300 dark:text-gray-600">—</span>' ?>
                     </td>
-                    <td class="px-6 py-3 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                        RM <?= number_format((float)$row['amount'], 2) ?>
+                    <td class="px-6 py-3 text-right font-semibold whitespace-nowrap <?= $isRefund ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white' ?>">
+                        <?= $isRefund ? '−' : '' ?>RM <?= number_format((float)$row['amount'], 2) ?>
                     </td>
                     <td class="px-6 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
                         <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
@@ -286,7 +320,7 @@ $platformColors = [
                             <button type="button"
                                     onclick="openEditSale(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
                                     class="text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 p-1 rounded hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors"
-                                    title="<?= __('edit') ?? 'Edit' ?>">
+                                    title="Edit">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -313,8 +347,8 @@ $platformColors = [
             <tfoot>
                 <tr class="bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700">
                     <td class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase" colspan="3"><?= __('total') ?></td>
-                    <td class="px-6 py-3 text-right font-bold text-gray-900 dark:text-white">
-                        RM <?= number_format($total, 2) ?>
+                    <td class="px-6 py-3 text-right font-bold <?= $total < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white' ?>">
+                        <?= $total < 0 ? '−' : '' ?>RM <?= number_format(abs($total), 2) ?>
                     </td>
                     <td colspan="2"></td>
                 </tr>
@@ -372,7 +406,7 @@ $platformColors = [
 <div id="edit-sale-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
         <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('edit') ?? 'Edit Sale' ?></h3>
+            <h3 id="edit-modal-title" class="text-base font-semibold text-gray-900 dark:text-white">Edit Sale</h3>
             <button type="button" onclick="document.getElementById('edit-sale-modal').classList.add('hidden')"
                     class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -384,6 +418,25 @@ $platformColors = [
             <?= \App\Core\CSRF::field() ?>
             <input type="hidden" name="year"  value="<?= $year ?>">
             <input type="hidden" name="month" value="<?= $month ?>">
+            <input type="hidden" name="entry_type" id="edit-entry-type" value="sale">
+
+            <!-- Sale / Refund toggle -->
+            <div class="flex items-center gap-3 mb-4">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-400"><?= __('entry_type') ?>:</span>
+                <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden text-sm font-medium">
+                    <button type="button" id="edit-btn-sale"
+                            onclick="setEntryType('edit','sale')"
+                            class="px-4 py-1.5 bg-emerald-600 text-white transition-colors">
+                        <?= __('entry_type_sale') ?>
+                    </button>
+                    <button type="button" id="edit-btn-refund"
+                            onclick="setEntryType('edit','refund')"
+                            class="px-4 py-1.5 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors">
+                        <?= __('entry_type_refund') ?>
+                    </button>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <!-- Amount -->
                 <div>
@@ -446,12 +499,44 @@ $platformColors = [
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
+var _labelSale   = <?= json_encode(__('entry_type_sale')) ?>;
+var _labelRefund = <?= json_encode(__('entry_type_refund')) ?>;
+
+// Toggle Sale / Refund for Add or Edit form (prefix = 'add' | 'edit')
+function setEntryType(prefix, type) {
+    document.getElementById(prefix + '-entry-type').value = type;
+
+    var saleBtn   = document.getElementById(prefix + '-btn-sale');
+    var refundBtn = document.getElementById(prefix + '-btn-refund');
+
+    if (type === 'sale') {
+        saleBtn.className   = 'px-4 py-1.5 bg-emerald-600 text-white transition-colors';
+        refundBtn.className = 'px-4 py-1.5 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors';
+    } else {
+        refundBtn.className = 'px-4 py-1.5 bg-red-600 text-white transition-colors';
+        saleBtn.className   = 'px-4 py-1.5 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors';
+    }
+
+    // Show/hide refund hint in Add form
+    if (prefix === 'add') {
+        var hint = document.getElementById('add-refund-hint');
+        if (hint) hint.classList.toggle('hidden', type !== 'refund');
+    }
+
+    // Update edit modal title
+    if (prefix === 'edit') {
+        var title = document.getElementById('edit-modal-title');
+        if (title) title.textContent = 'Edit ' + (type === 'refund' ? _labelRefund : _labelSale);
+    }
+}
+
 function toggleSaleForm() {
     var form = document.getElementById('sale-form');
     form.classList.toggle('hidden');
     if (!form.classList.contains('hidden')) {
+        // Reset to Sale mode
+        setEntryType('add', 'sale');
         form.querySelector('input[name="amount"]').focus();
-        // Reset platform select + custom input
         var sel = document.getElementById('add-platform-select');
         if (sel) { sel.value = sel.options[0].value; togglePlatformOther('add-platform-other', sel.value); }
     }
@@ -466,6 +551,10 @@ function openEditSale(row) {
     document.getElementById('edit-sale-notes').value  = row.description || '';
     document.getElementById('edit-sale-form').action  = '<?= BASE_URI ?>/revenue/' + row.id + '/update';
 
+    // Set entry type toggle
+    var entryType = row.entry_type || 'sale';
+    setEntryType('edit', entryType);
+
     // Platform: if stored value is a known key, select it; otherwise select 'other' + show custom
     var sel = document.getElementById('edit-sale-platform');
     var customInput = document.getElementById('edit-platform-other');
@@ -478,7 +567,7 @@ function openEditSale(row) {
         sel.value = 'other';
         customInput.classList.remove('hidden');
         customInput.required = true;
-        customInput.value = row.platform; // pre-fill with stored custom name
+        customInput.value = row.platform;
     }
 
     document.getElementById('edit-sale-modal').classList.remove('hidden');

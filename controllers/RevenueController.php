@@ -58,6 +58,10 @@ class RevenueController extends Controller
             $platform = 'other';
         }
 
+        $entryType = in_array($_POST['entry_type'] ?? '', Revenue::ENTRY_TYPES, true)
+            ? $_POST['entry_type']
+            : 'sale';
+
         if (!is_numeric($amount) || (float)$amount <= 0) {
             Session::flash('error', __('revenue_amount_invalid'));
             $this->redirect('/revenue');
@@ -66,6 +70,7 @@ class RevenueController extends Controller
         (new Revenue())->create([
             'user_id'     => Auth::id(),
             'platform'    => $platform,
+            'entry_type'  => $entryType,
             'amount'      => (float)$amount,
             'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
             'sale_date'   => $date,
@@ -96,6 +101,9 @@ class RevenueController extends Controller
         $date           = $_POST['sale_date']         ?? $entry['sale_date'];
         $year           = $_POST['year']              ?? date('Y');
         $month          = $_POST['month']             ?? date('n');
+        $entryType      = in_array($_POST['entry_type'] ?? '', Revenue::ENTRY_TYPES, true)
+            ? $_POST['entry_type']
+            : 'sale';
 
         if ($platform === 'other' && $platformCustom !== '') {
             $platform = substr(htmlspecialchars($platformCustom, ENT_QUOTES, 'UTF-8'), 0, 100);
@@ -110,13 +118,14 @@ class RevenueController extends Controller
 
         $model->update((int)$id, [
             'platform'    => $platform,
+            'entry_type'  => $entryType,
             'amount'      => (float)$amount,
             'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
             'sale_date'   => $date,
             'user_id'     => Auth::id(),
         ]);
 
-        Session::flash('success', 'Rekod jualan berjaya dikemaskini.');
+        Session::flash('success', __('revenue_updated'));
         $this->redirect("/revenue?year={$year}&month={$month}");
     }
 

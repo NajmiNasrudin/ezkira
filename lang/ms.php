@@ -127,10 +127,15 @@ return [
     'confirm_delete_sale'    => 'Padam rekod jualan ini?',
     'sale_notes_placeholder' => 'cth. Kempen promosi, pesanan pukal...',
     'revenue_added'          => 'Jualan berjaya direkodkan.',
+    'revenue_updated'        => 'Rekod jualan berjaya dikemaskini.',
     'revenue_deleted'        => 'Rekod jualan dipadam.',
     'revenue_target_saved'   => 'Target bulanan berjaya disimpan.',
     'revenue_target_invalid' => 'Jumlah target tidak sah.',
     'revenue_amount_invalid' => 'Jumlah mesti nombor positif.',
+    'entry_type'             => 'Jenis',
+    'entry_type_sale'        => 'Jualan',
+    'entry_type_refund'      => 'Bayaran Balik',
+    'refund_hint'            => 'Jumlah akan ditolak daripada jumlah pendapatan',
 
     // ---- Dashboard Charts ----
     'compare_day_title'      => 'Gambaran Harian',
