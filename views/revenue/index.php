@@ -208,7 +208,7 @@ $platformColors = [
                 </span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <!-- Amount -->
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -233,6 +233,18 @@ $platformColors = [
                            placeholder="e.g. Facebook Shop, Direct Order..."
                            maxlength="100"
                            class="hidden mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+                <!-- Payment Method -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('payment_method') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <select name="payment_method" required
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                        <?php foreach (\Models\Revenue::PAYMENT_METHODS as $pmKey => $pmLabel): ?>
+                            <option value="<?= $pmKey ?>"><?= htmlspecialchars($pmLabel, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <!-- Date -->
                 <div>
@@ -272,6 +284,7 @@ $platformColors = [
                 <tr class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
                     <th class="px-6 py-3 text-left font-medium"><?= __('date') ?></th>
                     <th class="px-6 py-3 text-left font-medium"><?= __('platform') ?></th>
+                    <th class="px-6 py-3 text-left font-medium"><?= __('payment_method') ?></th>
                     <th class="px-6 py-3 text-left font-medium"><?= __('notes') ?></th>
                     <th class="px-6 py-3 text-right font-medium"><?= __('amount') ?></th>
                     <th class="px-6 py-3 text-center font-medium"><?= __('added_by') ?></th>
@@ -304,6 +317,26 @@ $platformColors = [
                             </span>
                             <?php endif; ?>
                         </div>
+                    </td>
+                    <?php
+                        $pm      = $row['payment_method'] ?? 'cash';
+                        $pmLabel = \Models\Revenue::PAYMENT_METHODS[$pm] ?? 'Cash';
+                        $pmStyles = [
+                            'cash'           => ['path' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', 'cls' => 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-900/20'],
+                            'online_banking' => ['path' => 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z',            'cls' => 'text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20'],
+                            'card'           => ['path' => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',           'cls' => 'text-indigo-700 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/20'],
+                            'ewallet'        => ['path' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z',                       'cls' => 'text-pink-700 bg-pink-50 dark:text-pink-400 dark:bg-pink-900/20'],
+                            'other'          => ['path' => 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'cls' => 'text-gray-600 bg-gray-100 dark:text-gray-400 dark:bg-gray-700'],
+                        ];
+                        $pmStyle = $pmStyles[$pm] ?? $pmStyles['other'];
+                    ?>
+                    <td class="px-6 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full <?= $pmStyle['cls'] ?>">
+                            <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="<?= $pmStyle['path'] ?>"/>
+                            </svg>
+                            <?= htmlspecialchars($pmLabel, ENT_QUOTES) ?>
+                        </span>
                     </td>
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
                         <?= $row['description'] !== '' ? htmlspecialchars($row['description'], ENT_QUOTES) : '<span class="text-gray-300 dark:text-gray-600">—</span>' ?>
@@ -346,7 +379,7 @@ $platformColors = [
             </tbody>
             <tfoot>
                 <tr class="bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700">
-                    <td class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase" colspan="3"><?= __('total') ?></td>
+                    <td class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase" colspan="4"><?= __('total') ?></td>
                     <td class="px-6 py-3 text-right font-bold <?= $total < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white' ?>">
                         <?= $total < 0 ? '−' : '' ?>RM <?= number_format(abs($total), 2) ?>
                     </td>
@@ -637,7 +670,7 @@ $platformColors = [
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <!-- Amount -->
                 <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -654,8 +687,11 @@ $platformColors = [
                     <input type="date" id="edit-sale-date" name="sale_date" required
                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
                 <!-- Platform -->
-                <div class="col-span-2">
+                <div>
                     <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         <?= __('platform') ?> <span class="text-red-500">*</span>
                     </label>
@@ -670,6 +706,18 @@ $platformColors = [
                            placeholder="e.g. Facebook Shop, Direct Order..."
                            maxlength="100"
                            class="hidden mt-2 w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                </div>
+                <!-- Payment Method -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('payment_method') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <select id="edit-sale-payment" name="payment_method" required
+                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                        <?php foreach (\Models\Revenue::PAYMENT_METHODS as $pmKey => $pmLabel): ?>
+                            <option value="<?= $pmKey ?>"><?= htmlspecialchars($pmLabel, ENT_QUOTES) ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <!-- Notes -->
                 <div class="col-span-2">
@@ -754,6 +802,10 @@ function openEditSale(row) {
     // Set entry type toggle
     var entryType = row.entry_type || 'sale';
     setEntryType('edit', entryType);
+
+    // Set payment method
+    var pmSel = document.getElementById('edit-sale-payment');
+    if (pmSel) pmSel.value = row.payment_method || 'cash';
 
     // Platform: if stored value is a known key, select it; otherwise select 'other' + show custom
     var sel = document.getElementById('edit-sale-platform');

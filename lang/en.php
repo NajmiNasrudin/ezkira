@@ -136,6 +136,12 @@ return [
     'entry_type_sale'        => 'Sale',
     'entry_type_refund'      => 'Refund',
     'refund_hint'            => 'Amount will be deducted from revenue total',
+    'payment_method'         => 'Payment Method',
+    'pm_cash'                => 'Cash',
+    'pm_online_banking'      => 'Online Banking',
+    'pm_card'                => 'Debit / Credit Card',
+    'pm_ewallet'             => 'E-Wallet',
+    'pm_other'               => 'Others',
 
     // ---- Capital ----
     'capital'                => 'Capital',

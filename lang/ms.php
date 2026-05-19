@@ -136,6 +136,12 @@ return [
     'entry_type_sale'        => 'Jualan',
     'entry_type_refund'      => 'Bayaran Balik',
     'refund_hint'            => 'Jumlah akan ditolak daripada jumlah pendapatan',
+    'payment_method'         => 'Kaedah Bayaran',
+    'pm_cash'                => 'Tunai',
+    'pm_online_banking'      => 'Perbankan Dalam Talian',
+    'pm_card'                => 'Kad Debit / Kredit',
+    'pm_ewallet'             => 'E-Dompet',
+    'pm_other'               => 'Lain-lain',
 
     // ---- Capital ----
     'capital'                => 'Modal',

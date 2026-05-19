@@ -18,6 +18,14 @@ class Revenue
 
     public const ENTRY_TYPES = ['sale', 'refund'];
 
+    public const PAYMENT_METHODS = [
+        'cash'           => 'Cash',
+        'online_banking' => 'Online Banking',
+        'card'           => 'Debit / Credit Card',
+        'ewallet'        => 'E-Wallet',
+        'other'          => 'Others',
+    ];
+
     public function __construct()
     {
         $this->db = getDB();
@@ -127,16 +135,17 @@ class Revenue
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO revenues (user_id, platform, entry_type, amount, description, sale_date)
-             VALUES (:user_id, :platform, :entry_type, :amount, :description, :sale_date)'
+            'INSERT INTO revenues (user_id, platform, entry_type, payment_method, amount, description, sale_date)
+             VALUES (:user_id, :platform, :entry_type, :payment_method, :amount, :description, :sale_date)'
         );
         $stmt->execute([
-            ':user_id'     => $data['user_id'],
-            ':platform'    => $data['platform'],
-            ':entry_type'  => $data['entry_type'] ?? 'sale',
-            ':amount'      => $data['amount'],
-            ':description' => $data['description'],
-            ':sale_date'   => $data['sale_date'],
+            ':user_id'        => $data['user_id'],
+            ':platform'       => $data['platform'],
+            ':entry_type'     => $data['entry_type']     ?? 'sale',
+            ':payment_method' => $data['payment_method'] ?? 'cash',
+            ':amount'         => $data['amount'],
+            ':description'    => $data['description'],
+            ':sale_date'      => $data['sale_date'],
         ]);
         return (int) $this->db->lastInsertId();
     }
@@ -152,17 +161,19 @@ class Revenue
     public function update(int $id, array $data): bool
     {
         $stmt = $this->db->prepare(
-            'UPDATE revenues SET platform=:platform, entry_type=:entry_type, amount=:amount, description=:description, sale_date=:sale_date
+            'UPDATE revenues SET platform=:platform, entry_type=:entry_type, payment_method=:payment_method,
+             amount=:amount, description=:description, sale_date=:sale_date
              WHERE id=:id AND user_id=:user_id'
         );
         return $stmt->execute([
-            ':platform'    => $data['platform'],
-            ':entry_type'  => $data['entry_type'] ?? 'sale',
-            ':amount'      => $data['amount'],
-            ':description' => $data['description'],
-            ':sale_date'   => $data['sale_date'],
-            ':id'          => $id,
-            ':user_id'     => $data['user_id'],
+            ':platform'       => $data['platform'],
+            ':entry_type'     => $data['entry_type']     ?? 'sale',
+            ':payment_method' => $data['payment_method'] ?? 'cash',
+            ':amount'         => $data['amount'],
+            ':description'    => $data['description'],
+            ':sale_date'      => $data['sale_date'],
+            ':id'             => $id,
+            ':user_id'        => $data['user_id'],
         ]);
     }
 

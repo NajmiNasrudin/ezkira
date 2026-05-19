@@ -65,9 +65,10 @@ class RevenueController extends Controller
             $platform = 'other';
         }
 
-        $entryType = in_array($_POST['entry_type'] ?? '', Revenue::ENTRY_TYPES, true)
-            ? $_POST['entry_type']
-            : 'sale';
+        $entryType     = in_array($_POST['entry_type'] ?? '', Revenue::ENTRY_TYPES, true)
+            ? $_POST['entry_type'] : 'sale';
+        $paymentMethod = array_key_exists($_POST['payment_method'] ?? '', Revenue::PAYMENT_METHODS)
+            ? $_POST['payment_method'] : 'cash';
 
         if (!is_numeric($amount) || (float)$amount <= 0) {
             Session::flash('error', __('revenue_amount_invalid'));
@@ -75,12 +76,13 @@ class RevenueController extends Controller
         }
 
         (new Revenue())->create([
-            'user_id'     => Auth::id(),
-            'platform'    => $platform,
-            'entry_type'  => $entryType,
-            'amount'      => (float)$amount,
-            'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
-            'sale_date'   => $date,
+            'user_id'        => Auth::id(),
+            'platform'       => $platform,
+            'entry_type'     => $entryType,
+            'payment_method' => $paymentMethod,
+            'amount'         => (float)$amount,
+            'description'    => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'sale_date'      => $date,
         ]);
 
         $y = date('Y', strtotime($date));
@@ -109,8 +111,9 @@ class RevenueController extends Controller
         $year           = $_POST['year']              ?? date('Y');
         $month          = $_POST['month']             ?? date('n');
         $entryType      = in_array($_POST['entry_type'] ?? '', Revenue::ENTRY_TYPES, true)
-            ? $_POST['entry_type']
-            : 'sale';
+            ? $_POST['entry_type'] : 'sale';
+        $paymentMethod  = array_key_exists($_POST['payment_method'] ?? '', Revenue::PAYMENT_METHODS)
+            ? $_POST['payment_method'] : 'cash';
 
         if ($platform === 'other' && $platformCustom !== '') {
             $platform = substr(htmlspecialchars($platformCustom, ENT_QUOTES, 'UTF-8'), 0, 100);
@@ -124,12 +127,13 @@ class RevenueController extends Controller
         }
 
         $model->update((int)$id, [
-            'platform'    => $platform,
-            'entry_type'  => $entryType,
-            'amount'      => (float)$amount,
-            'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
-            'sale_date'   => $date,
-            'user_id'     => Auth::id(),
+            'platform'       => $platform,
+            'entry_type'     => $entryType,
+            'payment_method' => $paymentMethod,
+            'amount'         => (float)$amount,
+            'description'    => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'sale_date'      => $date,
+            'user_id'        => Auth::id(),
         ]);
 
         Session::flash('success', __('revenue_updated'));
