@@ -6,6 +6,7 @@ use App\Core\Auth;
 use App\Core\Controller;
 use App\Core\CSRF;
 use App\Core\Session;
+use Models\Capital;
 use Models\Revenue;
 
 class RevenueController extends Controller
@@ -28,6 +29,10 @@ class RevenueController extends Controller
 
         $pct = $target > 0 ? min(100, ($total / $target) * 100) : 0;
 
+        $capitalModel   = new Capital();
+        $capitalEntries = $capitalModel->byMonth($year, $month, $userId);
+        $capitalTotal   = $capitalModel->totalByMonth($year, $month, $userId);
+
         $this->view('revenue/index', [
             'year'           => $year,
             'month'          => $month,
@@ -38,6 +43,8 @@ class RevenueController extends Controller
             'platforms'      => $platforms,
             'daily'          => $daily,
             'platforms_list' => Revenue::PLATFORMS,
+            'capitalEntries' => $capitalEntries,
+            'capitalTotal'   => $capitalTotal,
         ], 'main', __('revenue'));
     }
 
@@ -230,5 +237,83 @@ class RevenueController extends Controller
 
         fclose($out);
         exit;
+    }
+
+    // ----------------------------------------------------------------
+    // Capital
+    // ----------------------------------------------------------------
+
+    public function storeCapital(): void
+    {
+        CSRF::check();
+
+        $amount      = trim($_POST['amount']      ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $date        = $_POST['capital_date']     ?? date('Y-m-d');
+        $year        = (int)($_POST['year']       ?? date('Y'));
+        $month       = (int)($_POST['month']      ?? date('n'));
+
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            Session::flash('error', __('revenue_amount_invalid'));
+            $this->redirect("/revenue?year={$year}&month={$month}");
+        }
+
+        (new Capital())->create([
+            'user_id'     => Auth::id(),
+            'amount'      => (float)$amount,
+            'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'capital_date'=> $date,
+        ]);
+
+        Session::flash('success', __('capital_added'));
+        $this->redirect("/revenue?year={$year}&month={$month}#capital");
+    }
+
+    public function updateCapital(string $id): void
+    {
+        CSRF::check();
+
+        $model  = new Capital();
+        $entry  = $model->findById((int)$id);
+        if (!$entry || (int)$entry['user_id'] !== Auth::id()) {
+            Session::flash('error', 'Rekod tidak dijumpai.');
+            $this->redirect('/revenue');
+        }
+
+        $amount      = trim($_POST['amount']      ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $date        = $_POST['capital_date']     ?? $entry['capital_date'];
+        $year        = (int)($_POST['year']       ?? date('Y'));
+        $month       = (int)($_POST['month']      ?? date('n'));
+
+        if (!is_numeric($amount) || (float)$amount <= 0) {
+            Session::flash('error', __('revenue_amount_invalid'));
+            $this->redirect("/revenue?year={$year}&month={$month}");
+        }
+
+        $model->update((int)$id, [
+            'amount'      => (float)$amount,
+            'description' => htmlspecialchars($description, ENT_QUOTES, 'UTF-8'),
+            'capital_date'=> $date,
+            'user_id'     => Auth::id(),
+        ]);
+
+        Session::flash('success', __('capital_updated'));
+        $this->redirect("/revenue?year={$year}&month={$month}#capital");
+    }
+
+    public function deleteCapital(string $id): void
+    {
+        CSRF::check();
+
+        $entry = (new Capital())->findById((int)$id);
+        if (!$entry || (int)$entry['user_id'] !== Auth::id()) {
+            Session::flash('error', 'Rekod tidak dijumpai.');
+            $this->redirect('/revenue');
+        }
+
+        (new Capital())->delete((int)$id);
+        Session::flash('success', __('capital_deleted'));
+        $this->redirect('/revenue');
     }
 }

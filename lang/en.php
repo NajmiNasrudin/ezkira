@@ -137,6 +137,20 @@ return [
     'entry_type_refund'      => 'Refund',
     'refund_hint'            => 'Amount will be deducted from revenue total',
 
+    // ---- Capital ----
+    'capital'                => 'Capital',
+    'capital_subtitle'       => 'Owner investment & capital injections',
+    'add_capital'            => 'Add Capital',
+    'save_capital'           => 'Save Capital',
+    'capital_date'           => 'Date',
+    'total_capital'          => 'Total Capital',
+    'capital_notes_placeholder' => 'e.g. Initial capital, additional investment...',
+    'no_capital_yet'         => 'No capital recorded yet. Click "Add Capital" to start.',
+    'confirm_delete_capital' => 'Delete this capital record?',
+    'capital_added'          => 'Capital recorded successfully.',
+    'capital_updated'        => 'Capital record updated.',
+    'capital_deleted'        => 'Capital record deleted.',
+
     // ---- Dashboard Charts ----
     'compare_day_title'      => 'Daily Overview',
     'compare_day_subtitle'   => 'Last 7 days — Revenue vs Expenses',

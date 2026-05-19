@@ -402,6 +402,206 @@ $platformColors = [
     </div>
 </div>
 
+<!-- ================================================================ -->
+<!-- Capital Section                                                  -->
+<!-- ================================================================ -->
+<div id="capital" class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+        <div>
+            <h3 class="font-semibold text-gray-900 dark:text-white text-sm"><?= __('capital') ?></h3>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5"><?= __('capital_subtitle') ?></p>
+        </div>
+        <button onclick="toggleCapitalForm()"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <?= __('add_capital') ?>
+        </button>
+    </div>
+
+    <!-- Add Capital Form -->
+    <div id="capital-form" class="hidden border-b border-gray-100 dark:border-gray-700 bg-violet-50/50 dark:bg-violet-900/10 px-6 py-5">
+        <form method="POST" action="<?= BASE_URI ?>/revenue/capital/store">
+            <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" name="year"  value="<?= $year ?>">
+            <input type="hidden" name="month" value="<?= $month ?>">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+                <!-- Date -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('capital_date') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="capital_date" required value="<?= date('Y-m-d') ?>"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+                <!-- Description -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('notes') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
+                    </label>
+                    <input type="text" name="description" maxlength="500"
+                           placeholder="<?= __('capital_notes_placeholder') ?>"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+            </div>
+            <div class="flex items-center gap-3 mt-4">
+                <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors">
+                    <?= __('save_capital') ?>
+                </button>
+                <button type="button" onclick="toggleCapitalForm()"
+                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 transition-colors">
+                    <?= __('cancel') ?>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Capital Table -->
+    <?php if (!empty($capitalEntries)): ?>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
+                    <th class="px-6 py-3 text-left font-medium"><?= __('date') ?></th>
+                    <th class="px-6 py-3 text-left font-medium"><?= __('notes') ?></th>
+                    <th class="px-6 py-3 text-right font-medium"><?= __('amount') ?></th>
+                    <th class="px-6 py-3 text-center font-medium"><?= __('added_by') ?></th>
+                    <th class="px-6 py-3 text-center font-medium"><?= __('action') ?></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                <?php foreach ($capitalEntries as $row): ?>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                    <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                        <?= date('d M Y', strtotime($row['capital_date'])) ?>
+                    </td>
+                    <td class="px-6 py-3 text-gray-600 dark:text-gray-400 max-w-xs truncate">
+                        <?= $row['description'] !== '' ? htmlspecialchars($row['description'], ENT_QUOTES) : '<span class="text-gray-300 dark:text-gray-600">—</span>' ?>
+                    </td>
+                    <td class="px-6 py-3 text-right font-semibold text-violet-700 dark:text-violet-400 whitespace-nowrap">
+                        RM <?= number_format((float)$row['amount'], 2) ?>
+                    </td>
+                    <td class="px-6 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
+                        <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
+                    </td>
+                    <td class="px-6 py-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <!-- Edit -->
+                            <button type="button"
+                                    onclick="openEditCapital(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
+                                    class="text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-300 p-1 rounded hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </button>
+                            <!-- Delete -->
+                            <form method="POST" action="<?= BASE_URI ?>/revenue/capital/<?= $row['id'] ?>/delete"
+                                  onsubmit="return confirm('<?= __('confirm_delete_capital') ?>')">
+                                <?= \App\Core\CSRF::field() ?>
+                                <button type="submit"
+                                        class="text-red-500 hover:text-red-700 dark:text-red-400 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr class="bg-violet-50/60 dark:bg-violet-900/20 border-t border-gray-200 dark:border-gray-700">
+                    <td class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase" colspan="2"><?= __('total_capital') ?></td>
+                    <td class="px-6 py-3 text-right font-bold text-violet-700 dark:text-violet-400">
+                        RM <?= number_format($capitalTotal, 2) ?>
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <?php else: ?>
+    <div class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">
+        <svg class="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-sm"><?= __('no_capital_yet') ?></p>
+    </div>
+    <?php endif; ?>
+</div>
+
+<!-- Edit Capital Modal -->
+<div id="edit-capital-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
+        <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('capital') ?></h3>
+            <button type="button" onclick="document.getElementById('edit-capital-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <form id="edit-capital-form" method="POST" action="" class="px-6 py-5">
+            <?= \App\Core\CSRF::field() ?>
+            <input type="hidden" name="year"  value="<?= $year ?>">
+            <input type="hidden" name="month" value="<?= $month ?>">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" id="edit-capital-amount" name="amount" step="0.01" min="0.01" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+                <!-- Date -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('capital_date') ?> <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" id="edit-capital-date" name="capital_date" required
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+                <!-- Notes -->
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <?= __('notes') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
+                    </label>
+                    <input type="text" id="edit-capital-notes" name="description" maxlength="500"
+                           placeholder="<?= __('capital_notes_placeholder') ?>"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-5">
+                <button type="submit"
+                        class="flex-1 py-2 text-sm font-medium text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors">
+                    <?= __('save_changes') ?>
+                </button>
+                <button type="button"
+                        onclick="document.getElementById('edit-capital-modal').classList.add('hidden')"
+                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <?= __('cancel') ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Edit Sale Modal -->
 <div id="edit-sale-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md">
@@ -586,6 +786,24 @@ function togglePlatformOther(inputId, val) {
         input.required = false;
         input.value = '';
     }
+}
+
+// Capital form toggle
+function toggleCapitalForm() {
+    var form = document.getElementById('capital-form');
+    form.classList.toggle('hidden');
+    if (!form.classList.contains('hidden')) {
+        form.querySelector('input[name="amount"]').focus();
+    }
+}
+
+function openEditCapital(row) {
+    document.getElementById('edit-capital-amount').value = row.amount;
+    document.getElementById('edit-capital-date').value   = row.capital_date;
+    document.getElementById('edit-capital-notes').value  = row.description || '';
+    document.getElementById('edit-capital-form').action  = '<?= BASE_URI ?>/revenue/capital/' + row.id + '/update';
+    document.getElementById('edit-capital-modal').classList.remove('hidden');
+    document.getElementById('edit-capital-amount').focus();
 }
 
 // Revenue month/year picker

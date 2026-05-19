@@ -137,6 +137,20 @@ return [
     'entry_type_refund'      => 'Bayaran Balik',
     'refund_hint'            => 'Jumlah akan ditolak daripada jumlah pendapatan',
 
+    // ---- Capital ----
+    'capital'                => 'Modal',
+    'capital_subtitle'       => 'Pelaburan pemilik & suntikan modal',
+    'add_capital'            => 'Tambah Modal',
+    'save_capital'           => 'Simpan Modal',
+    'capital_date'           => 'Tarikh',
+    'total_capital'          => 'Jumlah Modal',
+    'capital_notes_placeholder' => 'cth. Modal awal, pelaburan tambahan...',
+    'no_capital_yet'         => 'Tiada rekod modal lagi. Klik "Tambah Modal" untuk mula.',
+    'confirm_delete_capital' => 'Padam rekod modal ini?',
+    'capital_added'          => 'Modal berjaya direkodkan.',
+    'capital_updated'        => 'Rekod modal berjaya dikemaskini.',
+    'capital_deleted'        => 'Rekod modal dipadam.',
+
     // ---- Dashboard Charts ----
     'compare_day_title'      => 'Gambaran Harian',
     'compare_day_subtitle'   => '7 hari lepas — Pendapatan vs Perbelanjaan',
