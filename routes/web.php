@@ -51,6 +51,11 @@ $router->post('/expenses/receipt/{id}/delete',   'ExpenseController@deleteReceip
 $router->post('/expenses/{id}/update',           'ExpenseController@update',        [AuthMiddleware::class]);
 $router->post('/expenses/{id}/delete',           'ExpenseController@delete',        [AuthMiddleware::class]);
 
+// WhatsApp Blast
+$router->get('/blast',                    'BlastController@index',      [AuthMiddleware::class]);
+$router->post('/blast/send',              'BlastController@send',       [AuthMiddleware::class]);
+$router->get('/blast/{id}/recipients',   'BlastController@recipients', [AuthMiddleware::class]);
+
 // Profile
 $router->get('/profile',                 'ProfileController@index',       [AuthMiddleware::class]);
 $router->post('/profile/update',         'ProfileController@update',      [AuthMiddleware::class]);

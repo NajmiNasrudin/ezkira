@@ -24,6 +24,7 @@ $navLinks = [
     '/dashboard' => __('dashboard'),
     '/revenue'   => __('revenue'),
     '/expenses'  => __('expenses'),
+    '/blast'     => 'WhatsApp',
     '/profile'   => __('profile'),
 ];
 

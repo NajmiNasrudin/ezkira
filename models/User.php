@@ -93,6 +93,32 @@ class User
         return $stmt->execute($params);
     }
 
+    /** All users that have a WhatsApp number — for blast */
+    public function allWithPhone(): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT id, name, email, whatsapp_number, role, business_type
+             FROM users
+             WHERE whatsapp_number IS NOT NULL AND whatsapp_number != ''
+             ORDER BY name ASC"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /** Fetch multiple users by ID array — for blast */
+    public function findManyByIds(array $ids): array
+    {
+        if (empty($ids)) return [];
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->db->prepare(
+            "SELECT id, name, email, whatsapp_number, role
+             FROM users WHERE id IN ({$placeholders})"
+        );
+        $stmt->execute($ids);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function emailExists(string $email, ?int $excludeId = null): bool
     {
         if ($excludeId) {
