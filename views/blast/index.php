@@ -72,13 +72,44 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Nama Template WhatsApp <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="template_name" value="hello_world" required
-                           placeholder="e.g. hello_world"
+                    <input type="text" name="template_name" value="ezkira_blast_v2" required
+                           placeholder="e.g. ezkira_blast_v2"
                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        Guna <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">hello_world</code> untuk test. Untuk template custom, create di
-                        <a href="https://business.facebook.com/wa/manage/message-templates/" target="_blank" class="text-green-600 hover:underline">Meta Business Manager</a>.
+                        Urus template di <a href="https://business.facebook.com/wa/manage/message-templates/" target="_blank" class="text-green-600 hover:underline">Meta Business Manager</a>.
                     </p>
+                </div>
+
+                <!-- Image URL -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        URL Gambar Header <span class="text-xs text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <input type="url" name="image_url"
+                           placeholder="https://example.com/gambar.jpg"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Gambar mesti URL public yang boleh diakses. Kosongkan jika tiada gambar.</p>
+                </div>
+
+                <!-- Custom Message -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Mesej Custom ({{2}}) <span class="text-red-500">*</span>
+                    </label>
+                    <textarea name="custom_message" required rows="4"
+                              placeholder="Taip mesej anda di sini..."
+                              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Link -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Link ({{3}}) <span class="text-xs text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <input type="text" name="blast_link"
+                           placeholder="https://ezkira.com/promo"
+                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Kosongkan jika tiada link.</p>
                 </div>
 
                 <!-- Recipients -->
