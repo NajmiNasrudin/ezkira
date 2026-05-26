@@ -2,6 +2,7 @@
 
 use App\Middleware\AuthMiddleware;
 use App\Middleware\GuestMiddleware;
+use App\Middleware\RoleMiddleware;
 
 // ============================================================
 // Guest routes (redirect to dashboard if already logged in)
@@ -51,10 +52,10 @@ $router->post('/expenses/receipt/{id}/delete',   'ExpenseController@deleteReceip
 $router->post('/expenses/{id}/update',           'ExpenseController@update',        [AuthMiddleware::class]);
 $router->post('/expenses/{id}/delete',           'ExpenseController@delete',        [AuthMiddleware::class]);
 
-// WhatsApp Blast
-$router->get('/blast',                    'BlastController@index',      [AuthMiddleware::class]);
-$router->post('/blast/send',              'BlastController@send',       [AuthMiddleware::class]);
-$router->get('/blast/{id}/recipients',   'BlastController@recipients', [AuthMiddleware::class]);
+// WhatsApp Blast (admin only)
+$router->get('/blast',                   'BlastController@index',      [AuthMiddleware::class, new RoleMiddleware(['admin'])]);
+$router->post('/blast/send',             'BlastController@send',       [AuthMiddleware::class, new RoleMiddleware(['admin'])]);
+$router->get('/blast/{id}/recipients',  'BlastController@recipients', [AuthMiddleware::class, new RoleMiddleware(['admin'])]);
 
 // Profile
 $router->get('/profile',                 'ProfileController@index',       [AuthMiddleware::class]);

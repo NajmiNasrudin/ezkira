@@ -65,7 +65,8 @@ class Router
 
             // Run middleware stack
             foreach ($route['middleware'] as $middlewareClass) {
-                $mw = new $middlewareClass();
+                // Support both class-name strings and pre-instantiated objects
+                $mw = is_object($middlewareClass) ? $middlewareClass : new $middlewareClass();
                 $mw->handle();
             }
 

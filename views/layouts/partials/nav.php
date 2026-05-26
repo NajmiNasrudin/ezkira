@@ -24,9 +24,13 @@ $navLinks = [
     '/dashboard' => __('dashboard'),
     '/revenue'   => __('revenue'),
     '/expenses'  => __('expenses'),
-    '/blast'     => 'WhatsApp',
     '/profile'   => __('profile'),
 ];
+
+// WhatsApp Blast — admin only
+if ($role === 'admin') {
+    $navLinks['/blast'] = 'WhatsApp';
+}
 
 function navActive(string $path, string $current): string {
     return str_starts_with($current, $path)
