@@ -21,7 +21,8 @@ class Blast
         int     $total,
         string  $imagePath   = '',
         string  $blastLink   = '',
-        ?string $scheduledAt = null
+        ?string $scheduledAt = null,
+        string  $provider    = 'fonnte'   // 'fonnte' | 'whatsapp_api'
     ): int {
         $status = ($scheduledAt && strtotime($scheduledAt) > time())
             ? 'scheduled'
@@ -29,22 +30,23 @@ class Blast
 
         $stmt = $this->db->prepare(
             'INSERT INTO blast_logs
-               (status, sent_by, template_name, custom_message, total_recipients,
+               (status, provider, sent_by, template_name, custom_message, total_recipients,
                 scheduled_at, recipient_ids, image_path, blast_link, sent_count, failed_count)
              VALUES
-               (:status, :by, :tpl, :msg, :total,
+               (:status, :provider, :by, :tpl, :msg, :total,
                 :sched, :rids, :img, :link, 0, 0)'
         );
         $stmt->execute([
-            ':status' => $status,
-            ':by'     => $sentBy,
-            ':tpl'    => 'fonnte',
-            ':msg'    => $message,
-            ':total'  => $total,
-            ':sched'  => $scheduledAt ?: null,
-            ':rids'   => $recipientIds,
-            ':img'    => $imagePath,
-            ':link'   => $blastLink,
+            ':status'   => $status,
+            ':provider' => $provider,
+            ':by'       => $sentBy,
+            ':tpl'      => $provider,
+            ':msg'      => $message,
+            ':total'    => $total,
+            ':sched'    => $scheduledAt ?: null,
+            ':rids'     => $recipientIds,
+            ':img'      => $imagePath,
+            ':link'     => $blastLink,
         ]);
         return (int)$this->db->lastInsertId();
     }

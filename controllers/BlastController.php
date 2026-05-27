@@ -34,12 +34,15 @@ class BlastController extends Controller
         $blast   = new Blast();
         $history = $blast->history(10);
 
-        $configured = defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '';
+        $configured    = defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '';
+        $waApiReady    = defined('WA_PHONE_NUMBER_ID') && WA_PHONE_NUMBER_ID !== ''
+                      && defined('WA_ACCESS_TOKEN')    && WA_ACCESS_TOKEN    !== '';
 
         $this->view('blast/index', [
             'allUsers'   => $allUsers,
             'history'    => $history,
             'configured' => $configured,
+            'waApiReady' => $waApiReady,
         ], 'main', 'WhatsApp Blast');
     }
 
@@ -60,6 +63,17 @@ class BlastController extends Controller
         $customMsg   = trim($_POST['custom_message'] ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
         $scheduledAt = trim($_POST['scheduled_at']     ?? '');
+        $provider    = in_array($_POST['provider'] ?? '', ['fonnte','whatsapp_api'])
+                       ? $_POST['provider'] : 'fonnte';
+
+        // Check provider is configured
+        if ($provider === 'whatsapp_api') {
+            if (!defined('WA_PHONE_NUMBER_ID') || WA_PHONE_NUMBER_ID === '' ||
+                !defined('WA_ACCESS_TOKEN')    || WA_ACCESS_TOKEN    === '') {
+                Session::flash('error', 'WhatsApp Business API belum dikonfigurasi. Sila tambah WA_PHONE_NUMBER_ID dan WA_ACCESS_TOKEN dalam config.php');
+                $this->redirect('/blast');
+            }
+        }
 
         // Handle optional image upload
         $imagePath = '';
@@ -114,7 +128,8 @@ class BlastController extends Controller
             $total,
             $imagePath ?? '',
             $blastLink,
-            $scheduledAtNorm
+            $scheduledAtNorm,
+            $provider
         );
 
         // Try to trigger cron immediately (Linux only; falls back to cPanel cron)
