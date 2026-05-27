@@ -15,16 +15,28 @@
                 extend: {
                     colors: {
                         brand: {
-                            50:  '#f0f7f2',
-                            100: '#d9ede0',
-                            200: '#b3dbc1',
-                            300: '#7fc49e',
-                            400: '#52a872',
-                            500: '#458458',
-                            600: '#3a7049',
-                            700: '#2d5a3a',
-                            800: '#1f402a',
-                            900: '#122518',
+                            50:  '#eaf2ee',
+                            100: '#cce0d5',
+                            200: '#99c2ac',
+                            300: '#5f9d7d',
+                            400: '#3a7a58',
+                            500: '#245e40',
+                            600: '#1a4a2e',
+                            700: '#163020',
+                            800: '#0f2318',
+                            900: '#091610',
+                        },
+                        gold: {
+                            50:  '#fdf8e7',
+                            100: '#faefc4',
+                            200: '#f4d87a',
+                            300: '#eabc35',
+                            400: '#d4a820',
+                            500: '#C4A028',
+                            600: '#a88820',
+                            700: '#8a6e18',
+                            800: '#6b5412',
+                            900: '#4c3c0c',
                         },
                     },
                     fontFamily: {
@@ -43,13 +55,10 @@
     <div class="w-full max-w-md">
         <!-- Logo / Brand -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl shadow-lg mb-4">
-                <svg class="w-8 h-8 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+            <div class="inline-flex items-center justify-center mb-4">
+                <img src="<?= BASE_URI ?>/assets/img/logo.svg"
+                     alt="ezkira" class="w-24 h-24 rounded-2xl shadow-lg">
             </div>
-            <h1 class="text-2xl font-bold text-white dark:text-gray-100"><?= htmlspecialchars(APP_NAME) ?></h1>
             <p class="text-brand-200 dark:text-gray-400 text-sm mt-1">Finance Monitoring for SMEs</p>
         </div>
 

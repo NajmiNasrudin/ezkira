@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <!-- Background: cream -->
+  <rect width="240" height="240" fill="#F5F2EC" rx="24"/>
+
+  <!-- z — dark forest green, bold, right side -->
+  <text x="88" y="182"
+        font-family="'Georgia','Times New Roman',serif"
+        font-weight="900"
+        font-size="175"
+        fill="#163020">z</text>
+
+  <!-- e — gold, bold, left side, on top of z -->
+  <text x="-6" y="182"
+        font-family="'Georgia','Times New Roman',serif"
+        font-weight="900"
+        font-size="175"
+        fill="#C4A028">e</text>
+
+  <!-- ezkira wordmark -->
+  <text x="120" y="218"
+        text-anchor="middle"
+        font-family="'Arial','Helvetica Neue',sans-serif"
+        font-weight="700"
+        font-size="26"
+        letter-spacing="1.5">
+    <tspan fill="#C4A028">ez</tspan><tspan fill="#163020">kira</tspan>
+  </text>
+</svg>

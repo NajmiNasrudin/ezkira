@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+  <!-- Dark green background -->
+  <rect width="40" height="40" fill="#163020" rx="9"/>
+
+  <!-- z — white, right -->
+  <text x="17" y="36"
+        font-family="'Georgia','Times New Roman',serif"
+        font-weight="900"
+        font-size="36"
+        fill="rgba(255,255,255,0.85)">z</text>
+
+  <!-- e — gold, left, on top -->
+  <text x="-1" y="36"
+        font-family="'Georgia','Times New Roman',serif"
+        font-weight="900"
+        font-size="36"
+        fill="#C4A028">e</text>
+</svg>

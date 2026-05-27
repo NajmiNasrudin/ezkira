@@ -46,15 +46,10 @@ function navActive(string $path, string $current): string {
             <!-- Brand -->
             <a href="<?= BASE_URI ?>/dashboard"
                class="flex items-center gap-2.5 shrink-0">
-                <div class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                        <rect x="1.5" y="11" width="4" height="7.5" rx="1"/>
-                        <rect x="7.5" y="6.5" width="4" height="12" rx="1"/>
-                        <rect x="13.5" y="2.5" width="4" height="16" rx="1"/>
-                    </svg>
-                </div>
-                <span class="text-sm font-bold text-gray-900 dark:text-white hidden sm:block leading-tight tracking-wide">
-                    <?= htmlspecialchars(APP_NAME, ENT_QUOTES) ?>
+                <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg"
+                     alt="ezkira" class="w-9 h-9 rounded-lg">
+                <span class="hidden sm:block leading-tight tracking-wide">
+                    <span class="text-sm font-bold text-gold-500" style="color:#C4A028">ez</span><span class="text-sm font-bold text-brand-700 dark:text-brand-300" style="color:#163020">kira</span>
                 </span>
             </a>
 
