@@ -55,6 +55,7 @@ $router->post('/expenses/{id}/delete',           'ExpenseController@delete',    
 $router->get('/blast',                   'BlastController@index',      [AuthMiddleware::class]);
 $router->post('/blast/send',             'BlastController@send',       [AuthMiddleware::class]);
 $router->get('/blast/{id}/recipients',  'BlastController@recipients', [AuthMiddleware::class]);
+$router->get('/blast/media/{filename}', 'BlastController@serveMedia', []);  // Public — for Fonnte image fetch
 
 // Profile
 $router->get('/profile',                 'ProfileController@index',       [AuthMiddleware::class]);

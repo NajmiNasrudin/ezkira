@@ -125,8 +125,7 @@ class BlastController extends Controller
 
         $blastModel->updateLog($blastId, $sentCount, $failedCount);
 
-        $imgNote = $imageUrl ? " | IMG: {$imageUrl}" : ' | (tiada gambar)';
-        Session::flash('success', "Blast selesai — {$sentCount} berjaya, {$failedCount} gagal.{$imgNote}");
+        Session::flash('success', "Blast selesai — {$sentCount} berjaya, {$failedCount} gagal.");
         $this->redirect('/blast');
     }
 
@@ -145,6 +144,37 @@ class BlastController extends Controller
             'log'        => $log,
             'recipients' => $blast->recipients((int)$id),
         ]);
+    }
+
+    // ----------------------------------------------------------------
+    // GET /blast/media/{filename}  — public, no auth, serves blast images
+    // Used so Fonnte can fetch images with proper headers
+    // ----------------------------------------------------------------
+    public function serveMedia(string $filename): void
+    {
+        // Sanitise — only allow safe filenames (hex + extension)
+        if (!preg_match('/^[a-f0-9]{32}\.(jpg|jpeg|png|webp)$/i', $filename)) {
+            http_response_code(404);
+            exit;
+        }
+
+        $path = BASE_PATH . '/uploads/blast/' . $filename;
+
+        if (!file_exists($path)) {
+            http_response_code(404);
+            exit;
+        }
+
+        $mime = mime_content_type($path) ?: 'image/jpeg';
+
+        header('Content-Type: '        . $mime);
+        header('Content-Length: '      . filesize($path));
+        header('Access-Control-Allow-Origin: *');
+        header('Cache-Control: public, max-age=86400');
+        header('X-Content-Type-Options: nosniff');
+
+        readfile($path);
+        exit;
     }
 
     // ----------------------------------------------------------------
@@ -197,10 +227,10 @@ class BlastController extends Controller
             return null;
         }
 
-        // Return public URL so Fonnte can fetch the image
+        // Return URL through PHP media route (serves with explicit headers — more reliable for external fetchers)
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host   = $_SERVER['HTTP_HOST'] ?? parse_url(APP_URL, PHP_URL_HOST);
-        return $scheme . '://' . $host . '/uploads/blast/' . $filename;
+        return $scheme . '://' . $host . BASE_URI . '/blast/media/' . $filename;
     }
 
     private function normalisePhone(string $phone): string
