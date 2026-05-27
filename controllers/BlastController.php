@@ -195,7 +195,7 @@ class BlastController extends Controller
             'type'              => 'template',
             'template'          => [
                 'name'       => $templateName,
-                'language'   => ['code' => 'ms_MY'],
+                'language'   => ['code' => 'ms'],
                 'components' => $components,
             ],
         ]);
