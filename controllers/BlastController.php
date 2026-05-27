@@ -58,8 +58,17 @@ class BlastController extends Controller
 
         $selectedIds = $_POST['recipients']    ?? [];
         $customMsg   = trim($_POST['custom_message'] ?? '');
-        $imageUrl    = trim($_POST['image_url']       ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
+
+        // Handle optional image upload
+        $imageUrl = '';
+        if (!empty($_FILES['blast_image']['tmp_name']) && $_FILES['blast_image']['error'] === UPLOAD_ERR_OK) {
+            $imageUrl = $this->handleImageUpload($_FILES['blast_image']);
+            if ($imageUrl === null) {
+                Session::flash('error', 'Format atau saiz gambar tidak sah. Gunakan JPG/PNG/WebP, max 2MB.');
+                $this->redirect('/blast');
+            }
+        }
 
         if (empty($selectedIds)) {
             Session::flash('error', 'Pilih sekurang-kurangnya satu penerima.');
@@ -140,6 +149,55 @@ class BlastController extends Controller
     // ----------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------
+
+    /**
+     * Validate and save a blast image upload.
+     * Returns the public URL on success, or null on failure.
+     */
+    private function handleImageUpload(array $file): ?string
+    {
+        $allowedMime = ['image/jpeg', 'image/png', 'image/webp'];
+        $allowedExt  = ['jpg' => 'jpg', 'jpeg' => 'jpg', 'png' => 'png', 'webp' => 'webp'];
+        $maxSize     = 2 * 1024 * 1024; // 2 MB
+
+        if ($file['size'] > $maxSize) {
+            return null;
+        }
+
+        // MIME check via finfo (not trusting $_FILES['type'])
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, $allowedMime, true)) {
+            return null;
+        }
+
+        $origExt  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $safeExt  = $allowedExt[$origExt] ?? null;
+
+        // Fall back to MIME-derived extension if original extension is dodgy
+        if ($safeExt === null) {
+            $mimeMap  = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+            $safeExt  = $mimeMap[$mime] ?? null;
+        }
+
+        if ($safeExt === null) {
+            return null;
+        }
+
+        $uploadDir = BASE_PATH . '/uploads/blast/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $safeExt;
+        $destPath = $uploadDir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+            return null;
+        }
+
+        return APP_URL . '/uploads/blast/' . $filename;
+    }
 
     private function normalisePhone(string $phone): string
     {

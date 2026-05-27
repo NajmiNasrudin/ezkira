@@ -64,7 +64,7 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
             <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                 <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Hantar Blast Baru</h3>
             </div>
-            <form method="POST" action="<?= BASE_URI ?>/blast/send" id="blast-form" class="px-6 py-5 space-y-5">
+            <form method="POST" action="<?= BASE_URI ?>/blast/send" id="blast-form" enctype="multipart/form-data" class="px-6 py-5 space-y-5">
                 <?= \App\Core\CSRF::field() ?>
 
                 <!-- Fonnte badge -->
@@ -75,15 +75,48 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
                     Powered by <strong>Fonnte</strong> — mesej dihantar terus dari WhatsApp Business korang
                 </div>
 
-                <!-- Image URL -->
+                <!-- Image Upload -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        URL Gambar Header <span class="text-xs text-gray-400 font-normal">(optional)</span>
+                        Gambar Header <span class="text-xs text-gray-400 font-normal">(optional — JPG, PNG, WebP, max 2MB)</span>
                     </label>
-                    <input type="url" name="image_url"
-                           placeholder="https://example.com/gambar.jpg"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Gambar mesti URL public yang boleh diakses. Kosongkan jika tiada gambar.</p>
+
+                    <!-- Drop zone -->
+                    <div id="image-drop-zone"
+                         onclick="document.getElementById('blast_image').click()"
+                         ondragover="event.preventDefault(); this.classList.add('border-green-500','bg-green-50','dark:bg-green-900/10')"
+                         ondragleave="this.classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10')"
+                         ondrop="handleImageDrop(event)"
+                         class="relative flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-5 cursor-pointer hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors">
+
+                        <!-- Preview (hidden by default) -->
+                        <img id="image-preview" src="" alt="Preview"
+                             class="hidden max-h-40 rounded-lg object-contain shadow-sm">
+
+                        <!-- Placeholder icon + text -->
+                        <div id="image-placeholder" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <p class="text-sm font-medium">Klik atau seret gambar ke sini</p>
+                            <p class="text-xs">JPG · PNG · WebP</p>
+                        </div>
+
+                        <!-- Remove button (hidden by default) -->
+                        <button type="button" id="image-remove-btn"
+                                onclick="removeImage(event)"
+                                class="hidden absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow text-xs transition-colors">
+                            ✕
+                        </button>
+                    </div>
+
+                    <input type="file" id="blast_image" name="blast_image"
+                           accept="image/jpeg,image/png,image/webp"
+                           class="sr-only"
+                           onchange="handleImageSelect(this)">
+
+                    <p id="image-filename" class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden"></p>
                 </div>
 
                 <!-- Custom Message -->
@@ -153,10 +186,10 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
                     <?php endif; ?>
                 </div>
 
-                <!-- Warning for test mode -->
+                <!-- Fonnte note -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-400">
-                    <strong>⚠️ Test Mode:</strong> Boleh send ke max 5 nombor sahaja. Untuk blast semua user, complete
-                    <strong>Business Verification</strong> di Meta Business Manager.
+                    <strong>ℹ️ Info:</strong> Setiap mesej dihantar dengan jeda 0.5 saat. Blast kepada ramai penerima
+                    mungkin mengambil masa. Jangan tutup halaman semasa proses sedang berjalan.
                 </div>
 
                 <button type="submit" id="blast-btn"
@@ -233,7 +266,75 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
 </div>
 
 <script>
+// ---------------------------------------------------------------
+// Image upload helpers
+// ---------------------------------------------------------------
+var MAX_IMAGE_BYTES = 2 * 1024 * 1024; // 2 MB
+var ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+function handleImageSelect(input) {
+    if (input.files && input.files[0]) {
+        applyImageFile(input.files[0]);
+    }
+}
+
+function handleImageDrop(e) {
+    e.preventDefault();
+    var dz = document.getElementById('image-drop-zone');
+    dz.classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10');
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        var file = e.dataTransfer.files[0];
+        // Assign to hidden file input via DataTransfer
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('blast_image').files = dt.files;
+        applyImageFile(file);
+    }
+}
+
+function applyImageFile(file) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        alert('Format tidak disokong. Sila gunakan JPG, PNG, atau WebP.');
+        return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+        alert('Saiz gambar melebihi 2MB. Sila kompres gambar terlebih dahulu.');
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var preview = document.getElementById('image-preview');
+        var placeholder = document.getElementById('image-placeholder');
+        var removeBtn = document.getElementById('image-remove-btn');
+        var filename = document.getElementById('image-filename');
+
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        removeBtn.classList.remove('hidden');
+
+        var kb = (file.size / 1024).toFixed(0);
+        filename.textContent = file.name + ' (' + kb + ' KB)';
+        filename.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage(e) {
+    e.stopPropagation(); // Don't re-open file picker
+    var input = document.getElementById('blast_image');
+    input.value = '';
+    document.getElementById('image-preview').classList.add('hidden');
+    document.getElementById('image-preview').src = '';
+    document.getElementById('image-placeholder').classList.remove('hidden');
+    document.getElementById('image-remove-btn').classList.add('hidden');
+    document.getElementById('image-filename').classList.add('hidden');
+    document.getElementById('image-filename').textContent = '';
+}
+
+// ---------------------------------------------------------------
 // Track selected count
+// ---------------------------------------------------------------
 document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) {
     cb.addEventListener('change', updateCount);
 });

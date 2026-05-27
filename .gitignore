@@ -8,6 +8,8 @@ config/config.php
 # ---- User uploads ----
 uploads/profiles/*
 !uploads/profiles/.gitkeep
+uploads/blast/*
+!uploads/blast/.gitkeep
 
 # ---- Logs & sessions ----
 storage/logs/*.log

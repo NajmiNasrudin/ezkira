@@ -31,6 +31,8 @@ jobs:
             !**/uploads/profiles/.gitkeep
             **/uploads/receipts/**
             !**/uploads/receipts/.gitkeep
+            **/uploads/blast/**
+            !**/uploads/blast/.gitkeep
             **/storage/logs/**
             !**/storage/logs/.gitkeep
             **/storage/sessions/**
