@@ -27,14 +27,14 @@ class BlastController extends Controller
     public function index(): void
     {
         $this->requireAdmin();
+
         $userModel = new User();
         $allUsers  = $userModel->allWithPhone();
 
         $blast   = new Blast();
         $history = $blast->history(10);
 
-        $configured = defined('WA_PHONE_NUMBER_ID') && WA_PHONE_NUMBER_ID !== ''
-                   && defined('WA_ACCESS_TOKEN')    && WA_ACCESS_TOKEN    !== '';
+        $configured = defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '';
 
         $this->view('blast/index', [
             'allUsers'   => $allUsers,
@@ -51,16 +51,15 @@ class BlastController extends Controller
         $this->requireAdmin();
         CSRF::check();
 
-        if (!defined('WA_PHONE_NUMBER_ID') || WA_PHONE_NUMBER_ID === '') {
-            Session::flash('error', 'WhatsApp API belum dikonfigurasi.');
+        if (!defined('FONNTE_TOKEN') || FONNTE_TOKEN === '') {
+            Session::flash('error', 'Fonnte API belum dikonfigurasi. Sila tambah FONNTE_TOKEN dalam config.php');
             $this->redirect('/blast');
         }
 
-        $selectedIds  = $_POST['recipients']   ?? [];
-        $templateName = trim($_POST['template_name']  ?? 'ezkira_blast_v2');
-        $customMsg    = trim($_POST['custom_message']  ?? '');
-        $imageUrl     = trim($_POST['image_url']       ?? '');
-        $blastLink    = trim($_POST['blast_link']       ?? '');
+        $selectedIds = $_POST['recipients']    ?? [];
+        $customMsg   = trim($_POST['custom_message'] ?? '');
+        $imageUrl    = trim($_POST['image_url']       ?? '');
+        $blastLink   = trim($_POST['blast_link']       ?? '');
 
         if (empty($selectedIds)) {
             Session::flash('error', 'Pilih sekurang-kurangnya satu penerima.');
@@ -68,7 +67,7 @@ class BlastController extends Controller
         }
 
         if ($customMsg === '') {
-            Session::flash('error', 'Mesej custom tidak boleh kosong.');
+            Session::flash('error', 'Mesej tidak boleh kosong.');
             $this->redirect('/blast');
         }
 
@@ -87,16 +86,22 @@ class BlastController extends Controller
             $this->redirect('/blast');
         }
 
+        // Build full message
+        $message = $customMsg;
+        if ($blastLink !== '') {
+            $message .= "\n\n" . $blastLink;
+        }
+
         $blastModel = new Blast();
-        $blastId    = $blastModel->createLog(Auth::id(), $templateName, $customMsg, count($recipients));
+        $blastId    = $blastModel->createLog(Auth::id(), 'fonnte', $customMsg, count($recipients));
 
         $sentCount   = 0;
         $failedCount = 0;
 
         foreach ($recipients as $user) {
-            $phone  = $this->normalisePhone($user['whatsapp_number']);
-            $name   = $user['name'] ?? 'Pelanggan';
-            $result = $this->sendWaTemplate($phone, $templateName, $name, $customMsg, $imageUrl, $blastLink);
+            $phone      = $this->normalisePhone($user['whatsapp_number']);
+            $fullMsg    = "Hai {$user['name']},\n\n" . $message;
+            $result     = $this->sendFonnte($phone, $fullMsg, $imageUrl);
 
             if ($result['ok']) {
                 $sentCount++;
@@ -106,7 +111,7 @@ class BlastController extends Controller
                 $blastModel->logRecipient($blastId, (int)$user['id'], $user['name'], $phone, 'failed', $result['error']);
             }
 
-            usleep(200000); // 0.2s delay
+            usleep(500000); // 0.5s delay — Fonnte free tier limit
         }
 
         $blastModel->updateLog($blastId, $sentCount, $failedCount);
@@ -136,7 +141,6 @@ class BlastController extends Controller
     // Helpers
     // ----------------------------------------------------------------
 
-    /** Normalise phone to E.164 */
     private function normalisePhone(string $phone): string
     {
         $phone = preg_replace('/\D/', '', $phone);
@@ -146,74 +150,33 @@ class BlastController extends Controller
         return $phone;
     }
 
-    /**
-     * Send WhatsApp template message with dynamic parameters.
-     *
-     * Template structure (ezkira_blast_v2):
-     *   Header : image  → {{image_url}}   (optional)
-     *   Body   : {{1}}  = name
-     *            {{2}}  = custom message
-     *            {{3}}  = link            (optional)
-     */
-    private function sendWaTemplate(
-        string $toPhone,
-        string $templateName,
-        string $name      = '',
-        string $customMsg = '',
-        string $imageUrl  = '',
-        string $blastLink = ''
-    ): array {
-        $url = 'https://graph.facebook.com/v19.0/' . WA_PHONE_NUMBER_ID . '/messages';
+    /** Send message via Fonnte API */
+    private function sendFonnte(string $toPhone, string $message, string $imageUrl = ''): array
+    {
+        $url = 'https://api.fonnte.com/send';
 
-        // Build body components — always pass all 3 params (template requires them)
-        $bodyParams = [
-            ['type' => 'text', 'text' => $name      ?: 'Pelanggan'],
-            ['type' => 'text', 'text' => $customMsg ?: '-'],
-            ['type' => 'text', 'text' => $blastLink ?: '-'],
+        $data = [
+            'target'      => $toPhone,
+            'message'     => $message,
+            'countryCode' => '60',
         ];
 
-        $components = [
-            [
-                'type'       => 'body',
-                'parameters' => $bodyParams,
-            ],
-        ];
-
-        // Header image — only add if URL provided
         if ($imageUrl !== '') {
-            array_unshift($components, [
-                'type'       => 'header',
-                'parameters' => [
-                    ['type' => 'image', 'image' => ['link' => $imageUrl]],
-                ],
-            ]);
+            $data['url'] = $imageUrl;
         }
-
-        $payload = json_encode([
-            'messaging_product' => 'whatsapp',
-            'to'                => $toPhone,
-            'type'              => 'template',
-            'template'          => [
-                'name'       => $templateName,
-                'language'   => ['code' => 'ms'],
-                'components' => $components,
-            ],
-        ]);
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_POSTFIELDS     => $data,
             CURLOPT_HTTPHEADER     => [
-                'Authorization: Bearer ' . WA_ACCESS_TOKEN,
-                'Content-Type: application/json',
+                'Authorization: ' . FONNTE_TOKEN,
             ],
-            CURLOPT_TIMEOUT        => 15,
+            CURLOPT_TIMEOUT        => 30,
         ]);
 
         $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlErr  = curl_error($ch);
         curl_close($ch);
 
@@ -223,11 +186,11 @@ class BlastController extends Controller
 
         $data = json_decode($response, true);
 
-        if ($httpCode === 200 && isset($data['messages'][0]['id'])) {
+        if (!empty($data['status']) && $data['status'] === true) {
             return ['ok' => true];
         }
 
-        $errMsg = $data['error']['message'] ?? $response;
+        $errMsg = $data['reason'] ?? $response;
         return ['ok' => false, 'error' => substr($errMsg, 0, 300)];
     }
 }
