@@ -227,10 +227,36 @@ class BlastController extends Controller
             return null;
         }
 
-        // Return URL through PHP media route (serves with explicit headers — more reliable for external fetchers)
+        // Auto-upload to ImgBB so Fonnte can reliably fetch the image
+        if (defined('IMGBB_API_KEY') && IMGBB_API_KEY !== '') {
+            $imgbbUrl = $this->uploadToImgBB($destPath);
+            if ($imgbbUrl) {
+                return $imgbbUrl;
+            }
+        }
+
+        // Fallback: serve via PHP media route
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host   = $_SERVER['HTTP_HOST'] ?? parse_url(APP_URL, PHP_URL_HOST);
         return $scheme . '://' . $host . BASE_URI . '/blast/media/' . $filename;
+    }
+
+    /** Upload image to ImgBB CDN and return the hosted URL */
+    private function uploadToImgBB(string $localPath): ?string
+    {
+        $ch = curl_init('https://api.imgbb.com/1/upload?key=' . urlencode(IMGBB_API_KEY));
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => ['image' => base64_encode(file_get_contents($localPath))],
+            CURLOPT_TIMEOUT        => 30,
+        ]);
+
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        $data = json_decode($response, true);
+        return $data['data']['url'] ?? null;
     }
 
     private function normalisePhone(string $phone): string
