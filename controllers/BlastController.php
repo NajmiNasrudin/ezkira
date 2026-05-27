@@ -51,6 +51,10 @@ class BlastController extends Controller
         $this->requireAdmin();
         CSRF::check();
 
+        // Blast to many recipients can take minutes — disable PHP time limit
+        set_time_limit(0);
+        ignore_user_abort(true);
+
         if (!defined('FONNTE_TOKEN') || FONNTE_TOKEN === '') {
             Session::flash('error', 'Fonnte API belum dikonfigurasi. Sila tambah FONNTE_TOKEN dalam config.php');
             $this->redirect('/blast');
