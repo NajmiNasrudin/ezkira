@@ -11,11 +11,22 @@ use Models\User;
 
 class BlastController extends Controller
 {
+    /** Abort with 403 if not admin */
+    private function requireAdmin(): void
+    {
+        if (!Auth::hasRole('admin')) {
+            http_response_code(403);
+            include BASE_PATH . '/views/errors/403.php';
+            exit;
+        }
+    }
+
     // ----------------------------------------------------------------
     // GET /blast
     // ----------------------------------------------------------------
     public function index(): void
     {
+        $this->requireAdmin();
         $userModel = new User();
         $allUsers  = $userModel->allWithPhone();
 
@@ -37,6 +48,7 @@ class BlastController extends Controller
     // ----------------------------------------------------------------
     public function send(): void
     {
+        $this->requireAdmin();
         CSRF::check();
 
         if (!defined('WA_PHONE_NUMBER_ID') || WA_PHONE_NUMBER_ID === '') {
@@ -108,6 +120,7 @@ class BlastController extends Controller
     // ----------------------------------------------------------------
     public function recipients(string $id): void
     {
+        $this->requireAdmin();
         $blast = new Blast();
         $log   = $blast->findLog((int)$id);
         if (!$log) {
