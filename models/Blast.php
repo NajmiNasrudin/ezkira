@@ -11,17 +11,115 @@ class Blast
         $this->db = getDB();
     }
 
-    // Create a blast log entry, return its ID
-    public function createLog(int $sentBy, string $template, ?string $customMsg, int $total): int
-    {
+    // ------------------------------------------------------------------
+    // Queue a new blast — returns blast_id
+    // ------------------------------------------------------------------
+    public function queue(
+        int     $sentBy,
+        string  $message,
+        string  $recipientIds,   // JSON-encoded: ["all"]  or  [1,2,3,…]
+        int     $total,
+        string  $imagePath   = '',
+        string  $blastLink   = '',
+        ?string $scheduledAt = null
+    ): int {
+        $status = ($scheduledAt && strtotime($scheduledAt) > time())
+            ? 'scheduled'
+            : 'queued';
+
         $stmt = $this->db->prepare(
-            'INSERT INTO blast_logs (sent_by, template_name, custom_message, total_recipients)
-             VALUES (:by, :tpl, :msg, :total)'
+            'INSERT INTO blast_logs
+               (status, sent_by, template_name, custom_message, total_recipients,
+                scheduled_at, recipient_ids, image_path, blast_link, sent_count, failed_count)
+             VALUES
+               (:status, :by, :tpl, :msg, :total,
+                :sched, :rids, :img, :link, 0, 0)'
         );
-        $stmt->execute([':by' => $sentBy, ':tpl' => $template, ':msg' => $customMsg, ':total' => $total]);
+        $stmt->execute([
+            ':status' => $status,
+            ':by'     => $sentBy,
+            ':tpl'    => 'fonnte',
+            ':msg'    => $message,
+            ':total'  => $total,
+            ':sched'  => $scheduledAt ?: null,
+            ':rids'   => $recipientIds,
+            ':img'    => $imagePath,
+            ':link'   => $blastLink,
+        ]);
         return (int)$this->db->lastInsertId();
     }
 
+    // ------------------------------------------------------------------
+    // Cron: get the oldest blast that is due and not yet running
+    // ------------------------------------------------------------------
+    public function getNextDue(): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM blast_logs
+              WHERE status IN ('queued','scheduled')
+                AND (scheduled_at IS NULL OR scheduled_at <= NOW())
+                AND NOT EXISTS (
+                    SELECT 1 FROM blast_logs bl2 WHERE bl2.status = 'running'
+                )
+              ORDER BY created_at ASC
+              LIMIT 1"
+        );
+        $stmt->execute();
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function markRunning(int $id): void
+    {
+        $this->db->prepare(
+            "UPDATE blast_logs SET status='running', started_at=NOW() WHERE id=?"
+        )->execute([$id]);
+    }
+
+    public function markDone(int $id, int $sent, int $failed): void
+    {
+        $this->db->prepare(
+            "UPDATE blast_logs
+                SET status='done', sent_count=:s, failed_count=:f, finished_at=NOW()
+              WHERE id=:id"
+        )->execute([':s' => $sent, ':f' => $failed, ':id' => $id]);
+    }
+
+    public function markFailed(int $id, int $sent, int $failed): void
+    {
+        $this->db->prepare(
+            "UPDATE blast_logs
+                SET status='failed', sent_count=:s, failed_count=:f, finished_at=NOW()
+              WHERE id=:id"
+        )->execute([':s' => $sent, ':f' => $failed, ':id' => $id]);
+    }
+
+    /** Live progress update — called after every send inside cron */
+    public function updateProgress(int $id, int $sent, int $failed): void
+    {
+        $this->db->prepare(
+            'UPDATE blast_logs SET sent_count=:s, failed_count=:f WHERE id=:id'
+        )->execute([':s' => $sent, ':f' => $failed, ':id' => $id]);
+    }
+
+    // ------------------------------------------------------------------
+    // Progress / status endpoint
+    // ------------------------------------------------------------------
+    public function getProgress(int $id): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id, status, total_recipients, sent_count, failed_count,
+                    scheduled_at, started_at, finished_at, custom_message, created_at
+               FROM blast_logs WHERE id=?'
+        );
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    // ------------------------------------------------------------------
+    // Legacy helpers (keep for history view + recipients modal)
+    // ------------------------------------------------------------------
     public function updateLog(int $blastId, int $sent, int $failed): void
     {
         $this->db->prepare(
@@ -50,9 +148,9 @@ class Blast
     {
         $stmt = $this->db->prepare(
             'SELECT b.*, u.name AS sender_name
-             FROM blast_logs b
-             LEFT JOIN users u ON b.sent_by = u.id
-             ORDER BY b.created_at DESC LIMIT ' . (int)$limit
+               FROM blast_logs b
+               LEFT JOIN users u ON b.sent_by = u.id
+              ORDER BY b.created_at DESC LIMIT ' . (int)$limit
         );
         $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);

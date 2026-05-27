@@ -44,27 +44,24 @@ class BlastController extends Controller
     }
 
     // ----------------------------------------------------------------
-    // POST /blast/send
+    // POST /blast/send  — save blast to queue, redirect to progress page
     // ----------------------------------------------------------------
     public function send(): void
     {
         $this->requireAdmin();
         CSRF::check();
 
-        // Blast to many recipients can take minutes — disable PHP time limit
-        set_time_limit(0);
-        ignore_user_abort(true);
-
         if (!defined('FONNTE_TOKEN') || FONNTE_TOKEN === '') {
             Session::flash('error', 'Fonnte API belum dikonfigurasi. Sila tambah FONNTE_TOKEN dalam config.php');
             $this->redirect('/blast');
         }
 
-        $selectedIds = $_POST['recipients']    ?? [];
+        $selectedIds = $_POST['recipients']     ?? [];
         $customMsg   = trim($_POST['custom_message'] ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
+        $scheduledAt = trim($_POST['scheduled_at']     ?? '');
 
-        // Handle optional image upload — save locally, pass path to Fonnte
+        // Handle optional image upload
         $imagePath = '';
         if (!empty($_FILES['blast_image']['tmp_name']) && $_FILES['blast_image']['error'] === UPLOAD_ERR_OK) {
             $imagePath = $this->handleImageUpload($_FILES['blast_image']);
@@ -86,55 +83,97 @@ class BlastController extends Controller
 
         $userModel = new User();
 
+        // Resolve recipient list to get accurate total count
         if (in_array('all', $selectedIds, true)) {
-            $recipients = $userModel->allWithPhone();
+            $recipientIds = json_encode(['all']);
+            $total        = count($userModel->allWithPhone());
         } else {
-            $recipients = $userModel->findManyByIds(array_map('intval', $selectedIds));
+            $ids          = array_map('intval', $selectedIds);
+            $recipientIds = json_encode($ids);
+            $recipients   = $userModel->findManyByIds($ids);
+            $recipients   = array_filter($recipients, fn($u) => !empty($u['whatsapp_number']));
+            $total        = count($recipients);
         }
 
-        $recipients = array_filter($recipients, fn($u) => !empty($u['whatsapp_number']));
-
-        if (empty($recipients)) {
+        if ($total === 0) {
             Session::flash('error', 'Tiada penerima yang mempunyai nombor WhatsApp.');
             $this->redirect('/blast');
         }
 
-        // Build full message
-        $message = $customMsg;
-        if ($blastLink !== '') {
-            $message .= "\n\n" . $blastLink;
+        // Normalise scheduled_at — ignore past dates
+        $scheduledAtNorm = null;
+        if ($scheduledAt !== '' && strtotime($scheduledAt) > time()) {
+            $scheduledAtNorm = date('Y-m-d H:i:s', strtotime($scheduledAt));
         }
 
         $blastModel = new Blast();
-        $blastId    = $blastModel->createLog(Auth::id(), 'fonnte', $customMsg, count($recipients));
+        $blastId    = $blastModel->queue(
+            Auth::id(),
+            $customMsg,
+            $recipientIds,
+            $total,
+            $imagePath ?? '',
+            $blastLink,
+            $scheduledAtNorm
+        );
 
-        $sentCount   = 0;
-        $failedCount = 0;
+        // Try to trigger cron immediately (Linux only; falls back to cPanel cron)
+        $this->triggerCron();
 
-        foreach ($recipients as $user) {
-            $phone   = $this->normalisePhone($user['whatsapp_number']);
-            $fullMsg = "Hai {$user['name']},\n\n" . $message;
-            $result  = $this->sendFonnte($phone, $fullMsg, $imagePath);
-
-            if ($result['ok']) {
-                $sentCount++;
-                $blastModel->logRecipient($blastId, (int)$user['id'], $user['name'], $phone, 'sent', null);
-            } else {
-                $failedCount++;
-                $blastModel->logRecipient($blastId, (int)$user['id'], $user['name'], $phone, 'failed', $result['error']);
-            }
-
-            usleep(500000); // 0.5s delay between sends
+        if ($scheduledAtNorm) {
+            Session::flash('success', 'Blast dijadualkan untuk ' . date('d M Y, H:i', strtotime($scheduledAtNorm)));
+            $this->redirect('/blast');
         }
 
-        $blastModel->updateLog($blastId, $sentCount, $failedCount);
-
-        Session::flash('success', "Blast selesai — {$sentCount} berjaya, {$failedCount} gagal.");
-        $this->redirect('/blast');
+        $this->redirect('/blast/' . $blastId . '/progress');
     }
 
     // ----------------------------------------------------------------
-    // GET /blast/{id}/recipients  (AJAX — returns JSON)
+    // GET /blast/{id}/progress — progress tracking page
+    // ----------------------------------------------------------------
+    public function progress(string $id): void
+    {
+        $this->requireAdmin();
+        $blast = new Blast();
+        $log   = $blast->findLog((int)$id);
+
+        if (!$log) {
+            http_response_code(404);
+            include BASE_PATH . '/views/errors/404.php';
+            exit;
+        }
+
+        $this->view('blast/progress', ['log' => $log], 'main', 'Blast Progress');
+    }
+
+    // ----------------------------------------------------------------
+    // GET /blast/{id}/status  — AJAX JSON progress
+    // ----------------------------------------------------------------
+    public function statusJson(string $id): void
+    {
+        $this->requireAdmin();
+        $blast    = new Blast();
+        $progress = $blast->getProgress((int)$id);
+
+        if (!$progress) {
+            $this->json(['error' => 'Not found'], 404);
+            return;
+        }
+
+        // Compute ETA when blast is running
+        if ($progress['status'] === 'running' && $progress['started_at']) {
+            $elapsed   = time() - strtotime($progress['started_at']);
+            $done      = (int)$progress['sent_count'] + (int)$progress['failed_count'];
+            $remaining = (int)$progress['total_recipients'] - $done;
+            $rate      = $done > 0 ? ($elapsed / $done) : 5; // seconds per message
+            $progress['eta_seconds'] = max(0, (int)($remaining * $rate));
+        }
+
+        $this->json($progress);
+    }
+
+    // ----------------------------------------------------------------
+    // GET /blast/{id}/recipients  (AJAX — returns JSON for modal)
     // ----------------------------------------------------------------
     public function recipients(string $id): void
     {
@@ -224,54 +263,20 @@ class BlastController extends Controller
         return $destPath;
     }
 
-    /** Send message via Fonnte API — image sent as direct file upload (CURLFile) */
-    private function sendFonnte(string $toPhone, string $message, string $imagePath = ''): array
+    /**
+     * Try to fire cron.php in the background immediately (Linux/cPanel).
+     * Falls back silently — the cPanel cron will pick it up within 1 minute.
+     */
+    private function triggerCron(): void
     {
-        $data = [
-            'target'      => $toPhone,
-            'message'     => $message,
-            'countryCode' => '60',
-        ];
+        // Only on Unix systems and only if exec() is available
+        if (strncasecmp(PHP_OS, 'WIN', 3) === 0) return;
+        if (!function_exists('exec')) return;
 
-        // Attach image directly — no CDN needed, Fonnte receives the file
-        if ($imagePath !== '' && file_exists($imagePath)) {
-            $mime        = mime_content_type($imagePath) ?: 'image/jpeg';
-            $data['file'] = new \CURLFile($imagePath, $mime, basename($imagePath));
-        }
+        $php    = PHP_BINARY ?: '/usr/local/bin/php';
+        $script = escapeshellarg(BASE_PATH . '/cron.php');
 
-        $ch = curl_init('https://api.fonnte.com/send');
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => $data,
-            CURLOPT_HTTPHEADER     => ['Authorization: ' . FONNTE_TOKEN],
-            CURLOPT_TIMEOUT        => 30,
-        ]);
-
-        $response = curl_exec($ch);
-        $curlErr  = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlErr) {
-            return ['ok' => false, 'error' => 'cURL: ' . $curlErr];
-        }
-
-        $result = json_decode($response, true);
-
-        if (!empty($result['status']) && $result['status'] === true) {
-            return ['ok' => true];
-        }
-
-        $errMsg = $result['reason'] ?? $response;
-        return ['ok' => false, 'error' => substr($errMsg, 0, 300)];
-    }
-
-    private function normalisePhone(string $phone): string
-    {
-        $phone = preg_replace('/\D/', '', $phone);
-        if (str_starts_with($phone, '0')) {
-            $phone = '60' . substr($phone, 1);
-        }
-        return $phone;
+        // Non-blocking background exec
+        exec($php . ' ' . $script . ' > /dev/null 2>&1 &');
     }
 }

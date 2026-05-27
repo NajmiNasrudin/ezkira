@@ -54,6 +54,8 @@ $router->post('/expenses/{id}/delete',           'ExpenseController@delete',    
 // WhatsApp Blast (admin only — role check inside BlastController)
 $router->get('/blast',                   'BlastController@index',      [AuthMiddleware::class]);
 $router->post('/blast/send',             'BlastController@send',       [AuthMiddleware::class]);
+$router->get('/blast/{id}/progress',     'BlastController@progress',   [AuthMiddleware::class]);
+$router->get('/blast/{id}/status',       'BlastController@statusJson', [AuthMiddleware::class]);
 $router->get('/blast/{id}/recipients',  'BlastController@recipients', [AuthMiddleware::class]);
 $router->get('/blast/media/{filename}', 'BlastController@serveMedia', []);  // Public — for Fonnte image fetch
 
