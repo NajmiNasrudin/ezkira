@@ -60,11 +60,11 @@ class BlastController extends Controller
         $customMsg   = trim($_POST['custom_message'] ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
 
-        // Handle optional image upload
-        $imageUrl = '';
+        // Handle optional image upload — store local path for direct upload to Fonnte
+        $imagePath = '';
         if (!empty($_FILES['blast_image']['tmp_name']) && $_FILES['blast_image']['error'] === UPLOAD_ERR_OK) {
-            $imageUrl = $this->handleImageUpload($_FILES['blast_image']);
-            if ($imageUrl === null) {
+            $imagePath = $this->handleImageUpload($_FILES['blast_image']);
+            if ($imagePath === null) {
                 Session::flash('error', 'Format atau saiz gambar tidak sah. Gunakan JPG/PNG/WebP, max 2MB.');
                 $this->redirect('/blast');
             }
@@ -110,7 +110,7 @@ class BlastController extends Controller
         foreach ($recipients as $user) {
             $phone      = $this->normalisePhone($user['whatsapp_number']);
             $fullMsg    = "Hai {$user['name']},\n\n" . $message;
-            $result     = $this->sendFonnte($phone, $fullMsg, $imageUrl);
+            $result     = $this->sendFonnte($phone, $fullMsg, $imagePath);
 
             if ($result['ok']) {
                 $sentCount++;
@@ -196,10 +196,8 @@ class BlastController extends Controller
             return null;
         }
 
-        // Build public URL from actual server host (not APP_URL which may be localhost in config)
-        $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host    = $_SERVER['HTTP_HOST'] ?? parse_url(APP_URL, PHP_URL_HOST);
-        return $scheme . '://' . $host . '/uploads/blast/' . $filename;
+        // Return local path — image will be uploaded directly to Fonnte via CURLFile
+        return $destPath;
     }
 
     private function normalisePhone(string $phone): string
@@ -212,7 +210,7 @@ class BlastController extends Controller
     }
 
     /** Send message via Fonnte API */
-    private function sendFonnte(string $toPhone, string $message, string $imageUrl = ''): array
+    private function sendFonnte(string $toPhone, string $message, string $imagePath = ''): array
     {
         $url = 'https://api.fonnte.com/send';
 
@@ -222,8 +220,10 @@ class BlastController extends Controller
             'countryCode' => '60',
         ];
 
-        if ($imageUrl !== '') {
-            $data['url'] = $imageUrl;
+        // Attach image as CURLFile (direct upload — more reliable than passing a URL)
+        if ($imagePath !== '' && file_exists($imagePath)) {
+            $mime = mime_content_type($imagePath) ?: 'image/jpeg';
+            $data['file'] = new \CURLFile($imagePath, $mime, basename($imagePath));
         }
 
         $ch = curl_init($url);
