@@ -125,7 +125,7 @@ class BlastController extends Controller
 
         $blastModel->updateLog($blastId, $sentCount, $failedCount);
 
-        Session::flash('success', "Blast selesai — {$sentCount} berjaya, {$failedCount} gagal.");
+        Session::flash('success', "Blast selesai — {$sentCount} berjaya, {$failedCount} gagal." . ($imageUrl ? " IMG: {$imageUrl}" : ' (no img)'));
         $this->redirect('/blast');
     }
 
