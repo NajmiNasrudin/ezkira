@@ -165,16 +165,12 @@ class BlastController extends Controller
     ): array {
         $url = 'https://graph.facebook.com/v19.0/' . WA_PHONE_NUMBER_ID . '/messages';
 
-        // Build body components
+        // Build body components — always pass all 3 params (template requires them)
         $bodyParams = [
-            ['type' => 'text', 'text' => $name ?: 'Pelanggan'],
+            ['type' => 'text', 'text' => $name      ?: 'Pelanggan'],
             ['type' => 'text', 'text' => $customMsg ?: '-'],
+            ['type' => 'text', 'text' => $blastLink ?: '-'],
         ];
-
-        // {{3}} link — only add if provided
-        if ($blastLink !== '') {
-            $bodyParams[] = ['type' => 'text', 'text' => $blastLink];
-        }
 
         $components = [
             [
@@ -199,7 +195,7 @@ class BlastController extends Controller
             'type'              => 'template',
             'template'          => [
                 'name'       => $templateName,
-                'language'   => ['code' => 'ms'],
+                'language'   => ['code' => 'ms_MY'],
                 'components' => $components,
             ],
         ]);
