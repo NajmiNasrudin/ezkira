@@ -196,7 +196,10 @@ class BlastController extends Controller
             return null;
         }
 
-        return APP_URL . '/uploads/blast/' . $filename;
+        // Build public URL from actual server host (not APP_URL which may be localhost in config)
+        $scheme  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host    = $_SERVER['HTTP_HOST'] ?? parse_url(APP_URL, PHP_URL_HOST);
+        return $scheme . '://' . $host . '/uploads/blast/' . $filename;
     }
 
     private function normalisePhone(string $phone): string
