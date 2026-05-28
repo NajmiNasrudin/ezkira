@@ -99,8 +99,6 @@ cronLog("Sending to {$total} recipients, 5s delay each");
 foreach ($recipients as $i => $user) {
     $phone   = normalisePhone($user['whatsapp_number']);
     $msg     = "Hai {$user['name']},\n\n" . $fullMessage;
-    $result  = sendFonnte($phone, $msg, $imagePath);
-
     $result = ($provider === 'whatsapp_api')
         ? sendWhatsAppCloudAPI($phone, $msg, $imagePath)
         : sendFonnte($phone, $msg, $imagePath);
