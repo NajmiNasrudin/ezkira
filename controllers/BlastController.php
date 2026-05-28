@@ -60,7 +60,12 @@ class BlastController extends Controller
         $customMsg   = trim($_POST['custom_message'] ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
         $scheduledAt = trim($_POST['scheduled_at']     ?? '');
-        $provider = 'fonnte';
+        $provider    = 'fonnte';
+
+        // Delay preset: 3 | 5 | 8 | 12 (default: 12 = Sangat Selamat)
+        $allowedDelays = [3, 5, 8, 12];
+        $delaySecs     = in_array((int)($_POST['delay_seconds'] ?? 12), $allowedDelays, true)
+                         ? (int)$_POST['delay_seconds'] : 12;
 
         // Handle optional image upload
         $imagePath = '';
@@ -116,7 +121,8 @@ class BlastController extends Controller
             $imagePath ?? '',
             $blastLink,
             $scheduledAtNorm,
-            $provider
+            $provider,
+            $delaySecs
         );
 
         // Try to trigger cron immediately (Linux only; falls back to cPanel cron)

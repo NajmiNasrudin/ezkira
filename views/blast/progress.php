@@ -141,8 +141,18 @@ if ($status === 'running' && $startedAt) {
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
         <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Mesej</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed"><?= htmlspecialchars($msg, ENT_QUOTES) ?></p>
+        <?php
+        $delaySecs = (int)($log['delay_seconds'] ?? 12);
+        $delayLabels = [
+            3  => '⚡ Pantas (3–8s)',
+            5  => '🟡 Sederhana (5–10s)',
+            8  => '🟢 Selamat (8–13s)',
+            12 => '🛡️ Sangat Selamat (12–17s)',
+        ];
+        $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
+        ?>
         <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
-            Jeda antara setiap penerima: <strong>5 saat</strong> &nbsp;·&nbsp; <?= $total ?> penerima
+            Jeda: <strong><?= $delayLabel ?></strong> &nbsp;·&nbsp; <?= $total ?> penerima
         </p>
     </div>
 

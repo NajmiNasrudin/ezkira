@@ -22,7 +22,8 @@ class Blast
         string  $imagePath   = '',
         string  $blastLink   = '',
         ?string $scheduledAt = null,
-        string  $provider    = 'fonnte'   // 'fonnte' | 'whatsapp_api'
+        string  $provider    = 'fonnte',
+        int     $delaySecs   = 12        // min seconds between sends
     ): int {
         $status = ($scheduledAt && strtotime($scheduledAt) > time())
             ? 'scheduled'
@@ -31,10 +32,10 @@ class Blast
         $stmt = $this->db->prepare(
             'INSERT INTO blast_logs
                (status, provider, sent_by, template_name, custom_message, total_recipients,
-                scheduled_at, recipient_ids, image_path, blast_link, sent_count, failed_count)
+                scheduled_at, recipient_ids, image_path, blast_link, delay_seconds, sent_count, failed_count)
              VALUES
                (:status, :provider, :by, :tpl, :msg, :total,
-                :sched, :rids, :img, :link, 0, 0)'
+                :sched, :rids, :img, :link, :delay, 0, 0)'
         );
         $stmt->execute([
             ':status'   => $status,
@@ -47,6 +48,7 @@ class Blast
             ':rids'     => $recipientIds,
             ':img'      => $imagePath,
             ':link'     => $blastLink,
+            ':delay'    => $delaySecs,
         ]);
         return (int)$this->db->lastInsertId();
     }

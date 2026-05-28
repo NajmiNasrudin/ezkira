@@ -212,9 +212,60 @@ define('WA_ACCESS_TOKEN',    'your_access_token');</pre>
                     </div>
                 </div>
 
+                <!-- Delay selector -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Jeda Antara Mesej
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="delay-options">
+
+                        <!-- Sangat Selamat (default) -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-green-500 bg-green-50 dark:bg-green-900/20 text-center"
+                               id="delay-card-12">
+                            <input type="radio" name="delay_seconds" value="12" checked class="sr-only" onchange="selectDelay(12)">
+                            <span class="text-lg">🛡️</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Sangat Selamat</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">12–17 saat</span>
+                            <span class="text-xs bg-green-500 text-white px-1.5 py-0.5 rounded-md font-medium">Default</span>
+                        </label>
+
+                        <!-- Selamat -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                               id="delay-card-8">
+                            <input type="radio" name="delay_seconds" value="8" class="sr-only" onchange="selectDelay(8)">
+                            <span class="text-lg">🟢</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Selamat</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">8–13 saat</span>
+                        </label>
+
+                        <!-- Sederhana -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                               id="delay-card-5">
+                            <input type="radio" name="delay_seconds" value="5" class="sr-only" onchange="selectDelay(5)">
+                            <span class="text-lg">🟡</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Sederhana</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">5–10 saat</span>
+                        </label>
+
+                        <!-- Pantas -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                               id="delay-card-3">
+                            <input type="radio" name="delay_seconds" value="3" class="sr-only" onchange="selectDelay(3)">
+                            <span class="text-lg">⚡</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white">Pantas</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">3–8 saat</span>
+                            <span class="text-xs bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-md font-medium">Risiko Ban</span>
+                        </label>
+
+                    </div>
+                    <p id="delay-eta-hint" class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                        Anggaran masa untuk 500 penerima: ~<span id="delay-eta-val">~1j 42min</span>
+                    </p>
+                </div>
+
                 <!-- Info note -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-400">
-                    <strong>ℹ️ Info:</strong> Setiap mesej dihantar dengan jeda <strong>5 saat</strong> untuk elak akaun kena restrict WhatsApp.
+                    <strong>ℹ️ Info:</strong> Jeda rawak digunakan supaya nampak lebih natural dan elak akaun kena restrict WhatsApp.
                     Proses berjalan di background — anda boleh tutup halaman selepas submit.
                 </div>
 
@@ -386,6 +437,7 @@ function updateCount() {
     var count = document.querySelectorAll('input[name="recipients[]"]:checked').length;
     var el = document.getElementById('selected-count');
     if (el) el.textContent = count;
+    updateDelayEta();
 }
 
 function selectAllRecipients() {
@@ -407,6 +459,40 @@ function filterRecipients(q) {
         var phone = row.getAttribute('data-phone') || '';
         row.classList.toggle('hidden', q !== '' && !name.includes(q) && !phone.includes(q));
     });
+}
+
+// ---------------------------------------------------------------
+// Delay selector
+// ---------------------------------------------------------------
+var currentDelay = 12;
+var totalRecipients = <?= count($allUsers) ?>;
+
+function selectDelay(val) {
+    currentDelay = val;
+    [12, 8, 5, 3].forEach(function(d) {
+        var card = document.getElementById('delay-card-' + d);
+        if (!card) return;
+        if (d === val) {
+            card.classList.remove('border-gray-200', 'dark:border-gray-600');
+            card.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+        } else {
+            card.classList.remove('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+            card.classList.add('border-gray-200', 'dark:border-gray-600');
+        }
+    });
+    updateDelayEta();
+}
+
+function updateDelayEta() {
+    var count = document.querySelectorAll('input[name="recipients[]"]:checked').length || totalRecipients;
+    var avgDelay = currentDelay + 2.5; // midpoint of rand range
+    var totalSecs = count * avgDelay;
+    var h = Math.floor(totalSecs / 3600);
+    var m = Math.floor((totalSecs % 3600) / 60);
+    var s = Math.floor(totalSecs % 60);
+    var str = h > 0 ? h + 'j ' + m + 'min' : m > 0 ? m + 'min ' + s + 'saat' : s + 'saat';
+    var el = document.getElementById('delay-eta-val');
+    if (el) el.textContent = str;
 }
 
 // ---------------------------------------------------------------

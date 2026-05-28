@@ -55,11 +55,12 @@ if (!$job) {
     exit(0);
 }
 
-$blastId   = (int)$job['id'];
-$message   = $job['custom_message'] ?? '';
-$blastLink = $job['blast_link']     ?? '';
-$imagePath = $job['image_path']     ?? '';
-$provider  = $job['provider']       ?? 'fonnte';
+$blastId    = (int)$job['id'];
+$message    = $job['custom_message']  ?? '';
+$blastLink  = $job['blast_link']      ?? '';
+$imagePath  = $job['image_path']      ?? '';
+$provider   = $job['provider']        ?? 'fonnte';
+$delayMin   = max(3, (int)($job['delay_seconds'] ?? 12));  // min 3s floor
 
 cronLog("START blast #{$blastId}");
 
@@ -94,7 +95,7 @@ $sentCount   = 0;
 $failedCount = 0;
 $total       = count($recipients);
 
-cronLog("Sending to {$total} recipients, 5s delay each");
+cronLog("Sending to {$total} recipients, rand({$delayMin}," . ($delayMin + 5) . ")s delay each");
 
 foreach ($recipients as $i => $user) {
     $phone   = normalisePhone($user['whatsapp_number']);
@@ -119,9 +120,9 @@ foreach ($recipients as $i => $user) {
     // Update live progress in DB after every send
     $blastModel->updateProgress($blastId, $sentCount, $failedCount);
 
-    // 5 second delay between sends (skip delay after the last one)
+    // Random delay between sends (skip delay after the last one)
     if ($i < $total - 1) {
-        sleep(5);
+        sleep(rand($delayMin, $delayMin + 5));
     }
 }
 
