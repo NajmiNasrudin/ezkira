@@ -16,7 +16,6 @@ $done      = $sent + $failed;
 $pct       = $total > 0 ? round($done / $total * 100) : 0;
 $remaining = $total - $done;
 
-// ETA from PHP (initial render)
 $etaStr = '';
 if ($status === 'running' && $startedAt) {
     $elapsed = time() - strtotime($startedAt);
@@ -24,8 +23,17 @@ if ($status === 'running' && $startedAt) {
     $eta     = max(0, (int)($remaining * $rate));
     $min     = intdiv($eta, 60);
     $sec     = $eta % 60;
-    $etaStr  = $min > 0 ? "{$min}min {$sec}saat" : "{$sec}saat";
+    $etaStr  = $min > 0 ? "{$min}min {$sec}s" : "{$sec}s";
 }
+
+$delaySecs = (int)($log['delay_seconds'] ?? 12);
+$delayLabels = [
+    3  => '⚡ ' . __('blast_delay_fast')      . ' (3–8s)',
+    5  => '🟡 ' . __('blast_delay_moderate')  . ' (5–10s)',
+    8  => '🟢 ' . __('blast_delay_safe')      . ' (8–13s)',
+    12 => '🛡️ ' . __('blast_delay_very_safe') . ' (12–17s)',
+];
+$delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
 ?>
 
 <div class="max-w-2xl mx-auto space-y-5">
@@ -39,9 +47,9 @@ if ($status === 'running' && $startedAt) {
             </svg>
         </a>
         <div>
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Blast #<?= $blastId ?></h2>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white"><?= __('blast_title') ?> #<?= $blastId ?></h2>
             <p class="text-xs text-gray-500 dark:text-gray-400">
-                Dibuat: <?= date('d M Y, H:i', strtotime($log['created_at'])) ?>
+                <?= __('blast_created') ?> <?= date('d M Y, H:i', strtotime($log['created_at'])) ?>
             </p>
         </div>
     </div>
@@ -54,11 +62,11 @@ if ($status === 'running' && $startedAt) {
             <div id="status-badge">
                 <?php
                 $badges = [
-                    'queued'    => ['Dalam Giliran…',      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'],
-                    'scheduled' => ['Dijadualkan',         'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'],
-                    'running'   => ['Sedang Dihantar',     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
-                    'done'      => ['Selesai',             'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
-                    'failed'    => ['Gagal',               'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'],
+                    'queued'    => [__('blast_status_queued'),   'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'],
+                    'scheduled' => [__('blast_status_scheduled'),'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'],
+                    'running'   => [__('blast_status_running'),  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
+                    'done'      => [__('blast_status_done'),     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
+                    'failed'    => [__('blast_status_failed'),   'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'],
                 ];
                 [$label, $cls] = $badges[$status] ?? [$status, 'bg-gray-100 text-gray-700'];
                 ?>
@@ -81,7 +89,7 @@ if ($status === 'running' && $startedAt) {
         <div>
             <div class="flex justify-between items-center text-sm mb-2">
                 <span id="progress-text" class="text-gray-600 dark:text-gray-400">
-                    <?= $done ?> / <?= $total ?> dihantar
+                    <?= $done ?> / <?= $total ?> <?= __('blast_delivered') ?>
                 </span>
                 <span id="pct-text" class="font-bold text-gray-900 dark:text-white">
                     <?= $pct ?>%
@@ -98,27 +106,27 @@ if ($status === 'running' && $startedAt) {
         <div class="grid grid-cols-3 gap-4">
             <div class="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
                 <p id="sent-count" class="text-2xl font-bold text-green-600 dark:text-green-400"><?= $sent ?></p>
-                <p class="text-xs text-green-700 dark:text-green-500 mt-0.5 font-medium">Berjaya</p>
+                <p class="text-xs text-green-700 dark:text-green-500 mt-0.5 font-medium"><?= __('blast_success') ?></p>
             </div>
             <div class="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center">
                 <p id="failed-count" class="text-2xl font-bold text-red-500 dark:text-red-400"><?= $failed ?></p>
-                <p class="text-xs text-red-600 dark:text-red-500 mt-0.5 font-medium">Gagal</p>
+                <p class="text-xs text-red-600 dark:text-red-500 mt-0.5 font-medium"><?= __('blast_failed') ?></p>
             </div>
             <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-4 text-center">
                 <p id="remaining-count" class="text-2xl font-bold text-gray-700 dark:text-gray-300"><?= $remaining ?></p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">Berbaki</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium"><?= __('blast_remaining') ?></p>
             </div>
         </div>
 
         <!-- ETA / timing info -->
         <div id="timing-row" class="text-center text-sm text-gray-500 dark:text-gray-400 space-y-1">
             <?php if ($status === 'running' && $etaStr): ?>
-            <p id="eta-text">⏱ Anggaran masa berbaki: <strong><?= $etaStr ?></strong></p>
+            <p id="eta-text"><?= __('blast_eta') ?> <strong><?= $etaStr ?></strong></p>
             <?php elseif ($status === 'queued'): ?>
-            <p>Menunggu cron processor… mula dalam beberapa saat.</p>
+            <p><?= __('blast_waiting_cron') ?></p>
             <?php elseif ($status === 'done' && $startedAt && $finAt): ?>
             <?php $dur = strtotime($finAt) - strtotime($startedAt); $durMin = intdiv($dur, 60); $durSec = $dur % 60; ?>
-            <p>✓ Selesai dalam <?= $durMin > 0 ? "{$durMin}min {$durSec}saat" : "{$durSec}saat" ?></p>
+            <p><?= __('blast_completed_in') ?> <?= $durMin > 0 ? "{$durMin}min {$durSec}s" : "{$durSec}s" ?></p>
             <?php endif; ?>
         </div>
 
@@ -127,42 +135,33 @@ if ($status === 'running' && $startedAt) {
             <a href="<?= BASE_URI ?>/blast"
                class="flex-1 text-center py-2.5 text-sm font-semibold rounded-xl bg-brand-700 hover:bg-brand-800 text-white transition-colors"
                style="background-color:#163020">
-                ← Hantar Blast Baru
+                <?= __('blast_new_btn') ?>
             </a>
             <button type="button"
                     onclick="document.getElementById('blast-detail-modal').classList.remove('hidden'); loadDetail(<?= $blastId ?>)"
                     class="flex-1 py-2.5 text-sm font-semibold rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                Lihat Senarai Penerima
+                <?= __('blast_view_recipients') ?>
             </button>
         </div>
     </div>
 
     <!-- Message preview -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Mesej</h3>
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"><?= __('blast_message_preview') ?></h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed"><?= htmlspecialchars($msg, ENT_QUOTES) ?></p>
-        <?php
-        $delaySecs = (int)($log['delay_seconds'] ?? 12);
-        $delayLabels = [
-            3  => '⚡ Pantas (3–8s)',
-            5  => '🟡 Sederhana (5–10s)',
-            8  => '🟢 Selamat (8–13s)',
-            12 => '🛡️ Sangat Selamat (12–17s)',
-        ];
-        $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
-        ?>
         <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
-            Jeda: <strong><?= $delayLabel ?></strong> &nbsp;·&nbsp; <?= $total ?> penerima
+            <?= __('blast_delay_info') ?> <strong><?= $delayLabel ?></strong>
+            &nbsp;·&nbsp; <?= $total ?> <?= __('blast_recipients_count') ?>
         </p>
     </div>
 
 </div>
 
-<!-- Recipients Modal (shared with index.php) -->
+<!-- Recipients Modal -->
 <div id="blast-detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
         <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Senarai Penerima</h3>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('blast_detail_title') ?></h3>
             <button type="button" onclick="document.getElementById('blast-detail-modal').classList.add('hidden')"
                     class="text-gray-400 hover:text-gray-600 transition-colors">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -171,24 +170,40 @@ if ($status === 'running' && $startedAt) {
             </button>
         </div>
         <div id="blast-detail-body" class="overflow-y-auto px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-            <p class="text-center py-8">Memuatkan…</p>
+            <p class="text-center py-8"><?= __('blast_detail_loading') ?></p>
         </div>
     </div>
 </div>
 
 <script>
+var LANG = {
+    etaPrefix:    <?= json_encode(__('blast_eta')) ?>,
+    waitingCron:  <?= json_encode(__('blast_waiting_cron')) ?>,
+    completedIn:  <?= json_encode(__('blast_completed_in')) ?>,
+    delivered:    <?= json_encode(__('blast_delivered')) ?>,
+    detailLoading: <?= json_encode(__('blast_detail_loading')) ?>,
+    detailNoData:  <?= json_encode(__('blast_detail_no_data')) ?>,
+    detailLoadFail: <?= json_encode(__('blast_detail_load_fail')) ?>,
+    statusLabels: {
+        queued:    <?= json_encode(__('blast_status_queued')) ?>,
+        scheduled: <?= json_encode(__('blast_status_scheduled')) ?>,
+        running:   <?= json_encode(__('blast_status_running')) ?>,
+        done:      <?= json_encode(__('blast_status_done')) ?>,
+        failed:    <?= json_encode(__('blast_status_failed')) ?>,
+    }
+};
+
 (function () {
     var blastId    = <?= $blastId ?>;
     var statusNow  = <?= json_encode($status) ?>;
     var csrfToken  = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    var pollTimer  = null;
 
-    var statusMap = {
-        queued:    { label: 'Dalam Giliran…',  cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
-        scheduled: { label: 'Dijadualkan',          cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-        running:   { label: 'Sedang Dihantar',      cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', pulse: true },
-        done:      { label: 'Selesai',              cls: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
-        failed:    { label: 'Gagal',                cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+    var statusCls = {
+        queued:    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
+        scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+        running:   'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+        done:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+        failed:    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
     };
 
     function poll() {
@@ -200,12 +215,10 @@ if ($status === 'running' && $startedAt) {
             updateUI(data);
             statusNow = data.status;
             if (data.status !== 'done' && data.status !== 'failed') {
-                pollTimer = setTimeout(poll, 3000);
+                setTimeout(poll, 3000);
             }
         })
-        .catch(function () {
-            pollTimer = setTimeout(poll, 5000);
-        });
+        .catch(function () { setTimeout(poll, 5000); });
     }
 
     function updateUI(data) {
@@ -216,74 +229,63 @@ if ($status === 'running' && $startedAt) {
         var remaining = total - done;
         var pct       = total > 0 ? Math.round(done / total * 100) : 0;
 
-        // Counters
         document.getElementById('sent-count').textContent      = sent;
         document.getElementById('failed-count').textContent    = failed;
         document.getElementById('remaining-count').textContent = remaining;
 
-        // Progress bar
         var bar = document.getElementById('progress-bar');
         bar.style.width = pct + '%';
-        if (data.status === 'done') {
-            bar.classList.remove('bg-green-500'); bar.classList.add('bg-green-600');
-        } else if (data.status === 'failed') {
-            bar.classList.remove('bg-green-500'); bar.classList.add('bg-red-500');
-        }
+        if (data.status === 'done')   { bar.classList.remove('bg-green-500'); bar.classList.add('bg-green-600'); }
+        if (data.status === 'failed') { bar.classList.remove('bg-green-500'); bar.classList.add('bg-red-500'); }
 
-        document.getElementById('progress-text').textContent = done + ' / ' + total + ' dihantar';
+        document.getElementById('progress-text').textContent = done + ' / ' + total + ' ' + LANG.delivered;
         document.getElementById('pct-text').textContent      = pct + '%';
 
-        // Status badge
-        var s = statusMap[data.status] || { label: data.status, cls: 'bg-gray-100 text-gray-700' };
-        var pulse = s.pulse
-            ? '<span class="w-2 h-2 rounded-full bg-green-500 animate-ping inline-block"></span>'
-            : '';
+        var label = LANG.statusLabels[data.status] || data.status;
+        var cls   = statusCls[data.status] || 'bg-gray-100 text-gray-700';
+        var pulse = data.status === 'running'
+            ? '<span class="w-2 h-2 rounded-full bg-green-500 animate-ping inline-block"></span>' : '';
         document.getElementById('status-badge').innerHTML =
-            '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ' + s.cls + '">'
-            + pulse + s.label + '</span>';
+            '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ' + cls + '">'
+            + pulse + label + '</span>';
 
-        // ETA
+        var timingRow = document.getElementById('timing-row');
         var etaEl = document.getElementById('eta-text');
         if (data.status === 'running' && data.eta_seconds > 0) {
             var min = Math.floor(data.eta_seconds / 60);
             var sec = data.eta_seconds % 60;
-            var etaStr = min > 0 ? min + 'min ' + sec + 'saat' : sec + 'saat';
-            var timingRow = document.getElementById('timing-row');
+            var etaStr = min > 0 ? min + 'min ' + sec + 's' : sec + 's';
             if (!etaEl) {
-                timingRow.innerHTML = '<p id="eta-text">⏱ Anggaran masa berbaki: <strong>' + etaStr + '</strong></p>';
+                timingRow.innerHTML = '<p id="eta-text">' + LANG.etaPrefix + ' <strong>' + etaStr + '</strong></p>';
             } else {
-                etaEl.innerHTML = '⏱ Anggaran masa berbaki: <strong>' + etaStr + '</strong>';
+                etaEl.innerHTML = LANG.etaPrefix + ' <strong>' + etaStr + '</strong>';
             }
         } else if (data.status === 'queued') {
-            document.getElementById('timing-row').innerHTML = '<p>Menunggu cron processor… mula dalam beberapa saat.</p>';
+            timingRow.innerHTML = '<p>' + LANG.waitingCron + '</p>';
         }
 
-        // Done: show action buttons
         if (data.status === 'done' || data.status === 'failed') {
             document.getElementById('done-actions').classList.remove('hidden');
         }
     }
 
-    // Start polling unless blast is already finished
     if (statusNow !== 'done' && statusNow !== 'failed') {
-        pollTimer = setTimeout(poll, 2000);
+        setTimeout(poll, 2000);
     }
 
-    // Recipients modal
     window.loadDetail = function (id) {
-        document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-8">Memuatkan…</p>';
+        document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-8">' + LANG.detailLoading + '</p>';
         fetch('<?= BASE_URI ?>/blast/' + id + '/recipients', {
             headers: { 'X-CSRF-Token': csrfToken }
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (!data.recipients || data.recipients.length === 0) {
-                document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-4 text-gray-400">Belum ada data.</p>';
+                document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-4 text-gray-400">' + LANG.detailNoData + '</p>';
                 return;
             }
             var rows = data.recipients.map(function (r) {
-                var sc = r.status === 'sent'
-                    ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
+                var sc = r.status === 'sent' ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400';
                 return '<div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">'
                     + '<div><p class="font-medium text-gray-900 dark:text-white text-xs">' + (r.name || '—') + '</p>'
                     + '<p class="text-xs text-gray-400">' + r.phone + '</p>'
@@ -295,7 +297,7 @@ if ($status === 'running' && $startedAt) {
             document.getElementById('blast-detail-body').innerHTML = rows.join('');
         })
         .catch(function () {
-            document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-4 text-red-400">Gagal memuatkan data.</p>';
+            document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-4 text-red-400">' + LANG.detailLoadFail + '</p>';
         });
     };
 })();
