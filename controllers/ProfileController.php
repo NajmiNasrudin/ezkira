@@ -402,7 +402,7 @@ class ProfileController extends Controller
             Logger::log('wa_greeting_test', Auth::id(), "Test WA sent to {$phone}");
             echo json_encode([
                 'ok'      => true,
-                'message' => "✅ Mesej test berjaya dihantar ke +{$phone}. Semak WA anda.",
+                'message' => "Mesej test berjaya dihantar ke +{$phone}. Semak WA anda.",
             ]);
         } else {
             $reason = $decoded['reason'] ?? $decoded['message'] ?? $response;
