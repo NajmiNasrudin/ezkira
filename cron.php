@@ -103,6 +103,9 @@ foreach ($recipients as $i => $user) {
         ? sendWhatsAppCloudAPI($phone, $msg, $imagePath)
         : sendFonnte($phone, $msg, $imagePath);
 
+    // Debug: log phone + raw response info
+    cronLog("  [DEBUG] provider={$provider} phone={$phone} ok=" . ($result['ok'] ? 'true' : 'false') . (isset($result['error']) ? " err={$result['error']}" : '') . (isset($result['msg_id']) ? " id={$result['msg_id']}" : ''));
+
     if ($result['ok']) {
         $sentCount++;
         $blastModel->logRecipient($blastId, (int)$user['id'], $user['name'], $phone, 'sent', null);
@@ -201,10 +204,11 @@ function sendWhatsAppCloudAPI(string $toPhone, string $message, string $imagePat
 
     // Success: response has messages[0].id
     if (!empty($result['messages'][0]['id'])) {
-        return ['ok' => true];
+        return ['ok' => true, 'msg_id' => $result['messages'][0]['id']];
     }
 
     $errMsg = $result['error']['message'] ?? $response;
+    cronLog('  [WA_RAW] ' . substr($response, 0, 500));
     return ['ok' => false, 'error' => substr($errMsg, 0, 300)];
 }
 
