@@ -7,6 +7,7 @@ use App\Core\Controller;
 use App\Core\CSRF;
 use App\Core\Logger;
 use App\Core\Session;
+use Models\Setting;
 use Models\User;
 
 class ProfileController extends Controller
@@ -209,6 +210,89 @@ class ProfileController extends Controller
         Logger::log('avatar_upload', $userId, 'Profile photo updated');
         Session::flash('success', __('avatar_updated'));
         Session::flash('tab', 'avatar');
+        $this->redirect('/profile');
+    }
+
+    // -------------------------------------------------------------------------
+    // Upload site logo (admin only)
+    // -------------------------------------------------------------------------
+
+    public function uploadLogo(): void
+    {
+        CSRF::check();
+        if (!Auth::hasRole('admin')) { http_response_code(403); exit; }
+
+        if (!isset($_FILES['site_logo']) || $_FILES['site_logo']['error'] === UPLOAD_ERR_NO_FILE) {
+            Session::flash('error', __('no_file_selected'));
+            Session::flash('tab', 'branding');
+            $this->redirect('/profile');
+        }
+
+        $file = $_FILES['site_logo'];
+        if ($file['error'] !== UPLOAD_ERR_OK || $file['size'] > UPLOAD_MAX_SIZE) {
+            Session::flash('error', __('file_too_large'));
+            Session::flash('tab', 'branding');
+            $this->redirect('/profile');
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+        $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+        if (!in_array($mime, $allowed, true)) {
+            Session::flash('error', __('invalid_file_type'));
+            Session::flash('tab', 'branding');
+            $this->redirect('/profile');
+        }
+
+        $ext = match($mime) {
+            'image/jpeg'     => 'jpg',
+            'image/png'      => 'png',
+            'image/webp'     => 'webp',
+            'image/svg+xml'  => 'svg',
+            default          => 'png',
+        };
+
+        $uploadDir = BASE_PATH . '/uploads/logos/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $ext;
+        $destPath = $uploadDir . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destPath)) {
+            Session::flash('error', __('upload_failed'));
+            Session::flash('tab', 'branding');
+            $this->redirect('/profile');
+        }
+
+        // Delete old logo
+        $setting = new Setting();
+        $oldLogo = $setting->get('site_logo', '');
+        if ($oldLogo && file_exists(BASE_PATH . '/' . $oldLogo)) {
+            unlink(BASE_PATH . '/' . $oldLogo);
+        }
+
+        $setting->set('site_logo', 'uploads/logos/' . $filename);
+        Logger::log('logo_upload', Auth::id(), 'Site logo updated');
+        Session::flash('success', __('site_logo_updated'));
+        Session::flash('tab', 'branding');
+        $this->redirect('/profile');
+    }
+
+    public function removeLogo(): void
+    {
+        CSRF::check();
+        if (!Auth::hasRole('admin')) { http_response_code(403); exit; }
+
+        $setting = new Setting();
+        $oldLogo = $setting->get('site_logo', '');
+        if ($oldLogo && file_exists(BASE_PATH . '/' . $oldLogo)) {
+            unlink(BASE_PATH . '/' . $oldLogo);
+        }
+        $setting->set('site_logo', null);
+
+        Logger::log('logo_remove', Auth::id(), 'Site logo removed');
+        Session::flash('success', __('site_logo_removed'));
+        Session::flash('tab', 'branding');
         $this->redirect('/profile');
     }
 

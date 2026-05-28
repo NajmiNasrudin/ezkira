@@ -260,6 +260,17 @@ return [
     'date_to'           => 'Hingga',
     'download_csv'      => 'Muat Turun (CSV / ZIP dengan resit)',
 
+    // ---- Branding ----
+    'branding'              => 'Penjenamaan',
+    'site_logo'             => 'Logo Laman',
+    'site_logo_hint'        => 'Dipaparkan dalam bar navigasi. JPG, PNG, WebP atau SVG. Maks 2MB. Ketinggian disyorkan: 40px.',
+    'site_logo_current'     => 'Logo Semasa',
+    'site_logo_upload'      => 'Muat Naik Logo Baru',
+    'site_logo_remove'      => 'Buang Logo',
+    'site_logo_updated'     => 'Logo berjaya dikemaskini.',
+    'site_logo_removed'     => 'Logo dibuang. Logo lalai dipulihkan.',
+    'site_logo_default'     => 'Logo lalai sedang aktif',
+
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',
     'blast_subtitle'             => 'Hantar mesej kepada pengguna berdaftar',

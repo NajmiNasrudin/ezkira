@@ -32,6 +32,9 @@ if ($role === 'admin') {
     $navLinks['/blast'] = 'WhatsApp';
 }
 
+// Load custom site logo
+$siteLogo = (new \Models\Setting())->get('site_logo', '');
+
 function navActive(string $path, string $current): string {
     return str_starts_with($current, $path)
         ? 'text-brand-600 dark:text-brand-400 font-semibold border-b-2 border-brand-600 dark:border-brand-400'
@@ -46,11 +49,16 @@ function navActive(string $path, string $current): string {
             <!-- Brand -->
             <a href="<?= BASE_URI ?>/dashboard"
                class="flex items-center gap-2.5 shrink-0">
-                <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg"
-                     alt="ezkira" class="w-9 h-9 rounded-lg">
-                <span class="hidden sm:block leading-tight tracking-wide">
-                    <span class="text-sm font-bold text-gold-500" style="color:#C4A028">ez</span><span class="text-sm font-bold text-brand-700 dark:text-brand-300" style="color:#163020">kira</span>
-                </span>
+                <?php if (!empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo)): ?>
+                    <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
+                         alt="Logo" class="h-9 w-auto max-w-[160px] object-contain rounded-lg">
+                <?php else: ?>
+                    <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg"
+                         alt="ezkira" class="w-9 h-9 rounded-lg">
+                    <span class="hidden sm:block leading-tight tracking-wide">
+                        <span class="text-sm font-bold" style="color:#C4A028">ez</span><span class="text-sm font-bold dark:text-brand-300" style="color:#163020">kira</span>
+                    </span>
+                <?php endif; ?>
             </a>
 
             <!-- Desktop Navigation -->

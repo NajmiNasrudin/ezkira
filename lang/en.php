@@ -260,6 +260,17 @@ return [
     'date_to'           => 'To',
     'download_csv'      => 'Download (CSV / ZIP with receipts)',
 
+    // ---- Branding ----
+    'branding'              => 'Branding',
+    'site_logo'             => 'Site Logo',
+    'site_logo_hint'        => 'Displayed in the navigation bar. JPG, PNG, WebP or SVG. Max 2MB. Recommended height: 40px.',
+    'site_logo_current'     => 'Current Logo',
+    'site_logo_upload'      => 'Upload New Logo',
+    'site_logo_remove'      => 'Remove Logo',
+    'site_logo_updated'     => 'Logo updated successfully.',
+    'site_logo_removed'     => 'Logo removed. Default logo restored.',
+    'site_logo_default'     => 'Default logo is active',
+
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',
     'blast_subtitle'             => 'Send messages to registered users',
