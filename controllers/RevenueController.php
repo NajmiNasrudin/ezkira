@@ -200,12 +200,14 @@ class RevenueController extends Controller
         };
 
         $cogs      = $expense->totalByCategory('cogs',      $userId, $expYear, $expMonth, '', $expWeek);
+        $purchases = $expense->totalByCategory('purchases', $userId, $expYear, $expMonth, '', $expWeek);
         $opex      = $expense->totalByCategory('opex',      $userId, $expYear, $expMonth, '', $expWeek);
         $marketing = $expense->totalByCategory('marketing', $userId, $expYear, $expMonth, '', $expWeek);
 
         // P&L calculations
-        $grossProfit    = $revTotal - $cogs;
-        $totalOpex      = $opex + $marketing;
+        $costOfSales     = $cogs + $purchases;
+        $grossProfit     = $revTotal - $costOfSales;
+        $totalOpex       = $opex + $marketing;
         $profitBeforeTax = $grossProfit - $totalOpex;
 
         $periodLabel = match($period) {
@@ -247,7 +249,9 @@ class RevenueController extends Controller
         fputcsv($out, []);
 
         // ── Cost of Sales ────────────────────────────────────────────────────
-        fputcsv($out, ['Less: Cost of Sales', number_format($cogs, 2)]);
+        fputcsv($out, ['Less: Cost of Sales', number_format($costOfSales, 2)]);
+        fputcsv($out, ['    Cost of Goods Sold (COGS)', number_format($cogs, 2)]);
+        fputcsv($out, ['    Purchases',                 number_format($purchases, 2)]);
         fputcsv($out, []);
 
         // ── Gross Profit ─────────────────────────────────────────────────────

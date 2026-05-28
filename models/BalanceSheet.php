@@ -170,29 +170,35 @@ class BalanceSheet
         }
 
         $cogs      = $byCategory['cogs']      ?? 0;
+        $purchases = $byCategory['purchases'] ?? 0;
         $opex      = $byCategory['opex']      ?? 0;
         $marketing = $byCategory['marketing'] ?? 0;
         $ppe       = $byCategory['ppe']       ?? 0;
-        $inventory = $byCategory['inventory'] ?? 0;
         $totalExp  = array_sum($byCategory);
 
         // ── P&L ──────────────────────────────────────────────────────────────
-        $grossProfit  = $totalRevenue - $cogs;
+        // Purchases + COGS = Total cost of sales
+        $costOfSales  = $cogs + $purchases;
+        $grossProfit  = $totalRevenue - $costOfSales;
         $netProfit    = $grossProfit - $opex - $marketing;
 
         // ── Balance sheet derived values ──────────────────────────────────────
         // Cash = Capital + Revenue − All cash paid out
         $cash = max(0, $totalCapital + $totalRevenue - $totalExp);
+        // Inventories: manual-only BS field — no auto-calculation from expenses
+        // (Purchases expense ≠ closing inventory; users enter stock value manually)
 
         return [
             'auto_cash'          => $cash,
             'auto_ppe'           => $ppe,
-            'auto_inventory'     => $inventory,
+            'auto_inventory'     => 0,              // manual entry on Balance Sheet
             'auto_share_capital' => $totalCapital,
             'auto_retained'      => $netProfit,     // positive = profit, negative = loss
             '_pnl' => [
                 'revenue'      => $totalRevenue,
                 'cogs'         => $cogs,
+                'purchases'    => $purchases,
+                'cost_of_sales'=> $costOfSales,
                 'gross_profit' => $grossProfit,
                 'opex'         => $opex,
                 'marketing'    => $marketing,

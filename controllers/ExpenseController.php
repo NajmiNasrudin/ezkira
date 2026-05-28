@@ -12,15 +12,15 @@ use Models\Setting;
 
 class ExpenseController extends Controller
 {
-    private const CATEGORIES = ['opex', 'marketing', 'cogs', 'ppe', 'inventory', 'liability'];
+    private const CATEGORIES = ['opex', 'marketing', 'cogs', 'purchases', 'ppe', 'liability'];
 
     // Category metadata: label, group, BS section mapping
     public const CATEGORY_META = [
         // ── P&L (Income Statement) ──────────────────────────────
         'cogs'      => ['label' => 'Cost of Goods Sold (COGS)',     'group' => 'pnl',         'bs_section' => null],
+        'purchases' => ['label' => 'Purchases',                     'group' => 'pnl',         'bs_section' => null],
         'opex'      => ['label' => 'Operating Expenses (OPEX)',     'group' => 'pnl',         'bs_section' => null],
         'marketing' => ['label' => 'Marketing & Advertising',       'group' => 'pnl',         'bs_section' => null],
-        'inventory' => ['label' => 'Inventory Purchase',            'group' => 'pnl',         'bs_section' => 'current_asset'],
         // ── Balance Sheet — Assets ──────────────────────────────
         'ppe'       => ['label' => 'Property, Plant & Equipment',   'group' => 'asset',       'bs_section' => 'non_current_asset'],
         // ── Balance Sheet — Liabilities ─────────────────────────
@@ -66,8 +66,8 @@ class ExpenseController extends Controller
                 'opex'      => $model->totalByCategory('opex',      $userId, $year, $month),
                 'marketing' => $model->totalByCategory('marketing', $userId, $year, $month),
                 'cogs'      => $model->totalByCategory('cogs',      $userId, $year, $month),
+                'purchases' => $model->totalByCategory('purchases', $userId, $year, $month),
                 'ppe'       => $model->totalByCategory('ppe',       $userId, $year, $month),
-                'inventory' => $model->totalByCategory('inventory', $userId, $year, $month),
                 'liability' => $model->totalByCategory('liability', $userId, $year, $month),
             ],
         ];
