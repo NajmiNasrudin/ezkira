@@ -45,14 +45,46 @@ $platformColors = [
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"><?= __('revenue_subtitle') ?></p>
     </div>
     <div class="flex items-center gap-2">
-        <a href="<?= BASE_URI ?>/revenue/export-pnl?period=monthly&year=<?= $year ?>&month=<?= $month ?>"
-           class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            <?= __('export_pnl') ?>
-        </a>
+        <!-- P&L Download dropdown -->
+        <div class="relative" id="pnl-export-wrap">
+            <button type="button"
+                    onclick="document.getElementById('pnl-export-menu').classList.toggle('hidden')"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                <?= __('export_pnl') ?>
+                <svg class="w-3.5 h-3.5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <!-- Dropdown menu -->
+            <div id="pnl-export-menu"
+                 class="hidden absolute right-0 mt-1 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
+                <a href="<?= BASE_URI ?>/revenue/export-pnl?period=monthly&year=<?= $year ?>&month=<?= $month ?>"
+                   class="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-medium"><?= __('pnl_monthly') ?></p>
+                        <p class="text-xs text-gray-400"><?= $monthName ?></p>
+                    </div>
+                </a>
+                <div class="border-t border-gray-100 dark:border-gray-700"></div>
+                <a href="<?= BASE_URI ?>/revenue/export-pnl?period=annual&year=<?= $year ?>"
+                   class="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-medium"><?= __('pnl_annual') ?></p>
+                        <p class="text-xs text-gray-400"><?= __('pnl_full_year') ?> <?= $year ?></p>
+                    </div>
+                </a>
+            </div>
+        </div>
         <button type="button" onclick="document.getElementById('target-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -885,4 +917,13 @@ function openEditCapital(row) {
         }
     });
 })();
+
+// Close P&L dropdown on outside click
+document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('pnl-export-wrap');
+    var menu = document.getElementById('pnl-export-menu');
+    if (wrap && menu && !wrap.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
 </script>

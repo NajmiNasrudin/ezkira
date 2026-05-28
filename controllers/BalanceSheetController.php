@@ -73,21 +73,46 @@ class BalanceSheetController extends Controller
 
     public function export(): void
     {
-        $userId = Auth::id();
-        $date   = $_GET['date'] ?? date('Y-m-d');
+        $userId  = Auth::id();
+        $period  = $_GET['period'] ?? 'date';   // 'date' | 'monthly' | 'annual'
+        $year    = (int)($_GET['year']  ?? date('Y'));
+        $month   = (int)($_GET['month'] ?? date('n'));
+        $date    = $_GET['date'] ?? date('Y-m-d');
+
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             $date = date('Y-m-d');
         }
 
-        $model   = new BalanceSheet();
-        $entries = $model->getByDate($userId, $date);
+        $model = new BalanceSheet();
+
+        // Resolve entries and display label based on period
+        if ($period === 'annual') {
+            $result      = $model->getByYear($userId, $year);
+            $resolvedDate = $result['_date'] ?? null;
+            unset($result['_date']);
+            $entries      = $result;
+            $periodLabel  = "Annual — Year {$year}";
+            $asAtLabel    = $resolvedDate
+                ? date('d M Y', strtotime($resolvedDate))
+                : "Year {$year}";
+        } elseif ($period === 'monthly') {
+            $entries     = $model->getByMonth($userId, $year, $month);
+            $periodLabel = date('F Y', mktime(0, 0, 0, $month, 1, $year));
+            $asAtLabel   = $periodLabel;
+        } else {
+            $entries     = $model->getByDate($userId, $date);
+            $periodLabel = date('d M Y', strtotime($date));
+            $asAtLabel   = $periodLabel;
+        }
+
         $user    = Auth::user();
         $company = $user['name']     ?? 'My Business';
         $pic     = $user['pic_name'] ?? '';
 
         $filename = 'BalanceSheet_'
             . preg_replace('/[^A-Za-z0-9_\-]/', '_', $company)
-            . '_' . $date . '.csv';
+            . '_' . str_replace([' ', '—', ','], ['_', '', ''], $periodLabel)
+            . '.csv';
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -99,7 +124,10 @@ class BalanceSheetController extends Controller
         // Header block
         fputcsv($out, [$company]);
         fputcsv($out, ['Statement of Financial Position (Balance Sheet)']);
-        fputcsv($out, ['As at: ' . date('d M Y', strtotime($date))]);
+        fputcsv($out, ['As at: ' . $asAtLabel]);
+        if (!empty($entries) && $period === 'annual') {
+            fputcsv($out, ['Period: ' . $periodLabel]);
+        }
         if ($pic !== '') fputcsv($out, ['Prepared by: ' . $pic]);
         fputcsv($out, ['Generated: ' . date('d M Y, H:i')]);
         fputcsv($out, ['Powered by: ' . APP_NAME]);

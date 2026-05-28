@@ -301,6 +301,10 @@ return [
     'bs_total_liabilities'         => 'Total Liabilities',
     'bs_total_equity_liabilities'  => 'Total Equity and Liabilities',
     'bs_enter_positive'            => 'enter as positive number',
+    'bs_export_date'               => 'As at specific date',
+    'pnl_monthly'                  => 'Monthly Report',
+    'pnl_annual'                   => 'Annual Report',
+    'pnl_full_year'                => 'Full year',
 
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',

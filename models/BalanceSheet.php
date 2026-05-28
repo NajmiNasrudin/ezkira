@@ -124,6 +124,38 @@ class BalanceSheet
     }
 
     /**
+     * Get entries using the most recent saved date within a given month.
+     */
+    public function getByMonth(int $userId, int $year, int $month): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT as_of_date FROM balance_sheet_entries
+             WHERE user_id = ? AND YEAR(as_of_date) = ? AND MONTH(as_of_date) = ?
+             ORDER BY as_of_date DESC LIMIT 1'
+        );
+        $stmt->execute([$userId, $year, $month]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$row) return [];
+        return $this->getByDate($userId, $row['as_of_date']);
+    }
+
+    /**
+     * Get entries using the most recent saved date within a given year.
+     */
+    public function getByYear(int $userId, int $year): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT as_of_date FROM balance_sheet_entries
+             WHERE user_id = ? AND YEAR(as_of_date) = ?
+             ORDER BY as_of_date DESC LIMIT 1'
+        );
+        $stmt->execute([$userId, $year]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$row) return [];
+        return ['_date' => $row['as_of_date']] + $this->getByDate($userId, $row['as_of_date']);
+    }
+
+    /**
      * List distinct dates that have entries for this user (for the date picker).
      */
     public function listDates(int $userId): array

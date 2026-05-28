@@ -14,15 +14,70 @@ $val = fn(string $section, string $key) =>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white"><?= __('balance_sheet') ?></h1>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('balance_sheet_subtitle') ?></p>
         </div>
-        <!-- Export button -->
-        <a href="<?= BASE_URI ?>/balance-sheet/export?date=<?= urlencode($date) ?>"
-           class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors shrink-0">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-            <?= __('balance_sheet_export') ?>
-        </a>
+        <!-- Export dropdown -->
+        <?php
+            $curYear  = (int)date('Y');
+            $curMonth = (int)date('n');
+            $dateYear  = (int)date('Y', strtotime($date));
+            $dateMonth = (int)date('n', strtotime($date));
+        ?>
+        <div class="relative shrink-0" id="bs-export-wrap">
+            <button type="button"
+                    onclick="document.getElementById('bs-export-menu').classList.toggle('hidden')"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                <?= __('balance_sheet_export') ?>
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="bs-export-menu"
+                 class="hidden absolute right-0 mt-1 w-60 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
+
+                <!-- As at specific date -->
+                <a href="<?= BASE_URI ?>/balance-sheet/export?date=<?= urlencode($date) ?>"
+                   class="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-medium"><?= __('bs_export_date') ?></p>
+                        <p class="text-xs text-gray-400"><?= date('d M Y', strtotime($date)) ?></p>
+                    </div>
+                </a>
+
+                <div class="border-t border-gray-100 dark:border-gray-700"></div>
+
+                <!-- Monthly -->
+                <a href="<?= BASE_URI ?>/balance-sheet/export?period=monthly&year=<?= $dateYear ?>&month=<?= $dateMonth ?>"
+                   class="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-medium"><?= __('pnl_monthly') ?></p>
+                        <p class="text-xs text-gray-400"><?= date('F Y', strtotime($date)) ?></p>
+                    </div>
+                </a>
+
+                <div class="border-t border-gray-100 dark:border-gray-700"></div>
+
+                <!-- Annual -->
+                <a href="<?= BASE_URI ?>/balance-sheet/export?period=annual&year=<?= $dateYear ?>"
+                   class="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4 text-brand-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <div>
+                        <p class="font-medium"><?= __('pnl_annual') ?></p>
+                        <p class="text-xs text-gray-400"><?= __('pnl_full_year') ?> <?= $dateYear ?></p>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Date selector -->
@@ -267,4 +322,13 @@ document.querySelectorAll('input[type="number"]').forEach(inp => {
 
 // Initial calculation on page load
 calcTotals();
+
+// Close export dropdown on outside click
+document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('bs-export-wrap');
+    var menu = document.getElementById('bs-export-menu');
+    if (wrap && menu && !wrap.contains(e.target)) {
+        menu.classList.add('hidden');
+    }
+});
 </script>

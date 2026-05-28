@@ -301,6 +301,10 @@ return [
     'bs_total_liabilities'         => 'Jumlah Liabiliti',
     'bs_total_equity_liabilities'  => 'Jumlah Ekuiti dan Liabiliti',
     'bs_enter_positive'            => 'masukkan sebagai nombor positif',
+    'bs_export_date'               => 'Mengikut tarikh tertentu',
+    'pnl_monthly'                  => 'Laporan Bulanan',
+    'pnl_annual'                   => 'Laporan Tahunan',
+    'pnl_full_year'                => 'Setahun penuh',
 
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',
