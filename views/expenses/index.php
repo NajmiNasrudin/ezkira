@@ -429,16 +429,16 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                         <select name="category" required
                                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                             <option value="" disabled selected><?= __('select_category') ?></option>
-                            <optgroup label="📊 P&amp;L">
+                            <optgroup label="📊 P&amp;L — Expenses">
                                 <option value="cogs">Cost of Goods Sold (COGS)</option>
                                 <option value="opex">Operating Expenses (OPEX)</option>
                                 <option value="marketing">Marketing &amp; Advertising</option>
+                                <option value="inventory">Inventory Purchase</option>
                             </optgroup>
                             <optgroup label="🏢 Balance Sheet — Assets">
                                 <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
-                                <option value="inventory">Inventory Purchase</option>
                             </optgroup>
-                            <optgroup label="💳 Other">
+                            <optgroup label="📋 Balance Sheet — Liabilities">
                                 <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
                             </optgroup>
                         </select>
@@ -684,16 +684,16 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('category') ?></label>
                         <select id="edit-expense-cat" name="category"
                                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                            <optgroup label="📊 P&amp;L">
+                            <optgroup label="📊 P&amp;L — Expenses">
                                 <option value="cogs">Cost of Goods Sold (COGS)</option>
                                 <option value="opex">Operating Expenses (OPEX)</option>
                                 <option value="marketing">Marketing &amp; Advertising</option>
+                                <option value="inventory">Inventory Purchase</option>
                             </optgroup>
                             <optgroup label="🏢 Balance Sheet — Assets">
                                 <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
-                                <option value="inventory">Inventory Purchase</option>
                             </optgroup>
-                            <optgroup label="💳 Other">
+                            <optgroup label="📋 Balance Sheet — Liabilities">
                                 <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
                             </optgroup>
                         </select>
