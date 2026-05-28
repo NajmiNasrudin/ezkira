@@ -48,29 +48,26 @@ class ExpenseController extends Controller
 
         $userId = Auth::id();
 
-        // Load receipts for each expense
-        $loadWithReceipts = function(array $entries) use ($model): array {
-            foreach ($entries as &$e) {
-                $e['receipts'] = $model->getReceipts((int)$e['id']);
-            }
-            return $entries;
-        };
+        // Build unified list with receipts attached
+        $allRaw      = $model->allByMonth($userId, $year, $month);
+        $allExpenses = [];
+        foreach ($allRaw as $e) {
+            $e['receipts']  = $model->getReceipts((int)$e['id']);
+            $allExpenses[]  = $e;
+        }
 
         $data = [
             'year'          => $year,
             'month'         => $month,
             'targetRevenue' => $targetRevenue,
             'pcts'          => $pcts,
-            'expenses' => [
-                'opex'      => $loadWithReceipts($model->byCategory('opex',      $userId, $year, $month)),
-                'marketing' => $loadWithReceipts($model->byCategory('marketing', $userId, $year, $month)),
-                'cogs'      => $loadWithReceipts($model->byCategory('cogs',      $userId, $year, $month)),
-                'liability' => $loadWithReceipts($model->byCategory('liability', $userId, $year, $month)),
-            ],
+            'allExpenses'   => $allExpenses,
             'totals' => [
                 'opex'      => $model->totalByCategory('opex',      $userId, $year, $month),
                 'marketing' => $model->totalByCategory('marketing', $userId, $year, $month),
                 'cogs'      => $model->totalByCategory('cogs',      $userId, $year, $month),
+                'ppe'       => $model->totalByCategory('ppe',       $userId, $year, $month),
+                'inventory' => $model->totalByCategory('inventory', $userId, $year, $month),
                 'liability' => $model->totalByCategory('liability', $userId, $year, $month),
             ],
         ];

@@ -4,8 +4,8 @@
  * @var int    $month
  * @var float  $targetRevenue
  * @var array  $pcts          ['opex'=>float, 'marketing'=>float, 'cogs'=>float]
- * @var array  $expenses      ['opex'=>[...], 'marketing'=>[...], 'cogs'=>[...]]
- * @var array  $totals        ['opex'=>float, 'marketing'=>float, 'cogs'=>float]
+ * @var array  $allExpenses   All expenses for the month (all categories), with receipts
+ * @var array  $totals        ['opex'=>float, 'marketing'=>float, 'cogs'=>float, 'ppe'=>float, 'inventory'=>float, 'liability'=>float]
  */
 ?>
 <!-- Flatpickr: month picker -->
@@ -27,40 +27,44 @@ $cats = [
         'label'    => 'OPEX',
         'subtitle' => __('opex_subtitle'),
         'pct'      => $pcts['opex'],
-        'ring'     => 'ring-blue-500',
-        'bg'       => 'bg-blue-50 dark:bg-blue-900/20',
         'badge'    => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
         'bar'      => 'bg-blue-500',
-        'btn'      => 'bg-blue-600 hover:bg-blue-700',
-        'text'     => 'text-blue-600 dark:text-blue-400',
     ],
     'marketing' => [
         'label'    => 'Marketing Expenses',
         'subtitle' => __('marketing_subtitle'),
         'pct'      => $pcts['marketing'],
-        'ring'     => 'ring-purple-500',
-        'bg'       => 'bg-purple-50 dark:bg-purple-900/20',
         'badge'    => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
         'bar'      => 'bg-purple-500',
-        'btn'      => 'bg-purple-600 hover:bg-purple-700',
-        'text'     => 'text-purple-600 dark:text-purple-400',
     ],
     'cogs' => [
         'label'    => 'COGS',
         'subtitle' => __('cogs_subtitle'),
         'pct'      => $pcts['cogs'],
-        'ring'     => 'ring-amber-500',
-        'bg'       => 'bg-amber-50 dark:bg-amber-900/20',
         'badge'    => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
         'bar'      => 'bg-amber-500',
-        'btn'      => 'bg-amber-600 hover:bg-amber-700',
-        'text'     => 'text-amber-600 dark:text-amber-400',
     ],
+];
+
+// Category display metadata (for unified list)
+$catMeta = [
+    'opex'      => ['label' => 'OPEX',       'badge' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'],
+    'marketing' => ['label' => 'Marketing',  'badge' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'],
+    'cogs'      => ['label' => 'COGS',       'badge' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'],
+    'ppe'       => ['label' => 'PPE',        'badge' => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300'],
+    'inventory' => ['label' => 'Inventory',  'badge' => 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'],
+    'liability' => ['label' => 'Liability',  'badge' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'],
 ];
 
 function fmtMoney(float $v): string {
     return 'RM ' . number_format($v, 2);
 }
+
+$grandTotal  = array_sum($totals);
+$totalSpent  = $totals['opex'] + $totals['marketing'] + $totals['cogs'] + ($totals['liability'] ?? 0);
+$netProfit   = $targetRevenue - $totalSpent;
+$profitPct   = $targetRevenue > 0 ? ($netProfit / $targetRevenue) * 100 : 0;
+$totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
 ?>
 
 <!-- Page Header -->
@@ -69,7 +73,15 @@ function fmtMoney(float $v): string {
         <h2 class="text-2xl font-bold text-gray-900 dark:text-white"><?= __('expenses') ?></h2>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"><?= __('expenses_subtitle') ?></p>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 flex-wrap justify-end">
+        <!-- Add Expense button -->
+        <button type="button" onclick="document.getElementById('add-expense-modal').classList.remove('hidden')"
+                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <?= __('add_expense') ?>
+        </button>
         <!-- Export CSV button -->
         <button type="button" onclick="document.getElementById('export-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
@@ -105,7 +117,6 @@ function fmtMoney(float $v): string {
 
 <!-- Month Navigator -->
 <div class="flex items-center justify-center gap-3 mb-6">
-    <!-- Prev arrow -->
     <a href="<?= BASE_URI ?>/expenses?year=<?= $prevYear ?>&month=<?= $prevMonth ?>"
        class="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,7 +124,6 @@ function fmtMoney(float $v): string {
         </svg>
     </a>
 
-    <!-- Month/Year picker -->
     <div class="text-center">
         <div class="relative flex items-center gap-1.5 cursor-pointer justify-center"
              onclick="document.getElementById('exp-month-picker').click()">
@@ -141,7 +151,6 @@ function fmtMoney(float $v): string {
         <?php endif; ?>
     </div>
 
-    <!-- Next arrow -->
     <a href="<?= BASE_URI ?>/expenses?year=<?= $nextYear ?>&month=<?= $nextMonth ?>"
        class="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -151,12 +160,6 @@ function fmtMoney(float $v): string {
 </div>
 
 <!-- Summary Cards Row -->
-<?php
-    $totalSpent  = array_sum($totals);
-    $netProfit   = $targetRevenue - $totalSpent;
-    $profitPct   = $targetRevenue > 0 ? ($netProfit / $targetRevenue) * 100 : 0;
-    $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
-?>
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
     <?php foreach ($cats as $key => $cat):
         $spent  = $totals[$key];
@@ -189,7 +192,6 @@ function fmtMoney(float $v): string {
             </span>
         </div>
 
-        <!-- Progress Bar -->
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mt-2">
             <div class="<?= $barColor ?> h-2 rounded-full transition-all duration-500"
                  style="width: <?= $target > 0 ? number_format($pct, 1) : 0 ?>%"></div>
@@ -229,7 +231,6 @@ function fmtMoney(float $v): string {
             </span>
         </div>
 
-        <!-- Profit bar: shows total expense consumption + profit remainder -->
         <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mt-2 overflow-hidden flex">
             <?php if ($targetRevenue > 0): ?>
                 <div class="bg-gray-400 dark:bg-gray-500 h-2 transition-all duration-500"
@@ -248,111 +249,34 @@ function fmtMoney(float $v): string {
     </div>
 </div>
 
-<!-- Expense Sections -->
-<?php foreach ($cats as $key => $cat):
-    $entries = $expenses[$key];
-    $count   = count($entries);
-?>
-<div id="section-<?= $key ?>" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 overflow-hidden">
+<!-- ===== UNIFIED EXPENSE LIST ===== -->
+<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
     <!-- Section Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700 <?= $cat['bg'] ?>">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
         <div class="flex items-center gap-3">
-            <div class="w-2 h-8 rounded-full <?= $cat['bar'] ?>"></div>
+            <div class="w-2 h-8 rounded-full bg-brand-500"></div>
             <div>
-                <h3 class="font-semibold text-gray-900 dark:text-white"><?= $cat['label'] ?></h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400"><?= $cat['subtitle'] ?> &bull; <?= $count ?> <?= __('records') ?></p>
+                <h3 class="font-semibold text-gray-900 dark:text-white"><?= __('expenses') ?></h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <?= date('F Y', mktime(0,0,0,$month,1,$year)) ?> &bull; <?= count($allExpenses) ?> <?= __('records') ?>
+                </p>
             </div>
         </div>
-        <button type="button" onclick="toggleExpenseForm('<?= $key ?>')"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors <?= $cat['btn'] ?>">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            <?= __('add_expense') ?>
-        </button>
+        <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                <?= fmtMoney($grandTotal) ?>
+            </span>
+        </div>
     </div>
 
-    <!-- Add Expense Form (hidden by default) -->
-    <div id="form-<?= $key ?>" class="hidden border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-6 py-5">
-        <form method="POST" action="<?= BASE_URI ?>/expenses/store" enctype="multipart/form-data">
-            <?= \App\Core\CSRF::field() ?>
-            <input type="hidden" name="category" value="<?= $key ?>">
-            <input type="hidden" name="year"     value="<?= $year ?>">
-            <input type="hidden" name="month"    value="<?= $month ?>">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Amount -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="amount" step="0.01" min="0.01" required
-                           placeholder="0.00"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                </div>
-
-                <!-- Date -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('expense_date') ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" name="expense_date" required
-                           value="<?= date('Y-m-d') ?>"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('description') ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="description" required maxlength="500"
-                           placeholder="<?= __('expense_desc_placeholder') ?>"
-                           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                </div>
-
-                <!-- Receipt Upload -->
-                <div class="md:col-span-2 lg:col-span-4">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('receipt') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
-                    </label>
-                    <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-brand-400 transition-colors">
-                        <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                        </svg>
-                        <span id="file-label-<?= $key ?>" class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            <?= __('upload_receipt_hint') ?>
-                        </span>
-                        <input type="file" name="receipts[]" class="sr-only" multiple
-                               accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                               onchange="updateFileLabel('<?= $key ?>', this)">
-                    </label>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3 mt-4">
-                <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors <?= $cat['btn'] ?>">
-                    <?= __('save_expense') ?>
-                </button>
-                <button type="button" onclick="toggleExpenseForm('<?= $key ?>')"
-                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                    <?= __('cancel') ?>
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Expense Table -->
-    <?php if ($count > 0): ?>
+    <?php if (!empty($allExpenses)): ?>
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-gray-100 dark:border-gray-700">
                     <th class="px-6 py-3 text-left font-medium"><?= __('date') ?></th>
+                    <th class="px-6 py-3 text-left font-medium"><?= __('category') ?></th>
                     <th class="px-6 py-3 text-left font-medium"><?= __('description') ?></th>
                     <th class="px-6 py-3 text-right font-medium"><?= __('amount') ?></th>
                     <th class="px-6 py-3 text-center font-medium"><?= __('receipt') ?></th>
@@ -361,10 +285,17 @@ function fmtMoney(float $v): string {
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                <?php foreach ($entries as $row): ?>
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <?php foreach ($allExpenses as $row):
+                    $cm = $catMeta[$row['category']] ?? ['label' => $row['category'], 'badge' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'];
+                ?>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         <?= date('d M Y', strtotime($row['expense_date'])) ?>
+                    </td>
+                    <td class="px-6 py-3 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold <?= $cm['badge'] ?>">
+                            <?= $cm['label'] ?>
+                        </span>
                     </td>
                     <td class="px-6 py-3 text-gray-900 dark:text-gray-100 max-w-xs">
                         <?= htmlspecialchars($row['description'], ENT_QUOTES) ?>
@@ -420,6 +351,8 @@ function fmtMoney(float $v): string {
                             <form method="POST" action="<?= BASE_URI ?>/expenses/<?= $row['id'] ?>/delete"
                                   onsubmit="return confirm('<?= __('confirm_delete_expense') ?>')">
                                 <?= \App\Core\CSRF::field() ?>
+                                <input type="hidden" name="year"  value="<?= $year ?>">
+                                <input type="hidden" name="month" value="<?= $month ?>">
                                 <button type="submit"
                                         class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
                                         title="<?= __('delete') ?>">
@@ -436,11 +369,11 @@ function fmtMoney(float $v): string {
             </tbody>
             <tfoot>
                 <tr class="bg-gray-50 dark:bg-gray-700/30 border-t border-gray-200 dark:border-gray-700">
-                    <td class="px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" colspan="2">
+                    <td class="px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase" colspan="3">
                         <?= __('total') ?>
                     </td>
                     <td class="px-6 py-3 text-right font-bold text-gray-900 dark:text-white">
-                        <?= fmtMoney($totals[$key]) ?>
+                        <?= fmtMoney($grandTotal) ?>
                     </td>
                     <td colspan="3"></td>
                 </tr>
@@ -448,230 +381,132 @@ function fmtMoney(float $v): string {
         </table>
     </div>
     <?php else: ?>
-    <div class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">
-        <svg class="w-10 h-10 mx-auto mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="px-6 py-14 text-center text-gray-400 dark:text-gray-500">
+        <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <p class="text-sm"><?= __('no_expenses_yet') ?></p>
-    </div>
-    <?php endif; ?>
-</div>
-<?php endforeach; ?>
-
-<!-- ===== LIABILITY SECTION ===== -->
-<?php
-    $liabilityEntries = $expenses['liability'] ?? [];
-    $liabilityCount   = count($liabilityEntries);
-    $liabilityTotal   = $totals['liability'] ?? 0.0;
-?>
-<div id="section-liability" class="bg-white dark:bg-gray-800 rounded-xl border border-rose-200 dark:border-rose-900/50 shadow-sm mb-6 overflow-hidden">
-
-    <!-- Section Header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-rose-100 dark:border-rose-900/40 bg-rose-50 dark:bg-rose-900/20">
-        <div class="flex items-center gap-3">
-            <div class="w-2 h-8 rounded-full bg-rose-500"></div>
-            <div>
-                <h3 class="font-semibold text-gray-900 dark:text-white"><?= __('liability') ?></h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
-                    <?= __('liability_subtitle') ?> &bull; <?= $liabilityCount ?> <?= __('records') ?>
-                </p>
-            </div>
-        </div>
-        <button type="button" onclick="toggleExpenseForm('liability')"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors bg-rose-600 hover:bg-rose-700">
+        <p class="text-sm mb-3"><?= __('no_expenses_yet') ?></p>
+        <button type="button" onclick="document.getElementById('add-expense-modal').classList.remove('hidden')"
+                class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
-            <?= __('add_liability') ?>
+            <?= __('add_expense') ?>
         </button>
-    </div>
-
-    <!-- Add Liability Form (hidden by default) -->
-    <div id="form-liability" class="hidden border-b border-rose-100 dark:border-rose-900/40 bg-rose-50/60 dark:bg-rose-900/10 px-6 py-5">
-        <form method="POST" action="<?= BASE_URI ?>/expenses/store" enctype="multipart/form-data">
-            <?= \App\Core\CSRF::field() ?>
-            <input type="hidden" name="category" value="liability">
-            <input type="hidden" name="year"     value="<?= $year ?>">
-            <input type="hidden" name="month"    value="<?= $month ?>">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Amount -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="amount" step="0.01" min="0.01" required
-                           placeholder="0.00"
-                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
-                </div>
-
-                <!-- Date -->
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('expense_date') ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" name="expense_date" required
-                           value="<?= date('Y-m-d') ?>"
-                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('description') ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="description" required maxlength="500"
-                           placeholder="<?= __('liability_desc_placeholder') ?>"
-                           class="w-full px-3 py-2 text-sm border border-rose-200 dark:border-rose-800 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none">
-                </div>
-
-                <!-- File Upload (multiple) -->
-                <div class="md:col-span-2 lg:col-span-4">
-                    <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('receipt') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
-                    </label>
-                    <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-rose-300 dark:border-rose-700 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-rose-400 transition-colors">
-                        <svg class="w-5 h-5 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                        </svg>
-                        <span id="file-label-liability" class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            <?= __('upload_files_hint') ?>
-                        </span>
-                        <input type="file" name="receipts[]" class="sr-only" multiple
-                               accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                               onchange="updateFileLabel('liability', this)">
-                    </label>
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3 mt-4">
-                <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors bg-rose-600 hover:bg-rose-700">
-                    <?= __('save_expense') ?>
-                </button>
-                <button type="button" onclick="toggleExpenseForm('liability')"
-                        class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors">
-                    <?= __('cancel') ?>
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Liability Table -->
-    <?php if ($liabilityCount > 0): ?>
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide border-b border-rose-100 dark:border-rose-900/40">
-                    <th class="px-6 py-3 text-left font-medium"><?= __('date') ?></th>
-                    <th class="px-6 py-3 text-left font-medium"><?= __('description') ?></th>
-                    <th class="px-6 py-3 text-right font-medium"><?= __('amount') ?></th>
-                    <th class="px-6 py-3 text-center font-medium"><?= __('receipt') ?></th>
-                    <th class="px-6 py-3 text-center font-medium"><?= __('added_by') ?></th>
-                    <th class="px-6 py-3 text-center font-medium"><?= __('action') ?></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-rose-50 dark:divide-rose-900/20">
-                <?php foreach ($liabilityEntries as $row): ?>
-                <tr class="hover:bg-rose-50/40 dark:hover:bg-rose-900/10 transition-colors">
-                    <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                        <?= date('d M Y', strtotime($row['expense_date'])) ?>
-                    </td>
-                    <td class="px-6 py-3 text-gray-900 dark:text-gray-100 max-w-xs">
-                        <?= htmlspecialchars($row['description'], ENT_QUOTES) ?>
-                    </td>
-                    <td class="px-6 py-3 text-right font-semibold text-rose-700 dark:text-rose-400 whitespace-nowrap">
-                        <?= fmtMoney((float)$row['amount']) ?>
-                    </td>
-                    <td class="px-6 py-3 text-center">
-                        <?php if (!empty($row['receipts'])): ?>
-                            <div class="flex flex-col items-start gap-1 min-w-[100px]">
-                                <?php foreach ($row['receipts'] as $rcpt): ?>
-                                <div class="flex items-center gap-1 w-full">
-                                    <a href="<?= BASE_URI ?>/expenses/file/<?= $rcpt['id'] ?>"
-                                       target="_blank"
-                                       class="flex-1 inline-flex items-center gap-1 text-xs text-rose-600 dark:text-rose-400 hover:underline truncate max-w-[90px]"
-                                       title="<?= htmlspecialchars($rcpt['name'], ENT_QUOTES) ?>">
-                                        <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                                        </svg>
-                                        <span class="truncate"><?= htmlspecialchars(mb_strimwidth($rcpt['name'], 0, 14, '…'), ENT_QUOTES) ?></span>
-                                    </a>
-                                    <form method="POST" action="<?= BASE_URI ?>/expenses/receipt/<?= $rcpt['id'] ?>/delete"
-                                          onsubmit="return confirm('Delete this file?')" class="shrink-0">
-                                        <?= \App\Core\CSRF::field() ?>
-                                        <input type="hidden" name="year"  value="<?= $year ?>">
-                                        <input type="hidden" name="month" value="<?= $month ?>">
-                                        <button type="submit" class="text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 text-xs leading-none px-0.5 rounded transition-colors" title="Remove file">×</button>
-                                    </form>
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php else: ?>
-                            <span class="text-gray-300 dark:text-gray-600">—</span>
-                        <?php endif; ?>
-                    </td>
-                    <td class="px-6 py-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                        <?= htmlspecialchars($row['added_by'], ENT_QUOTES) ?>
-                    </td>
-                    <td class="px-6 py-3 text-center">
-                        <div class="flex items-center justify-center gap-1">
-                            <!-- Edit -->
-                            <button type="button"
-                                    onclick="openEditExpense(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)"
-                                    class="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 transition-colors p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20"
-                                    title="<?= __('edit') ?>">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </button>
-                            <!-- Delete -->
-                            <form method="POST" action="<?= BASE_URI ?>/expenses/<?= $row['id'] ?>/delete"
-                                  onsubmit="return confirm('<?= __('confirm_delete_liability') ?>')">
-                                <?= \App\Core\CSRF::field() ?>
-                                <button type="submit"
-                                        class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                                        title="<?= __('delete') ?>">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-            <tfoot>
-                <tr class="bg-rose-50 dark:bg-rose-900/20 border-t border-rose-200 dark:border-rose-900/40">
-                    <td class="px-6 py-3 text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase" colspan="2">
-                        <?= __('total') ?>
-                    </td>
-                    <td class="px-6 py-3 text-right font-bold text-rose-700 dark:text-rose-300">
-                        <?= fmtMoney($liabilityTotal) ?>
-                    </td>
-                    <td colspan="3"></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <?php else: ?>
-    <div class="px-6 py-10 text-center text-gray-400 dark:text-gray-500">
-        <svg class="w-10 h-10 mx-auto mb-2 opacity-40 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-        </svg>
-        <p class="text-sm"><?= __('no_liability_yet') ?></p>
     </div>
     <?php endif; ?>
 </div>
-<!-- ===== END LIABILITY SECTION ===== -->
+<!-- ===== END UNIFIED EXPENSE LIST ===== -->
+
+<!-- ===== ADD EXPENSE MODAL ===== -->
+<div id="add-expense-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('add_expense') ?></h3>
+            <button type="button" onclick="document.getElementById('add-expense-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="overflow-y-auto flex-1 px-6 py-5">
+            <form method="POST" action="<?= BASE_URI ?>/expenses/store" enctype="multipart/form-data">
+                <?= \App\Core\CSRF::field() ?>
+                <input type="hidden" name="year"  value="<?= $year ?>">
+                <input type="hidden" name="month" value="<?= $month ?>">
+
+                <div class="space-y-4">
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <?= __('category') ?> <span class="text-red-500">*</span>
+                        </label>
+                        <select name="category" required
+                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            <option value="" disabled selected><?= __('select_category') ?></option>
+                            <optgroup label="📊 P&amp;L">
+                                <option value="cogs">Cost of Goods Sold (COGS)</option>
+                                <option value="opex">Operating Expenses (OPEX)</option>
+                                <option value="marketing">Marketing &amp; Advertising</option>
+                            </optgroup>
+                            <optgroup label="🏢 Balance Sheet — Assets">
+                                <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
+                                <option value="inventory">Inventory Purchase</option>
+                            </optgroup>
+                            <optgroup label="💳 Other">
+                                <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <!-- Amount -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <?= __('amount') ?> (RM) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="amount" step="0.01" min="0.01" required
+                               placeholder="0.00"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <?= __('expense_date') ?> <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" name="expense_date" required
+                               value="<?= date('Y-m-d') ?>"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <?= __('description') ?> <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="description" required maxlength="500"
+                               placeholder="<?= __('expense_desc_placeholder') ?>"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Receipt -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <?= __('receipt') ?> <span class="text-gray-400">(<?= __('optional') ?>)</span>
+                        </label>
+                        <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-brand-400 transition-colors">
+                            <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                            </svg>
+                            <span id="add-file-label" class="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">
+                                <?= __('upload_files_hint') ?>
+                            </span>
+                            <input type="file" name="receipts[]" class="sr-only" multiple
+                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                                   onchange="updateAddFileLabel(this)">
+                        </label>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="submit"
+                            class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                        <?= __('save_expense') ?>
+                    </button>
+                    <button type="button"
+                            onclick="document.getElementById('add-expense-modal').classList.add('hidden')"
+                            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <?= __('cancel') ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- ===== END ADD EXPENSE MODAL ===== -->
 
 <!-- ===== EXPORT CSV MODAL ===== -->
 <div id="export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -680,7 +515,7 @@ function fmtMoney(float $v): string {
 
         <div class="flex items-center justify-between mb-5">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><?= __('export_csv') ?></h3>
-            <button type="button" onclick="document.getElementById('export-modal').classList.add('hidden")"
+            <button type="button" onclick="document.getElementById('export-modal').classList.add('hidden')"
                     class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -690,11 +525,11 @@ function fmtMoney(float $v): string {
 
         <!-- Mode toggle -->
         <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5 mb-5">
-            <button type="button" id="exp-btn-month" onclick="switchExportMode('month")"
+            <button type="button" id="exp-btn-month" onclick="switchExportMode('month')"
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
                 <?= __('export_by_month') ?>
             </button>
-            <button type="button" id="exp-btn-range" onclick="switchExportMode('range")"
+            <button type="button" id="exp-btn-range" onclick="switchExportMode('range')"
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                 <?= __('export_by_range') ?>
             </button>
@@ -747,38 +582,6 @@ function fmtMoney(float $v): string {
         </button>
     </div>
 </div>
-
-<script>
-var _exportMode = 'month';
-var _expBtnActive   = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
-var _expBtnInactive = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
-
-function switchExportMode(m) {
-    _exportMode = m;
-    document.getElementById('exp-btn-month').className = m === 'month' ? _expBtnActive : _expBtnInactive;
-    document.getElementById('exp-btn-range').className = m === 'range' ? _expBtnActive : _expBtnInactive;
-    document.getElementById('exp-month-panel').classList.toggle('hidden', m !== 'month');
-    document.getElementById('exp-range-panel').classList.toggle('hidden', m !== 'range');
-}
-
-function doExport() {
-    var base = '<?= BASE_URI ?>/expenses/export';
-    var url;
-    if (_exportMode === 'month') {
-        var m = document.getElementById('exp-month').value;
-        var y = document.getElementById('exp-year').value;
-        url = base + '?mode=month&year=' + y + '&month=' + m;
-    } else {
-        var from = document.getElementById('exp-from').value;
-        var to   = document.getElementById('exp-to').value;
-        if (!from || !to) { alert('Sila pilih tarikh.'); return; }
-        if (from > to) { alert('Tarikh mula mesti sebelum tarikh tamat.'); return; }
-        url = base + '?mode=range&from=' + from + '&to=' + to;
-    }
-    window.location.href = url;
-    document.getElementById('export-modal').classList.add('hidden');
-}
-</script>
 <!-- ===== END EXPORT CSV MODAL ===== -->
 
 <!-- Configure Budget % Modal -->
@@ -853,6 +656,102 @@ function doExport() {
     </div>
 </div>
 
+<!-- Edit Expense Modal -->
+<div id="edit-expense-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('edit') ?></h3>
+            <button type="button" onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="overflow-y-auto flex-1 px-6 py-5">
+            <form id="edit-expense-action" method="POST" action="" enctype="multipart/form-data">
+                <?= \App\Core\CSRF::field() ?>
+                <input type="hidden" id="edit-expense-id" name="id" value="">
+                <input type="hidden" name="year"  value="<?= $year ?>">
+                <input type="hidden" name="month" value="<?= $month ?>">
+
+                <div class="space-y-4">
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('category') ?></label>
+                        <select id="edit-expense-cat" name="category"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            <optgroup label="📊 P&amp;L">
+                                <option value="cogs">Cost of Goods Sold (COGS)</option>
+                                <option value="opex">Operating Expenses (OPEX)</option>
+                                <option value="marketing">Marketing &amp; Advertising</option>
+                            </optgroup>
+                            <optgroup label="🏢 Balance Sheet — Assets">
+                                <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
+                                <option value="inventory">Inventory Purchase</option>
+                            </optgroup>
+                            <optgroup label="💳 Other">
+                                <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <!-- Amount -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('amount') ?> (RM)</label>
+                        <input type="number" id="edit-expense-amount" name="amount" step="0.01" min="0.01" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('description') ?></label>
+                        <input type="text" id="edit-expense-desc" name="description" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+                    <!-- Date -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('expense_date') ?></label>
+                        <input type="date" id="edit-expense-date" name="expense_date" required
+                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                    </div>
+
+                    <!-- Attachments -->
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2"><?= __('receipt') ?></label>
+                        <div id="edit-receipts-list" class="space-y-1.5 mb-3"></div>
+                        <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-brand-400 transition-colors">
+                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            <span id="edit-file-label" class="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">
+                                <?= __('upload_files_hint') ?>
+                            </span>
+                            <input type="file" name="receipts[]" id="edit-file-input" class="sr-only" multiple
+                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                                   onchange="updateEditFileLabel(this)">
+                        </label>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button type="submit"
+                            class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
+                        <?= __('save_changes') ?>
+                    </button>
+                    <button type="button"
+                            onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
+                            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <?= __('cancel') ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 <script>
@@ -886,6 +785,17 @@ function doExport() {
 
 var _targetRevenue = <?= json_encode($targetRevenue) ?>;
 
+function updateAddFileLabel(input) {
+    var label = document.getElementById('add-file-label');
+    if (input.files.length === 0) {
+        label.textContent = '<?= __('upload_files_hint') ?>';
+    } else if (input.files.length === 1) {
+        label.textContent = input.files[0].name;
+    } else {
+        label.textContent = input.files.length + ' files selected';
+    }
+}
+
 function updateLiveCalc(cat, val) {
     var pct = parseFloat(val) || 0;
     var el  = document.getElementById('calc-' + cat);
@@ -897,7 +807,6 @@ function updateLiveCalc(cat, val) {
             el.textContent = '<?= __('set_target_to_see_amount') ?>';
         }
     }
-    // Update total
     var total = 0;
     ['opex','marketing','cogs'].forEach(function(k) {
         var inp = document.querySelector('input[name="pct_' + k + '"]');
@@ -912,43 +821,38 @@ function updateLiveCalc(cat, val) {
     }
 }
 
-function toggleExpenseForm(cat) {
-    const form = document.getElementById('form-' + cat);
-    form.classList.toggle('hidden');
-    if (!form.classList.contains('hidden')) {
-        form.querySelector('input[name="amount"]').focus();
-    }
+// Export modal helpers
+var _exportMode = 'month';
+var _expBtnActive   = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+var _expBtnInactive = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
+
+function switchExportMode(m) {
+    _exportMode = m;
+    document.getElementById('exp-btn-month').className = m === 'month' ? _expBtnActive : _expBtnInactive;
+    document.getElementById('exp-btn-range').className = m === 'range' ? _expBtnActive : _expBtnInactive;
+    document.getElementById('exp-month-panel').classList.toggle('hidden', m !== 'month');
+    document.getElementById('exp-range-panel').classList.toggle('hidden', m !== 'range');
 }
 
-function updateFileLabel(cat, input) {
-    const label = document.getElementById('file-label-' + cat);
-    if (input.files.length === 0) {
-        label.textContent = '<?= __('upload_receipt_hint') ?>';
-    } else if (input.files.length === 1) {
-        label.textContent = input.files[0].name;
+function doExport() {
+    var base = '<?= BASE_URI ?>/expenses/export';
+    var url;
+    if (_exportMode === 'month') {
+        var m = document.getElementById('exp-month').value;
+        var y = document.getElementById('exp-year').value;
+        url = base + '?mode=month&year=' + y + '&month=' + m;
     } else {
-        label.textContent = input.files.length + ' files selected';
+        var from = document.getElementById('exp-from').value;
+        var to   = document.getElementById('exp-to').value;
+        if (!from || !to) { alert('Sila pilih tarikh.'); return; }
+        if (from > to)    { alert('Tarikh mula mesti sebelum tarikh tamat.'); return; }
+        url = base + '?mode=range&from=' + from + '&to=' + to;
     }
+    window.location.href = url;
+    document.getElementById('export-modal').classList.add('hidden');
 }
 
-// Live calc in target modal
-document.querySelector('input[name="target_revenue"]')?.addEventListener('input', function() {
-    const v = parseFloat(this.value) || 0;
-    document.getElementById('calc-opex').textContent = (v * 0.20).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    document.getElementById('calc-mkt').textContent  = (v * 0.10).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    document.getElementById('calc-cogs').textContent = (v * 0.40).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-});
-
-// Auto-open form if anchor matches
-window.addEventListener('load', function() {
-    const hash = location.hash.replace('#', '');
-    if (['opex','marketing','cogs','liability'].includes(hash)) {
-        const form = document.getElementById('form-' + hash);
-        if (form) form.classList.remove('hidden');
-        document.getElementById('section-' + hash)?.scrollIntoView({ behavior: 'smooth' });
-    }
-});
-
+// Edit expense modal
 var _editCsrf = <?= json_encode(\App\Core\CSRF::generate()) ?>;
 
 function openEditExpense(row) {
@@ -959,11 +863,9 @@ function openEditExpense(row) {
     document.getElementById('edit-expense-cat').value     = row.category;
     document.getElementById('edit-expense-action').action = '<?= BASE_URI ?>/expenses/' + row.id + '/update';
 
-    // Reset file input label
     document.getElementById('edit-file-label').textContent = '<?= __('upload_files_hint') ?>';
     document.getElementById('edit-file-input').value = '';
 
-    // Render existing receipts
     var list = document.getElementById('edit-receipts-list');
     list.innerHTML = '';
     var receipts = row.receipts || [];
@@ -1048,104 +950,3 @@ function deleteReceiptInModal(btn, receiptId) {
     });
 }
 </script>
-
-<!-- Edit Expense Modal -->
-<div id="edit-expense-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-700 shrink-0">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('edit') ?? 'Edit Expense' ?></h3>
-            <button type="button" onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
-                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Scrollable body -->
-        <div class="overflow-y-auto flex-1 px-6 py-5">
-            <form id="edit-expense-action" method="POST" action="" enctype="multipart/form-data">
-                <?= \App\Core\CSRF::field() ?>
-                <input type="hidden" id="edit-expense-id" name="id" value="">
-                <input type="hidden" name="year"  value="<?= $year ?>">
-                <input type="hidden" name="month" value="<?= $month ?>">
-
-                <div class="space-y-4">
-                    <!-- Category -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                        <select id="edit-expense-cat" name="category"
-                                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                            <optgroup label="📊 P&L">
-                                <option value="cogs">Cost of Goods Sold (COGS)</option>
-                                <option value="opex">Operating Expenses (OPEX)</option>
-                                <option value="marketing">Marketing &amp; Advertising</option>
-                            </optgroup>
-                            <optgroup label="🏢 Balance Sheet — Assets">
-                                <option value="ppe">Property, Plant &amp; Equipment</option>
-                                <option value="inventory">Inventory Purchase</option>
-                            </optgroup>
-                            <optgroup label="💳 Other">
-                                <option value="liability"><?= __('liability') ?></option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <!-- Amount -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('amount') ?> (RM)</label>
-                        <input type="number" id="edit-expense-amount" name="amount" step="0.01" min="0.01" required
-                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                    <!-- Description -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('description') ?></label>
-                        <input type="text" id="edit-expense-desc" name="description" required
-                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-                    <!-- Date -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('expense_date') ?></label>
-                        <input type="date" id="edit-expense-date" name="expense_date" required
-                               class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                    </div>
-
-                    <!-- Attachments -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2"><?= __('receipt') ?></label>
-
-                        <!-- Existing receipts list -->
-                        <div id="edit-receipts-list" class="space-y-1.5 mb-3"></div>
-
-                        <!-- Add new files -->
-                        <label class="flex items-center gap-3 w-full px-3 py-2.5 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 cursor-pointer hover:border-brand-400 transition-colors">
-                            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            <span id="edit-file-label" class="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">
-                                <?= __('upload_files_hint') ?>
-                            </span>
-                            <input type="file" name="receipts[]" id="edit-file-input" class="sr-only" multiple
-                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                                   onchange="updateEditFileLabel(this)">
-                        </label>
-                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
-                    </div>
-                </div>
-
-                <!-- Actions inside form so submit works -->
-                <div class="flex gap-3 mt-6">
-                    <button type="submit"
-                            class="flex-1 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors">
-                        <?= __('save_changes') ?>
-                    </button>
-                    <button type="button"
-                            onclick="document.getElementById('edit-expense-modal').classList.add('hidden')"
-                            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <?= __('cancel') ?>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>

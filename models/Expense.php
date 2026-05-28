@@ -147,6 +147,25 @@ class Expense
         return (float) $stmt->fetchColumn();
     }
 
+    /**
+     * Fetch all expenses (all categories) for a month, sorted newest-first.
+     * Does NOT attach receipts — caller must loop with getReceipts().
+     */
+    public function allByMonth(int $userId, int $year, int $month): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT e.*, u.name AS added_by
+             FROM expenses e
+             JOIN users u ON e.user_id = u.id
+             WHERE e.user_id = ?
+               AND YEAR(e.expense_date)  = ?
+               AND MONTH(e.expense_date) = ?
+             ORDER BY e.expense_date DESC, e.created_at DESC"
+        );
+        $stmt->execute([$userId, $year, $month]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
     public function countAll(int $userId): int
     {
         $stmt = $this->db->prepare('SELECT COUNT(*) FROM expenses WHERE user_id = ?');
