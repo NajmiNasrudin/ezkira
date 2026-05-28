@@ -55,9 +55,15 @@
     <div class="w-full max-w-md">
         <!-- Logo / Brand -->
         <div class="text-center mb-8">
+            <?php $siteLogo = (new \Models\Setting())->get('site_logo', ''); ?>
             <div class="inline-flex items-center justify-center mb-4">
-                <img src="<?= BASE_URI ?>/assets/img/logo.svg"
-                     alt="ezkira" class="w-24 h-24 rounded-2xl shadow-lg">
+                <?php if (!empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo)): ?>
+                    <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
+                         alt="Logo" class="h-24 w-auto max-w-[200px] object-contain rounded-2xl shadow-lg">
+                <?php else: ?>
+                    <img src="<?= BASE_URI ?>/assets/img/logo.svg"
+                         alt="ezkira" class="w-24 h-24 rounded-2xl shadow-lg">
+                <?php endif; ?>
             </div>
             <p class="text-brand-200 dark:text-gray-400 text-sm mt-1">Finance Monitoring for SMEs</p>
         </div>
