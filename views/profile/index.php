@@ -377,6 +377,8 @@ $tabClass = fn(string $tab) => $activeTab === $tab
             </form>
         </div>
     </div>
+    <?php endif; ?>
+
     <!-- Tab: WA Auto Greeting (admin only) -->
     <?php if (($user['role'] ?? '') === 'admin'):
         $setting       = new \Models\Setting();
