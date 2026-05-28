@@ -79,7 +79,7 @@ function navActive(string $path, string $current): string {
                 </form>
 
                 <!-- Dark Mode Toggle -->
-                <button id="theme-toggle" onclick="toggleDarkMode()"
+                <button type="button" id="theme-toggle" onclick="toggleDarkMode()"
                         class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         aria-label="Toggle dark mode">
                     <!-- Sun (shown in dark mode) -->
@@ -98,7 +98,7 @@ function navActive(string $path, string $current): string {
 
                 <!-- User Avatar Dropdown -->
                 <div class="relative" id="user-menu-wrapper">
-                    <button id="user-menu-btn"
+                    <button type="button" id="user-menu-btn"
                             onclick="toggleUserMenu()"
                             class="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <?php if (!empty($user['profile_image'])): ?>
@@ -154,7 +154,7 @@ function navActive(string $path, string $current): string {
                 </div>
 
                 <!-- Hamburger (mobile) -->
-                <button id="hamburger" onclick="toggleMobileMenu()"
+                <button type="button" id="hamburger" onclick="toggleMobileMenu()"
                         class="md:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>

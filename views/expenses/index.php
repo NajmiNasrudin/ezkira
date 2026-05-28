@@ -71,7 +71,7 @@ function fmtMoney(float $v): string {
     </div>
     <div class="flex items-center gap-2">
         <!-- Export CSV button -->
-        <button onclick="document.getElementById('export-modal').classList.remove('hidden')"
+        <button type="button" onclick="document.getElementById('export-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -80,7 +80,7 @@ function fmtMoney(float $v): string {
             <?= __('export_csv') ?>
         </button>
         <!-- Configure % button -->
-        <button onclick="document.getElementById('budget-pct-modal').classList.remove('hidden')"
+        <button type="button" onclick="document.getElementById('budget-pct-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -264,7 +264,7 @@ function fmtMoney(float $v): string {
                 <p class="text-xs text-gray-500 dark:text-gray-400"><?= $cat['subtitle'] ?> &bull; <?= $count ?> <?= __('records') ?></p>
             </div>
         </div>
-        <button onclick="toggleExpenseForm('<?= $key ?>')"
+        <button type="button" onclick="toggleExpenseForm('<?= $key ?>')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors <?= $cat['btn'] ?>">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -325,7 +325,7 @@ function fmtMoney(float $v): string {
                         <span id="file-label-<?= $key ?>" class="text-sm text-gray-500 dark:text-gray-400 truncate">
                             <?= __('upload_receipt_hint') ?>
                         </span>
-                        <input type="file" name="receipts[]" class="hidden" multiple
+                        <input type="file" name="receipts[]" class="sr-only" multiple
                                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
                                onchange="updateFileLabel('<?= $key ?>', this)">
                     </label>
@@ -478,7 +478,7 @@ function fmtMoney(float $v): string {
                 </p>
             </div>
         </div>
-        <button onclick="toggleExpenseForm('liability')"
+        <button type="button" onclick="toggleExpenseForm('liability')"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg transition-colors bg-rose-600 hover:bg-rose-700">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -539,7 +539,7 @@ function fmtMoney(float $v): string {
                         <span id="file-label-liability" class="text-sm text-gray-500 dark:text-gray-400 truncate">
                             <?= __('upload_files_hint') ?>
                         </span>
-                        <input type="file" name="receipts[]" class="hidden" multiple
+                        <input type="file" name="receipts[]" class="sr-only" multiple
                                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
                                onchange="updateFileLabel('liability', this)">
                     </label>
@@ -680,7 +680,7 @@ function fmtMoney(float $v): string {
 
         <div class="flex items-center justify-between mb-5">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white"><?= __('export_csv') ?></h3>
-            <button onclick="document.getElementById('export-modal').classList.add('hidden')"
+            <button type="button" onclick="document.getElementById('export-modal').classList.add('hidden")"
                     class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -690,11 +690,11 @@ function fmtMoney(float $v): string {
 
         <!-- Mode toggle -->
         <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5 mb-5">
-            <button id="exp-btn-month" onclick="switchExportMode('month')"
+            <button type="button" id="exp-btn-month" onclick="switchExportMode('month")"
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
                 <?= __('export_by_month') ?>
             </button>
-            <button id="exp-btn-range" onclick="switchExportMode('range')"
+            <button type="button" id="exp-btn-range" onclick="switchExportMode('range")"
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                 <?= __('export_by_range') ?>
             </button>
@@ -737,7 +737,7 @@ function fmtMoney(float $v): string {
             </div>
         </div>
 
-        <button onclick="doExport()"
+        <button type="button" onclick="doExport()"
                 class="mt-5 w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors text-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1117,7 +1117,7 @@ function deleteReceiptInModal(btn, receiptId) {
                             <span id="edit-file-label" class="text-sm text-gray-500 dark:text-gray-400 truncate flex-1">
                                 <?= __('upload_files_hint') ?>
                             </span>
-                            <input type="file" name="receipts[]" id="edit-file-input" class="hidden" multiple
+                            <input type="file" name="receipts[]" id="edit-file-input" class="sr-only" multiple
                                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
                                    onchange="updateEditFileLabel(this)">
                         </label>

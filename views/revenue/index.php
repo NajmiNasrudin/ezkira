@@ -53,7 +53,7 @@ $platformColors = [
             </svg>
             <?= __('export_pnl') ?>
         </a>
-        <button onclick="document.getElementById('target-modal').classList.remove('hidden')"
+        <button type="button" onclick="document.getElementById('target-modal').classList.remove('hidden')"
                 class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -172,7 +172,7 @@ $platformColors = [
 <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 overflow-hidden">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
         <h3 class="font-semibold text-gray-900 dark:text-white text-sm"><?= __('sales_history') ?></h3>
-        <button onclick="toggleSaleForm()"
+        <button type="button" onclick="toggleSaleForm()"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -444,7 +444,7 @@ $platformColors = [
             <h3 class="font-semibold text-gray-900 dark:text-white text-sm"><?= __('capital') ?></h3>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5"><?= __('capital_subtitle') ?></p>
         </div>
-        <button onclick="toggleCapitalForm()"
+        <button type="button" onclick="toggleCapitalForm()"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white rounded-lg bg-violet-600 hover:bg-violet-700 transition-colors">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

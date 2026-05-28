@@ -22,22 +22,22 @@ $tabClass = fn(string $tab) => $activeTab === $tab
     <!-- Tab Navigation -->
     <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
         <nav class="flex gap-6 -mb-px overflow-x-auto">
-            <button onclick="switchTab('info')"
+            <button type="button" onclick="switchTab('info')"
                     id="tab-info"
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('info') ?>">
                 <?= __('personal_info') ?>
             </button>
-            <button onclick="switchTab('avatar')"
+            <button type="button" onclick="switchTab('avatar')"
                     id="tab-avatar"
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('avatar') ?>">
                 <?= __('profile_photo') ?>
             </button>
-            <button onclick="switchTab('password')"
+            <button type="button" onclick="switchTab('password')"
                     id="tab-password"
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('password') ?>">
                 <?= __('change_password') ?>
             </button>
-            <button onclick="switchTab('preferences')"
+            <button type="button" onclick="switchTab('preferences')"
                     id="tab-preferences"
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('preferences') ?>">
                 <?= __('preferences') ?>
