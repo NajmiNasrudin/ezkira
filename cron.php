@@ -153,7 +153,7 @@ function sendWhatsAppCloudAPI(string $toPhone, string $message, string $imagePat
         return ['ok' => false, 'error' => 'WA_PHONE_NUMBER_ID / WA_ACCESS_TOKEN tidak dikonfigurasi'];
     }
 
-    $url = 'https://graph.facebook.com/v19.0/' . WA_PHONE_NUMBER_ID . '/messages';
+    $url = 'https://graph.facebook.com/v25.0/' . WA_PHONE_NUMBER_ID . '/messages';
 
     // Image message (with caption) vs plain text
     if ($imagePath !== '' && file_exists($imagePath)) {
