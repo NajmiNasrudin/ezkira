@@ -16,8 +16,9 @@ function __(string $key, array $replace = []): string
 /**
  * Send a single WhatsApp greeting via Fonnte.
  * Called after new user registration. Fails silently.
+ * If $userId > 0 and message delivers, marks users.wa_greeting_sent = 1.
  */
-function sendWhatsAppGreeting(string $phone, string $name): void
+function sendWhatsAppGreeting(string $phone, string $name, int $userId = 0): void
 {
     if (!defined('FONNTE_TOKEN') || FONNTE_TOKEN === '') return;
 
@@ -51,6 +52,22 @@ function sendWhatsAppGreeting(string $phone, string $name): void
         CURLOPT_HTTPHEADER     => ['Authorization: ' . FONNTE_TOKEN],
         CURLOPT_TIMEOUT        => 10,
     ]);
-    curl_exec($ch);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+
+    // Mark user as greeted if Fonnte accepted the request
+    if ($userId > 0 && $httpCode === 200 && $response !== false) {
+        $decoded = json_decode($response, true);
+        // Fonnte returns {"status":true,...} on success
+        if (!empty($decoded['status'])) {
+            try {
+                getDB()
+                    ->prepare('UPDATE users SET wa_greeting_sent = 1 WHERE id = ?')
+                    ->execute([$userId]);
+            } catch (\Throwable) {
+                // Silent — greeting was sent, just couldn't update flag
+            }
+        }
+    }
 }

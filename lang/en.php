@@ -271,6 +271,7 @@ return [
     'wa_greeting_preview'      => 'Preview',
     'wa_greeting_requires'     => 'Requires Fonnte API to be configured.',
     'wa_greeting_preview_name' => 'Ahmad',
+    'wa_greeting_sent_count'   => 'Greeted',
 
     // ---- Branding ----
     'branding'              => 'Branding',

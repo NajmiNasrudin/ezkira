@@ -158,7 +158,7 @@ class AuthController extends Controller
         Auth::login($newUser);
 
         // Send WA greeting (fails silently if not configured)
-        sendWhatsAppGreeting($whatsapp, $name);
+        sendWhatsAppGreeting($whatsapp, $name, (int)$id);
 
         Logger::log('register', $id, 'New user registered');
         Session::clearOldInput();
@@ -544,7 +544,7 @@ class AuthController extends Controller
         Auth::login($newUser);
 
         // Send WA greeting (fails silently if not configured)
-        sendWhatsAppGreeting($whatsapp, $pending['name']);
+        sendWhatsAppGreeting($whatsapp, $pending['name'], (int)$id);
 
         Logger::log('register', $id, 'New user registered via Google');
         Session::clearOldInput();

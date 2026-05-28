@@ -381,23 +381,40 @@ $tabClass = fn(string $tab) => $activeTab === $tab
 
     <!-- Tab: WA Auto Greeting (admin only) -->
     <?php if (($user['role'] ?? '') === 'admin'):
-        $setting       = new \Models\Setting();
-        $greetEnabled  = (bool)(int)$setting->get('wa_greeting_enabled', '0');
-        $greetMessage  = $setting->get('wa_greeting_message', '');
+        $setting        = new \Models\Setting();
+        $greetEnabled   = (bool)(int)$setting->get('wa_greeting_enabled', '0');
+        $greetMessage   = $setting->get('wa_greeting_message', '');
+        try {
+            $greetCount = (int)getDB()->query('SELECT COUNT(*) FROM users WHERE wa_greeting_sent = 1')->fetchColumn();
+        } catch (\Throwable) {
+            $greetCount = 0;
+        }
     ?>
     <div id="panel-wa_greeting" class="tab-panel <?= $activeTab !== 'wa_greeting' ? 'hidden' : '' ?>">
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
 
             <!-- Header -->
-            <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('wa_greeting') ?></h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('wa_greeting_subtitle') ?></p>
-                <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('wa_greeting') ?></h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('wa_greeting_subtitle') ?></p>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <?= __('wa_greeting_requires') ?>
+                    </p>
+                </div>
+                <!-- Sent count badge -->
+                <div class="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3 min-w-[110px]">
+                    <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <?= __('wa_greeting_requires') ?>
-                </p>
+                    <div>
+                        <p class="text-2xl font-bold text-green-600 dark:text-green-400 leading-none"><?= $greetCount ?></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><?= __('wa_greeting_sent_count') ?></p>
+                    </div>
+                </div>
             </div>
 
             <form method="POST" action="<?= BASE_URI ?>/profile/greeting">

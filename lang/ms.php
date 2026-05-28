@@ -271,6 +271,7 @@ return [
     'wa_greeting_preview'      => 'Pratonton',
     'wa_greeting_requires'     => 'Memerlukan Fonnte API dikonfigurasi.',
     'wa_greeting_preview_name' => 'Ahmad',
+    'wa_greeting_sent_count'   => 'Diucapkan',
 
     // ---- Branding ----
     'branding'              => 'Penjenamaan',
