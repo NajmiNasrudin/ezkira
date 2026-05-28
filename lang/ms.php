@@ -284,6 +284,24 @@ return [
     'site_logo_removed'     => 'Logo dibuang. Logo lalai dipulihkan.',
     'site_logo_default'     => 'Logo lalai sedang aktif',
 
+    // ---- Balance Sheet ----
+    'balance_sheet'                => 'Kunci Kira-Kira',
+    'balance_sheet_subtitle'       => 'Penyata Kedudukan Kewangan — masukkan nilai untuk setiap item.',
+    'balance_sheet_as_at'          => 'Tarikh sehingga',
+    'balance_sheet_saved_dates'    => 'Rekod sebelumnya',
+    'balance_sheet_save'           => 'Simpan Kunci Kira-Kira',
+    'balance_sheet_saved'          => 'Kunci kira-kira berjaya disimpan.',
+    'balance_sheet_export'         => 'Muat Turun CSV',
+    'load'                         => 'Muatkan',
+    'bs_assets'                    => 'Aset',
+    'bs_equity'                    => 'Ekuiti',
+    'bs_liabilities'               => 'Liabiliti',
+    'bs_total_assets'              => 'Jumlah Aset',
+    'bs_total_equity'              => 'Jumlah Ekuiti',
+    'bs_total_liabilities'         => 'Jumlah Liabiliti',
+    'bs_total_equity_liabilities'  => 'Jumlah Ekuiti dan Liabiliti',
+    'bs_enter_positive'            => 'masukkan sebagai nombor positif',
+
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',
     'blast_subtitle'             => 'Hantar mesej kepada pengguna berdaftar',

@@ -59,6 +59,11 @@ $router->get('/blast/{id}/status',       'BlastController@statusJson', [AuthMidd
 $router->get('/blast/{id}/recipients',  'BlastController@recipients', [AuthMiddleware::class]);
 $router->get('/blast/media/{filename}', 'BlastController@serveMedia', []);  // Public — for Fonnte image fetch
 
+// Balance Sheet
+$router->get('/balance-sheet',        'BalanceSheetController@index',  [AuthMiddleware::class]);
+$router->post('/balance-sheet/save',  'BalanceSheetController@save',   [AuthMiddleware::class]);
+$router->get('/balance-sheet/export', 'BalanceSheetController@export', [AuthMiddleware::class]);
+
 // Profile
 $router->get('/profile',                 'ProfileController@index',       [AuthMiddleware::class]);
 $router->post('/profile/update',         'ProfileController@update',      [AuthMiddleware::class]);

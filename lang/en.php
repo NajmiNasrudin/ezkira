@@ -284,6 +284,24 @@ return [
     'site_logo_removed'     => 'Logo removed. Default logo restored.',
     'site_logo_default'     => 'Default logo is active',
 
+    // ---- Balance Sheet ----
+    'balance_sheet'                => 'Balance Sheet',
+    'balance_sheet_subtitle'       => 'Statement of Financial Position — enter values for each line item.',
+    'balance_sheet_as_at'          => 'As at date',
+    'balance_sheet_saved_dates'    => 'Previous records',
+    'balance_sheet_save'           => 'Save Balance Sheet',
+    'balance_sheet_saved'          => 'Balance sheet saved successfully.',
+    'balance_sheet_export'         => 'Download CSV',
+    'load'                         => 'Load',
+    'bs_assets'                    => 'Assets',
+    'bs_equity'                    => 'Equity',
+    'bs_liabilities'               => 'Liabilities',
+    'bs_total_assets'              => 'Total Assets',
+    'bs_total_equity'              => 'Total Equity',
+    'bs_total_liabilities'         => 'Total Liabilities',
+    'bs_total_equity_liabilities'  => 'Total Equity and Liabilities',
+    'bs_enter_positive'            => 'enter as positive number',
+
     // ---- WhatsApp Blast ----
     'blast_title'                => 'WhatsApp Blast',
     'blast_subtitle'             => 'Send messages to registered users',

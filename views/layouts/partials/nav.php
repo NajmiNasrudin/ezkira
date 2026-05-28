@@ -21,10 +21,11 @@ $roleColor = match($role) {
 };
 
 $navLinks = [
-    '/dashboard' => __('dashboard'),
-    '/revenue'   => __('revenue'),
-    '/expenses'  => __('expenses'),
-    '/profile'   => __('profile'),
+    '/dashboard'    => __('dashboard'),
+    '/revenue'      => __('revenue'),
+    '/expenses'     => __('expenses'),
+    '/balance-sheet'=> __('balance_sheet'),
+    '/profile'      => __('profile'),
 ];
 
 // WhatsApp Blast — admin only
