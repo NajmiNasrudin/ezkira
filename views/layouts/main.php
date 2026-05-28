@@ -66,6 +66,8 @@
 
     <?php include BASE_PATH . '/views/layouts/partials/footer.php'; ?>
 
+    <?php include BASE_PATH . '/views/layouts/partials/help-drawer.php'; ?>
+
     <!-- WhatsApp Float Button -->
     <a href="https://wa.me/60122541050?text=Hi%2C%20saya%20perlukan%20bantuan%20dengan%20EZKIRA."
        target="_blank" rel="noopener"
