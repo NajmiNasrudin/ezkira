@@ -185,59 +185,91 @@ class RevenueController extends Controller
         $companyName = $user['name']     ?? 'My Business';
         $picName     = $user['pic_name'] ?? '';
 
+        // Revenue data
         $revenue       = new Revenue();
         $revTotal      = $revenue->totalByPeriod($period, $year, $month, $userId, $week);
         $revByPlatform = $revenue->platformBreakdown($period, $year, $month, $userId, $week);
 
-        $expense   = new \Models\Expense();
-        $opex      = $expense->totalByCategory('opex',      $userId);
-        $marketing = $expense->totalByCategory('marketing', $userId);
-        $cogs      = $expense->totalByCategory('cogs',      $userId);
-        $totalExp  = $opex + $marketing + $cogs;
-        $netProfit = $revTotal - $totalExp;
+        // Expense data — filtered by same period as revenue
+        $expense = new \Models\Expense();
+        [$expYear, $expMonth, $expWeek] = match($period) {
+            'annual'  => [$year,  0,      0],
+            'weekly'  => [$year,  0,      $week],
+            'monthly' => [$year,  $month, 0],
+            default   => [0,      0,      0],
+        };
+
+        $cogs      = $expense->totalByCategory('cogs',      $userId, $expYear, $expMonth, '', $expWeek);
+        $opex      = $expense->totalByCategory('opex',      $userId, $expYear, $expMonth, '', $expWeek);
+        $marketing = $expense->totalByCategory('marketing', $userId, $expYear, $expMonth, '', $expWeek);
+
+        // P&L calculations
+        $grossProfit    = $revTotal - $cogs;
+        $totalOpex      = $opex + $marketing;
+        $profitBeforeTax = $grossProfit - $totalOpex;
 
         $periodLabel = match($period) {
             'annual'  => "Year {$year}",
             'weekly'  => "Week {$week}, {$year}",
             'daily'   => date('d M Y'),
-            default   => date('F Y', mktime(0,0,0,$month,1,$year)),
+            default   => date('F Y', mktime(0, 0, 0, $month, 1, $year)),
         };
 
-        $filename = 'PnL_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $companyName) . '_' . str_replace([' ', ','], ['_', ''], $periodLabel) . '.csv';
+        $filename = 'PnL_'
+            . preg_replace('/[^A-Za-z0-9_\-]/', '_', $companyName)
+            . '_' . str_replace([' ', ','], ['_', ''], $periodLabel)
+            . '.csv';
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Cache-Control: no-cache, no-store');
 
         $out = fopen('php://output', 'w');
-        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+        fprintf($out, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
 
-        fputcsv($out, [$companyName . ' — Profit & Loss Statement']);
-        fputcsv($out, ['Period:', $periodLabel]);
-        if ($picName !== '') fputcsv($out, ['Prepared by:', $picName]);
-        fputcsv($out, ['Generated:', date('d M Y, H:i')]);
-        fputcsv($out, ['Powered by:', APP_NAME]);
+        // ── Header ──────────────────────────────────────────────────────────
+        fputcsv($out, [$companyName]);
+        fputcsv($out, ['Profit & Loss Statement']);
+        fputcsv($out, ['Period: ' . $periodLabel]);
+        if ($picName !== '') fputcsv($out, ['Prepared by: ' . $picName]);
+        fputcsv($out, ['Generated: ' . date('d M Y, H:i')]);
+        fputcsv($out, ['Powered by: ' . APP_NAME]);
+        fputcsv($out, []);
+        fputcsv($out, ['', 'RM']);
         fputcsv($out, []);
 
-        fputcsv($out, ['REVENUE']);
-        fputcsv($out, ['Platform', 'Amount (RM)']);
+        // ── Revenue ─────────────────────────────────────────────────────────
+        fputcsv($out, ['Revenue', number_format($revTotal, 2)]);
         foreach ($revByPlatform as $row) {
             $label = Revenue::PLATFORMS[$row['platform']] ?? ucfirst($row['platform']);
-            fputcsv($out, [$label, number_format((float)$row['total'], 2)]);
+            fputcsv($out, ['    ' . $label, number_format((float)$row['total'], 2)]);
         }
-        fputcsv($out, ['TOTAL REVENUE', number_format($revTotal, 2)]);
         fputcsv($out, []);
 
-        fputcsv($out, ['EXPENSES']);
-        fputcsv($out, ['Category', 'Amount (RM)']);
-        fputcsv($out, ['OPEX',               number_format($opex, 2)]);
-        fputcsv($out, ['Marketing Expenses', number_format($marketing, 2)]);
-        fputcsv($out, ['COGS',               number_format($cogs, 2)]);
-        fputcsv($out, ['TOTAL EXPENSES',     number_format($totalExp, 2)]);
+        // ── Cost of Sales ────────────────────────────────────────────────────
+        fputcsv($out, ['Less: Cost of Sales', number_format($cogs, 2)]);
         fputcsv($out, []);
 
-        fputcsv($out, ['NET PROFIT', number_format($netProfit, 2)]);
-        fputcsv($out, ['PROFIT MARGIN', $revTotal > 0 ? number_format(($netProfit / $revTotal) * 100, 2) . '%' : 'N/A']);
+        // ── Gross Profit ─────────────────────────────────────────────────────
+        fputcsv($out, ['Gross Profit', number_format($grossProfit, 2)]);
+        fputcsv($out, []);
+
+        // ── Other Income ─────────────────────────────────────────────────────
+        fputcsv($out, ['Add: Other Income', number_format(0, 2)]);
+        fputcsv($out, []);
+
+        // ── Operating Expenses ───────────────────────────────────────────────
+        fputcsv($out, ['Less: Operating Expenses', number_format($totalOpex, 2)]);
+        fputcsv($out, ['    Operating Expenses (OPEX)', number_format($opex, 2)]);
+        fputcsv($out, ['    Marketing Expenses',        number_format($marketing, 2)]);
+        fputcsv($out, []);
+
+        // ── Profit Before Tax ─────────────────────────────────────────────────
+        fputcsv($out, ['Profit/(Loss) Before Tax', number_format($profitBeforeTax, 2)]);
+        fputcsv($out, [
+            'Profit Margin',
+            $revTotal > 0 ? number_format(($profitBeforeTax / $revTotal) * 100, 2) . '%' : 'N/A',
+        ]);
 
         fclose($out);
         exit;
