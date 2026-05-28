@@ -260,6 +260,18 @@ return [
     'date_to'           => 'To',
     'download_csv'      => 'Download (CSV / ZIP with receipts)',
 
+    // ---- WA Auto Greeting ----
+    'wa_greeting'             => 'WA Auto Greeting',
+    'wa_greeting_subtitle'    => 'Automatically send a WhatsApp message when a new user registers.',
+    'wa_greeting_enabled'     => 'Enable Auto Greeting',
+    'wa_greeting_message'     => 'Greeting Message',
+    'wa_greeting_placeholder' => 'Hi {name}, welcome to Ezkira! Your account has been created. Log in at: https://ezkira.com',
+    'wa_greeting_hint'        => 'Use {name} to insert the user\'s name automatically.',
+    'wa_greeting_saved'       => 'Greeting settings saved.',
+    'wa_greeting_preview'      => 'Preview',
+    'wa_greeting_requires'     => 'Requires Fonnte API to be configured.',
+    'wa_greeting_preview_name' => 'Ahmad',
+
     // ---- Branding ----
     'branding'              => 'Branding',
     'site_logo'             => 'Site Logo',

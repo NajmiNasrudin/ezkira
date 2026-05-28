@@ -48,6 +48,11 @@ $tabClass = fn(string $tab) => $activeTab === $tab
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('branding') ?>">
                 <?= __('branding') ?>
             </button>
+            <button type="button" onclick="switchTab('wa_greeting')"
+                    id="tab-wa_greeting"
+                    class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('wa_greeting') ?>">
+                <?= __('wa_greeting') ?>
+            </button>
             <?php endif; ?>
         </nav>
     </div>
@@ -372,6 +377,80 @@ $tabClass = fn(string $tab) => $activeTab === $tab
             </form>
         </div>
     </div>
+    <!-- Tab: WA Auto Greeting (admin only) -->
+    <?php if (($user['role'] ?? '') === 'admin'):
+        $setting       = new \Models\Setting();
+        $greetEnabled  = (bool)(int)$setting->get('wa_greeting_enabled', '0');
+        $greetMessage  = $setting->get('wa_greeting_message', '');
+    ?>
+    <div id="panel-wa_greeting" class="tab-panel <?= $activeTab !== 'wa_greeting' ? 'hidden' : '' ?>">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
+
+            <!-- Header -->
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('wa_greeting') ?></h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('wa_greeting_subtitle') ?></p>
+                <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <?= __('wa_greeting_requires') ?>
+                </p>
+            </div>
+
+            <form method="POST" action="<?= BASE_URI ?>/profile/greeting">
+                <?= CSRF::field() ?>
+
+                <!-- Enable toggle -->
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600 mb-5">
+                    <div>
+                        <p class="text-sm font-medium text-gray-800 dark:text-white"><?= __('wa_greeting_enabled') ?></p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><?= __('wa_greeting_subtitle') ?></p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="wa_greeting_enabled" value="1"
+                               id="wa_greeting_toggle"
+                               onchange="document.getElementById('wa_greeting_form_fields').classList.toggle('hidden', !this.checked)"
+                               <?= $greetEnabled ? 'checked' : '' ?>
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-500 dark:peer-focus:ring-brand-600 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-brand-600"></div>
+                    </label>
+                </div>
+
+                <!-- Message fields (hidden when disabled) -->
+                <div id="wa_greeting_form_fields" class="space-y-4 <?= !$greetEnabled ? 'hidden' : '' ?>">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                            <?= __('wa_greeting_message') ?>
+                        </label>
+                        <textarea name="wa_greeting_message" rows="5"
+                                  placeholder="<?= htmlspecialchars(__('wa_greeting_placeholder'), ENT_QUOTES) ?>"
+                                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600
+                                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                                         focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                                         transition-colors text-sm resize-y font-mono"><?= htmlspecialchars($greetMessage, ENT_QUOTES) ?></textarea>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5"><?= __('wa_greeting_hint') ?></p>
+                    </div>
+
+                    <!-- Live preview -->
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1"><?= __('wa_greeting_preview') ?></p>
+                        <div id="greeting-preview"
+                             class="text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-3 text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words min-h-[48px]">
+                            <?= htmlspecialchars(str_replace(['{name}','{nama}'], __('wa_greeting_preview_name') ?: 'Ali', $greetMessage), ENT_QUOTES) ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-5">
+                    <button type="submit"
+                            class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors">
+                        <?= __('save_changes') ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <?php endif; ?>
 
 </div>
@@ -406,4 +485,16 @@ function toggleProfileOtherField(value) {
         field.classList.add('hidden');
     }
 }
+
+// WA Greeting live preview
+(function () {
+    const ta = document.querySelector('textarea[name="wa_greeting_message"]');
+    const preview = document.getElementById('greeting-preview');
+    if (!ta || !preview) return;
+    const previewName = '<?= addslashes(__("wa_greeting_preview_name") ?: "Ali") ?>';
+    ta.addEventListener('input', function () {
+        const raw = this.value || '';
+        preview.textContent = raw.replace(/\{name\}/g, previewName).replace(/\{nama\}/g, previewName) || '—';
+    });
+})();
 </script>

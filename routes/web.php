@@ -67,6 +67,7 @@ $router->post('/profile/avatar',         'ProfileController@avatar',      [AuthM
 $router->post('/profile/preferences',    'ProfileController@preferences', [AuthMiddleware::class]);
 $router->post('/profile/logo',           'ProfileController@uploadLogo',  [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/profile/logo/remove',    'ProfileController@removeLogo',  [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
+$router->post('/profile/greeting',       'ProfileController@saveGreeting',[AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 
 // ============================================================
 // Utility routes (no auth required — handle gracefully)

@@ -260,6 +260,18 @@ return [
     'date_to'           => 'Hingga',
     'download_csv'      => 'Muat Turun (CSV / ZIP dengan resit)',
 
+    // ---- WA Auto Greeting ----
+    'wa_greeting'             => 'Ucapan Auto WA',
+    'wa_greeting_subtitle'    => 'Hantar mesej WhatsApp secara automatik apabila pengguna baru mendaftar.',
+    'wa_greeting_enabled'     => 'Aktifkan Ucapan Auto',
+    'wa_greeting_message'     => 'Mesej Ucapan',
+    'wa_greeting_placeholder' => 'Hi {name}, selamat datang ke Ezkira! Akaun anda telah berjaya didaftarkan. Log masuk di: https://ezkira.com',
+    'wa_greeting_hint'        => 'Gunakan {name} untuk masukkan nama pengguna secara automatik.',
+    'wa_greeting_saved'       => 'Tetapan ucapan berjaya disimpan.',
+    'wa_greeting_preview'      => 'Pratonton',
+    'wa_greeting_requires'     => 'Memerlukan Fonnte API dikonfigurasi.',
+    'wa_greeting_preview_name' => 'Ahmad',
+
     // ---- Branding ----
     'branding'              => 'Penjenamaan',
     'site_logo'             => 'Logo Laman',

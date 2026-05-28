@@ -297,6 +297,28 @@ class ProfileController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // Save WA Auto Greeting settings (admin only)
+    // -------------------------------------------------------------------------
+
+    public function saveGreeting(): void
+    {
+        CSRF::check();
+        if (!Auth::hasRole('admin')) { http_response_code(403); exit; }
+
+        $enabled = !empty($_POST['wa_greeting_enabled']) ? '1' : '0';
+        $message = trim($_POST['wa_greeting_message'] ?? '');
+
+        $setting = new Setting();
+        $setting->set('wa_greeting_enabled', $enabled);
+        $setting->set('wa_greeting_message', $message);
+
+        Logger::log('wa_greeting_save', Auth::id(), 'WA greeting settings updated');
+        Session::flash('success', __('wa_greeting_saved'));
+        Session::flash('tab', 'wa_greeting');
+        $this->redirect('/profile');
+    }
+
+    // -------------------------------------------------------------------------
     // Save preferences (lang + dark mode)
     // -------------------------------------------------------------------------
 
