@@ -527,7 +527,7 @@ document.getElementById('blast-form').addEventListener('submit', function(e) {
         var dt = document.getElementById('scheduled_at').value;
         if (!dt) { e.preventDefault(); return; }
         if (new Date(dt) <= new Date()) { e.preventDefault(); return; }
-        var dtFormatted = new Date(dt).toLocaleString('<?= App\Core\Lang::get() === 'ms' ? 'ms-MY' : 'en-MY' ?>', {dateStyle:'medium', timeStyle:'short'});
+        var dtFormatted = new Date(dt).toLocaleString('<?= \App\Core\Lang::current() === 'ms' ? 'ms-MY' : 'en-MY' ?>', {dateStyle:'medium', timeStyle:'short'});
         var msg = LANG.confirmSchedule.replace(':count', count).replace(':time', dtFormatted);
         if (!confirm(msg)) e.preventDefault();
     } else {
