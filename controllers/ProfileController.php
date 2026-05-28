@@ -319,6 +319,102 @@ class ProfileController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // Test WA greeting — sends a sample message to the admin's own number
+    // -------------------------------------------------------------------------
+
+    public function testGreeting(): void
+    {
+        CSRF::check();
+        if (!Auth::hasRole('admin')) {
+            http_response_code(403);
+            echo json_encode(['ok' => false, 'message' => 'Forbidden']);
+            exit;
+        }
+
+        header('Content-Type: application/json');
+
+        // Check token
+        if (!defined('FONNTE_TOKEN') || trim(FONNTE_TOKEN) === '') {
+            echo json_encode([
+                'ok'      => false,
+                'message' => 'FONNTE_TOKEN tidak ditemui dalam config.php. Sila set FONNTE_TOKEN dahulu.',
+            ]);
+            exit;
+        }
+
+        $setting  = new Setting();
+        $template = trim($setting->get('wa_greeting_message', ''));
+        if ($template === '') {
+            echo json_encode([
+                'ok'      => false,
+                'message' => 'Mesej greeting belum ditetapkan. Sila isi mesej dahulu.',
+            ]);
+            exit;
+        }
+
+        $user  = Auth::user();
+        $phone = preg_replace('/\D/', '', $user['whatsapp_number'] ?? '');
+        if ($phone === '') {
+            echo json_encode([
+                'ok'      => false,
+                'message' => 'Nombor WhatsApp admin tidak ditemui dalam profil.',
+            ]);
+            exit;
+        }
+
+        // Normalise to 60xxx
+        if (str_starts_with($phone, '0')) {
+            $phone = '60' . substr($phone, 1);
+        }
+
+        $name    = $user['name'] ?? 'Admin';
+        $message = str_replace(['{name}', '{nama}'], $name, $template);
+
+        // Call Fonnte
+        $data = [
+            'target'      => $phone,
+            'message'     => $message,
+            'countryCode' => '60',
+        ];
+        $ch = curl_init('https://api.fonnte.com/send');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $data,
+            CURLOPT_HTTPHEADER     => ['Authorization: ' . FONNTE_TOKEN],
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false || $curlErr !== '') {
+            echo json_encode([
+                'ok'      => false,
+                'message' => 'Gagal sambung ke Fonnte: ' . $curlErr,
+            ]);
+            exit;
+        }
+
+        $decoded = json_decode($response, true);
+        if (!empty($decoded['status'])) {
+            Logger::log('wa_greeting_test', Auth::id(), "Test WA sent to {$phone}");
+            echo json_encode([
+                'ok'      => true,
+                'message' => "✅ Mesej test berjaya dihantar ke +{$phone}. Semak WA anda.",
+            ]);
+        } else {
+            $reason = $decoded['reason'] ?? $decoded['message'] ?? $response;
+            echo json_encode([
+                'ok'      => false,
+                'message' => 'Fonnte menolak permintaan: ' . $reason,
+            ]);
+        }
+        exit;
+    }
+
+    // -------------------------------------------------------------------------
     // Save preferences (lang + dark mode)
     // -------------------------------------------------------------------------
 

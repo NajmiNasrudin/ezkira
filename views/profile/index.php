@@ -394,16 +394,27 @@ $tabClass = fn(string $tab) => $activeTab === $tab
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
 
             <!-- Header -->
+            <?php $fontneConfigured = defined('FONNTE_TOKEN') && trim(FONNTE_TOKEN) !== ''; ?>
             <div class="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                     <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('wa_greeting') ?></h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('wa_greeting_subtitle') ?></p>
-                    <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1">
+                    <!-- API status -->
+                    <?php if ($fontneConfigured): ?>
+                    <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 font-medium">
                         <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <?= __('wa_greeting_requires') ?>
+                        Fonnte API Token dikonfigurasi ✓
                     </p>
+                    <?php else: ?>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center gap-1 font-medium">
+                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        FONNTE_TOKEN belum ditetapkan dalam config.php — mesej tidak akan dihantar
+                    </p>
+                    <?php endif; ?>
                 </div>
                 <!-- Sent count badge -->
                 <div class="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3 min-w-[110px]">
@@ -461,7 +472,20 @@ $tabClass = fn(string $tab) => $activeTab === $tab
                     </div>
                 </div>
 
-                <div class="flex justify-end mt-5">
+                <!-- Test result banner (hidden by default) -->
+                <div id="wa-test-result" class="hidden px-4 py-3 rounded-xl text-sm font-medium flex items-start gap-2 mt-4"></div>
+
+                <div class="flex items-center justify-between gap-3 mt-5 flex-wrap">
+                    <!-- Send Test button -->
+                    <button type="button" id="wa-test-btn"
+                            onclick="sendWaTest()"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.852L.057 23.998l6.305-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.997a9.953 9.953 0 01-5.073-1.381l-.364-.216-3.742.982.999-3.648-.237-.374A9.953 9.953 0 012.003 12C2.003 6.476 6.476 2.003 12 2.003S21.997 6.476 21.997 12 17.524 21.997 12 21.997z"/>
+                        </svg>
+                        Hantar Test ke WA Saya
+                    </button>
                     <button type="submit"
                             class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors">
                         <?= __('save_changes') ?>
@@ -516,4 +540,46 @@ function toggleProfileOtherField(value) {
         preview.textContent = raw.replace(/\{name\}/g, previewName).replace(/\{nama\}/g, previewName) || '—';
     });
 })();
+
+// WA Test send
+function sendWaTest() {
+    var btn = document.getElementById('wa-test-btn');
+    var result = document.getElementById('wa-test-result');
+    if (!btn || !result) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg> Menghantar...';
+    result.className = 'hidden';
+
+    var csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    fetch('<?= BASE_URI ?>/profile/greeting/test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': csrf
+        },
+        body: 'csrf_token=' + encodeURIComponent(csrf)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        result.className = data.ok
+            ? 'px-4 py-3 rounded-xl text-sm font-medium flex items-start gap-2 mt-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+            : 'px-4 py-3 rounded-xl text-sm font-medium flex items-start gap-2 mt-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
+        result.innerHTML = (data.ok ? '✅ ' : '❌ ') + escHtmlProfile(data.message || '');
+    })
+    .catch(function(e) {
+        result.className = 'px-4 py-3 rounded-xl text-sm font-medium flex items-start gap-2 mt-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
+        result.innerHTML = '❌ Network error: ' + e.message;
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.852L.057 23.998l6.305-1.654A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.997a9.953 9.953 0 01-5.073-1.381l-.364-.216-3.742.982.999-3.648-.237-.374A9.953 9.953 0 012.003 12C2.003 6.476 6.476 2.003 12 2.003S21.997 6.476 21.997 12 17.524 21.997 12 21.997z"/></svg> Hantar Test ke WA Saya';
+    });
+}
+
+function escHtmlProfile(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
