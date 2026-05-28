@@ -1077,10 +1077,18 @@ function deleteReceiptInModal(btn, receiptId) {
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                         <select id="edit-expense-cat" name="category"
                                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
-                            <option value="opex">OPEX</option>
-                            <option value="marketing">Marketing</option>
-                            <option value="cogs">COGS</option>
-                            <option value="liability"><?= __('liability') ?></option>
+                            <optgroup label="📊 P&L">
+                                <option value="cogs">Cost of Goods Sold (COGS)</option>
+                                <option value="opex">Operating Expenses (OPEX)</option>
+                                <option value="marketing">Marketing &amp; Advertising</option>
+                            </optgroup>
+                            <optgroup label="🏢 Balance Sheet — Assets">
+                                <option value="ppe">Property, Plant &amp; Equipment</option>
+                                <option value="inventory">Inventory Purchase</option>
+                            </optgroup>
+                            <optgroup label="💳 Other">
+                                <option value="liability"><?= __('liability') ?></option>
+                            </optgroup>
                         </select>
                     </div>
                     <!-- Amount -->

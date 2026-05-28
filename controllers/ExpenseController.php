@@ -12,7 +12,20 @@ use Models\Setting;
 
 class ExpenseController extends Controller
 {
-    private const CATEGORIES = ['opex', 'marketing', 'cogs', 'liability'];
+    private const CATEGORIES = ['opex', 'marketing', 'cogs', 'ppe', 'inventory', 'liability'];
+
+    // Category metadata: label, group, BS section mapping
+    public const CATEGORY_META = [
+        // ── P&L (Income Statement) ──────────────────────────────
+        'cogs'      => ['label' => 'Cost of Goods Sold (COGS)',     'group' => 'pnl',  'bs_section' => null],
+        'opex'      => ['label' => 'Operating Expenses (OPEX)',     'group' => 'pnl',  'bs_section' => null],
+        'marketing' => ['label' => 'Marketing & Advertising',       'group' => 'pnl',  'bs_section' => null],
+        // ── Balance Sheet — Assets ──────────────────────────────
+        'ppe'       => ['label' => 'Property, Plant & Equipment',   'group' => 'asset','bs_section' => 'non_current_asset'],
+        'inventory' => ['label' => 'Inventory Purchase',            'group' => 'asset','bs_section' => 'current_asset'],
+        // ── Other ───────────────────────────────────────────────
+        'liability' => ['label' => 'Liability / Loan Repayment',    'group' => 'other','bs_section' => null],
+    ];
 
     public const SUGGESTED_PCT = ['opex' => 20, 'marketing' => 10, 'cogs' => 40];
 

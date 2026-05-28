@@ -123,6 +123,84 @@ class BalanceSheet
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Auto-calculation from Revenue / Expense / Capital data
+    // -------------------------------------------------------------------------
+
+    /**
+     * Derive balance sheet values from recorded transactions up to $asOfDate.
+     *
+     * Returns:
+     *   auto_cash            → Cash & cash equivalents  (Capital + Revenue − All expenses)
+     *   auto_ppe             → PPE (sum of 'ppe' expenses)
+     *   auto_inventory       → Inventories (sum of 'inventory' expenses)
+     *   auto_share_capital   → Share capital (sum of capital injections)
+     *   auto_retained        → Retained earnings / accumulated losses (P&L net profit)
+     *   _pnl                 → Sub-array with P&L breakdown (for P&L summary widget)
+     */
+    public function autoCalculate(int $userId, string $asOfDate): array
+    {
+        $db = $this->db;
+
+        // ── Revenue up to date ────────────────────────────────────────────────
+        $s = $db->prepare(
+            "SELECT COALESCE(SUM(CASE WHEN entry_type='refund' THEN -amount ELSE amount END),0)
+             FROM revenues WHERE user_id=? AND sale_date<=?"
+        );
+        $s->execute([$userId, $asOfDate]);
+        $totalRevenue = (float)$s->fetchColumn();
+
+        // ── Capital injections up to date ─────────────────────────────────────
+        $s = $db->prepare(
+            "SELECT COALESCE(SUM(amount),0) FROM capitals WHERE user_id=? AND capital_date<=?"
+        );
+        $s->execute([$userId, $asOfDate]);
+        $totalCapital = (float)$s->fetchColumn();
+
+        // ── Expenses by category up to date ──────────────────────────────────
+        $s = $db->prepare(
+            "SELECT category, COALESCE(SUM(amount),0) AS total
+             FROM expenses WHERE user_id=? AND expense_date<=?
+             GROUP BY category"
+        );
+        $s->execute([$userId, $asOfDate]);
+        $byCategory = [];
+        foreach ($s->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $byCategory[$row['category']] = (float)$row['total'];
+        }
+
+        $cogs      = $byCategory['cogs']      ?? 0;
+        $opex      = $byCategory['opex']      ?? 0;
+        $marketing = $byCategory['marketing'] ?? 0;
+        $ppe       = $byCategory['ppe']       ?? 0;
+        $inventory = $byCategory['inventory'] ?? 0;
+        $totalExp  = array_sum($byCategory);
+
+        // ── P&L ──────────────────────────────────────────────────────────────
+        $grossProfit  = $totalRevenue - $cogs;
+        $netProfit    = $grossProfit - $opex - $marketing;
+
+        // ── Balance sheet derived values ──────────────────────────────────────
+        // Cash = Capital + Revenue − All cash paid out
+        $cash = max(0, $totalCapital + $totalRevenue - $totalExp);
+
+        return [
+            'auto_cash'          => $cash,
+            'auto_ppe'           => $ppe,
+            'auto_inventory'     => $inventory,
+            'auto_share_capital' => $totalCapital,
+            'auto_retained'      => $netProfit,     // positive = profit, negative = loss
+            '_pnl' => [
+                'revenue'      => $totalRevenue,
+                'cogs'         => $cogs,
+                'gross_profit' => $grossProfit,
+                'opex'         => $opex,
+                'marketing'    => $marketing,
+                'net_profit'   => $netProfit,
+            ],
+        ];
+    }
+
     /**
      * Get entries using the most recent saved date within a given month.
      */

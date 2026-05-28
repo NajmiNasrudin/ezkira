@@ -7,6 +7,7 @@ use App\Core\Controller;
 use App\Core\CSRF;
 use App\Core\Logger;
 use App\Core\Session;
+use Controllers\ExpenseController;
 use Models\BalanceSheet;
 use Models\Capital;
 use Models\Revenue;
@@ -25,13 +26,17 @@ class BalanceSheetController extends Controller
         }
 
         $entries    = $model->getByDate($userId, $date);
+        $auto       = $model->autoCalculate($userId, $date);
         $savedDates = $model->listDates($userId);
 
         $this->view('balance-sheet/index', [
             'date'       => $date,
             'entries'    => $entries,
+            'auto'       => $auto,
             'savedDates' => $savedDates,
             'sections'   => BalanceSheet::SECTIONS,
+            'platforms'  => Revenue::PLATFORMS,
+            'catMeta'    => ExpenseController::CATEGORY_META,
         ], 'main', __('balance_sheet'));
     }
 
@@ -103,6 +108,24 @@ class BalanceSheetController extends Controller
             $entries     = $model->getByDate($userId, $date);
             $periodLabel = date('d M Y', strtotime($date));
             $asAtLabel   = $periodLabel;
+        }
+
+        // Merge auto-calculated values into entries (auto fills gaps, manual overrides)
+        $auto = $model->autoCalculate($userId, $date);
+        $entries['current_asset']['cash']          ??= 0;
+        $entries['non_current_asset']['ppe']        ??= 0;
+        $entries['current_asset']['inventories']    ??= 0;
+        $entries['equity']['share_capital']         ??= 0;
+        $entries['equity']['accum_losses']          ??= 0;
+
+        // Use auto values for items without manual override
+        if (($entries['current_asset']['cash']       ?? 0) == 0) $entries['current_asset']['cash']       = $auto['auto_cash'];
+        if (($entries['non_current_asset']['ppe']    ?? 0) == 0) $entries['non_current_asset']['ppe']    = $auto['auto_ppe'];
+        if (($entries['current_asset']['inventories']?? 0) == 0) $entries['current_asset']['inventories']= $auto['auto_inventory'];
+        if (($entries['equity']['share_capital']     ?? 0) == 0) $entries['equity']['share_capital']     = $auto['auto_share_capital'];
+        // Retained earnings: positive = profit (goes under share_capital area), negative = accumulated losses
+        if (($entries['equity']['accum_losses']      ?? 0) == 0 && $auto['auto_retained'] < 0) {
+            $entries['equity']['accum_losses'] = abs($auto['auto_retained']);
         }
 
         $user    = Auth::user();
