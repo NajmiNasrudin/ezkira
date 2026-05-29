@@ -100,9 +100,11 @@ cronLog("Sending to {$total} recipients, rand({$delayMin}," . ($delayMin + 5) . 
 foreach ($recipients as $i => $user) {
     $phone   = normalisePhone($user['whatsapp_number']);
     $msg     = "Hai {$user['name']},\n\n" . $fullMessage;
-    $result = ($provider === 'whatsapp_api')
-        ? sendWhatsAppCloudAPI($phone, $msg, $imagePath)
-        : sendFonnte($phone, $msg, $imagePath);
+    $result = match($provider) {
+        'whatsapp_api'  => sendWhatsAppCloudAPI($phone, $msg, $imagePath),
+        'wasenderapi'   => sendWaSenderApi($phone, $msg, $imagePath),
+        default         => sendFonnte($phone, $msg, $imagePath),
+    };
 
     // Debug: log phone + raw response info
     cronLog("  [DEBUG] provider={$provider} phone={$phone} ok=" . ($result['ok'] ? 'true' : 'false') . (isset($result['error']) ? " err={$result['error']}" : '') . (isset($result['msg_id']) ? " id={$result['msg_id']}" : ''));
@@ -210,6 +212,61 @@ function sendWhatsAppCloudAPI(string $toPhone, string $message, string $imagePat
 
     $errMsg = $result['error']['message'] ?? $response;
     cronLog('  [WA_RAW] ' . substr($response, 0, 500));
+    return ['ok' => false, 'error' => substr($errMsg, 0, 300)];
+}
+
+// ----------------------------------------------------------------
+
+// ----------------------------------------------------------------
+// WASenderAPI  (wasenderapi.com)
+// ----------------------------------------------------------------
+function sendWaSenderApi(string $toPhone, string $message, string $imagePath = ''): array
+{
+    if (!defined('WASENDER_API_KEY') || trim(WASENDER_API_KEY) === '') {
+        return ['ok' => false, 'error' => 'WASENDER_API_KEY tidak dikonfigurasi dalam config.php'];
+    }
+
+    $body = ['to' => $toPhone];
+
+    if ($imagePath !== '' && file_exists($imagePath)) {
+        // Build public URL for the image
+        $imageUrl = rtrim(defined('APP_URL') ? APP_URL : '', '/') . '/blast/media/' . basename($imagePath);
+        $body['mediaUrl'] = $imageUrl;
+        $body['caption']  = $message;
+    } else {
+        $body['message'] = $message;
+    }
+
+    $ch = curl_init('https://app.wasenderapi.com/api/send-message');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($body),
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . WASENDER_API_KEY,
+            'Content-Type: application/json',
+        ],
+        CURLOPT_TIMEOUT        => 30,
+    ]);
+
+    $response = curl_exec($ch);
+    $curlErr  = curl_error($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($curlErr) {
+        return ['ok' => false, 'error' => 'cURL: ' . $curlErr];
+    }
+
+    $result = json_decode($response, true);
+
+    // WASenderAPI returns { "success": true, ... } on success
+    if (!empty($result['success'])) {
+        return ['ok' => true, 'msg_id' => $result['messageId'] ?? ''];
+    }
+
+    $errMsg = $result['message'] ?? $result['error'] ?? $response;
+    cronLog('  [WASENDER_RAW] HTTP ' . $httpCode . ' ' . substr($response, 0, 500));
     return ['ok' => false, 'error' => substr($errMsg, 0, 300)];
 }
 

@@ -34,7 +34,8 @@ class BlastController extends Controller
         $blast   = new Blast();
         $history = $blast->history(10);
 
-        $configured = defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '';
+        $configured = (defined('FONNTE_TOKEN')     && FONNTE_TOKEN     !== '')
+                   || (defined('WASENDER_API_KEY') && WASENDER_API_KEY !== '');
 
         $this->view('blast/index', [
             'allUsers'     => $allUsers,
@@ -52,16 +53,30 @@ class BlastController extends Controller
         $this->requireAdmin();
         CSRF::check();
 
-        if (!defined('FONNTE_TOKEN') || FONNTE_TOKEN === '') {
-            Session::flash('error', 'Fonnte API belum dikonfigurasi. Sila tambah FONNTE_TOKEN dalam config.php');
-            $this->redirect('/blast');
-        }
-
         $selectedIds = $_POST['recipients']     ?? [];
         $customMsg   = trim($_POST['custom_message'] ?? '');
         $blastLink   = trim($_POST['blast_link']       ?? '');
         $scheduledAt = trim($_POST['scheduled_at']     ?? '');
-        $provider    = 'fonnte';
+
+        // Validate chosen provider is configured
+        $provider = in_array($_POST['provider'] ?? '', ['fonnte', 'wasenderapi', 'whatsapp_api'], true)
+                    ? $_POST['provider'] : 'fonnte';
+
+        $providerConfigured = match($provider) {
+            'wasenderapi'  => defined('WASENDER_API_KEY') && WASENDER_API_KEY !== '',
+            'whatsapp_api' => defined('WA_PHONE_NUMBER_ID') && WA_PHONE_NUMBER_ID !== '',
+            default        => defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '',
+        };
+
+        if (!$providerConfigured) {
+            $hint = match($provider) {
+                'wasenderapi'  => 'Sila tambah WASENDER_API_KEY dalam config.php',
+                'whatsapp_api' => 'Sila tambah WA_PHONE_NUMBER_ID dan WA_ACCESS_TOKEN dalam config.php',
+                default        => 'Sila tambah FONNTE_TOKEN dalam config.php',
+            };
+            Session::flash('error', ucfirst($provider) . ' belum dikonfigurasi. ' . $hint);
+            $this->redirect('/blast');
+        }
 
         // Delay preset: 8 | 12 | 30 | 60 (default: 30 = Sangat Selamat)
         $allowedDelays = [8, 12, 30, 60];

@@ -394,25 +394,30 @@ $tabClass = fn(string $tab) => $activeTab === $tab
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
 
             <!-- Header -->
-            <?php $fontneConfigured = defined('FONNTE_TOKEN') && trim(FONNTE_TOKEN) !== ''; ?>
+            <?php
+            $fontneConfigured   = defined('FONNTE_TOKEN')     && trim(FONNTE_TOKEN)     !== '';
+            $wasenderConfigured = defined('WASENDER_API_KEY') && trim(WASENDER_API_KEY) !== '';
+            ?>
             <div class="flex items-start justify-between gap-4 flex-wrap">
-                <div>
+                <div class="flex-1 min-w-0">
                     <h3 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('wa_greeting') ?></h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1"><?= __('wa_greeting_subtitle') ?></p>
-                    <!-- API status -->
-                    <?php if ($fontneConfigured): ?>
-                    <p class="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1 font-medium">
-                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Fonnte API Token dikonfigurasi ✓
-                    </p>
-                    <?php else: ?>
-                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center gap-1 font-medium">
-                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        FONNTE_TOKEN belum ditetapkan dalam config.php — mesej tidak akan dihantar
+
+                    <!-- API provider status pills -->
+                    <div class="flex flex-wrap gap-2 mt-2">
+                        <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full
+                            <?= $fontneConfigured ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' ?>">
+                            <?= $fontneConfigured ? '✓' : '✗' ?> Fonnte
+                        </span>
+                        <span class="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full
+                            <?= $wasenderConfigured ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' ?>">
+                            <?= $wasenderConfigured ? '✓' : '✗' ?> WASenderAPI
+                        </span>
+                    </div>
+
+                    <?php if (!$fontneConfigured && !$wasenderConfigured): ?>
+                    <p class="text-xs text-red-600 dark:text-red-400 mt-2 font-medium">
+                        ⚠️ Tiada provider dikonfigurasi. Set FONNTE_TOKEN atau WASENDER_API_KEY dalam config.php
                     </p>
                     <?php endif; ?>
                 </div>

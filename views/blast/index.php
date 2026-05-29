@@ -63,7 +63,53 @@
             </div>
             <form method="POST" action="<?= BASE_URI ?>/blast/send" id="blast-form" enctype="multipart/form-data" class="px-6 py-5 space-y-5">
                 <?= \App\Core\CSRF::field() ?>
-                <input type="hidden" name="provider" value="fonnte">
+
+                <!-- Provider Selector -->
+                <?php
+                $fonnteOk   = defined('FONNTE_TOKEN')      && trim(FONNTE_TOKEN)      !== '';
+                $wasenderOk = defined('WASENDER_API_KEY')  && trim(WASENDER_API_KEY)  !== '';
+                ?>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provider</label>
+                    <div class="grid grid-cols-2 gap-3">
+
+                        <label class="provider-card flex items-center gap-3 border-2 rounded-xl px-4 py-3 cursor-pointer transition-all
+                                      <?= $fonnteOk ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-600 opacity-60' ?>"
+                               id="provider-card-fonnte">
+                            <input type="radio" name="provider" value="fonnte"
+                                   <?= $fonnteOk ? 'checked' : ($wasenderOk ? '' : 'checked') ?>
+                                   class="sr-only" onchange="selectProvider('fonnte')">
+                            <span class="text-xl">🟢</span>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">Fonnte</p>
+                                <p class="text-xs <?= $fonnteOk ? 'text-green-600 dark:text-green-400' : 'text-gray-400' ?>">
+                                    <?= $fonnteOk ? '✓ Token OK' : '✗ Belum set' ?>
+                                </p>
+                            </div>
+                        </label>
+
+                        <label class="provider-card flex items-center gap-3 border-2 rounded-xl px-4 py-3 cursor-pointer transition-all
+                                      <?= $wasenderOk ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-600 opacity-60' ?>"
+                               id="provider-card-wasenderapi">
+                            <input type="radio" name="provider" value="wasenderapi"
+                                   <?= (!$fonnteOk && $wasenderOk) ? 'checked' : '' ?>
+                                   class="sr-only" onchange="selectProvider('wasenderapi')">
+                            <span class="text-xl">📡</span>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900 dark:text-white">WASenderAPI</p>
+                                <p class="text-xs <?= $wasenderOk ? 'text-green-600 dark:text-green-400' : 'text-gray-400' ?>">
+                                    <?= $wasenderOk ? '✓ API Key OK' : '✗ Belum set' ?>
+                                </p>
+                            </div>
+                        </label>
+
+                    </div>
+                    <?php if (!$fonnteOk && !$wasenderOk): ?>
+                    <p class="text-xs text-red-500 dark:text-red-400 mt-1.5">
+                        ⚠️ Set FONNTE_TOKEN atau WASENDER_API_KEY dalam config.php dahulu.
+                    </p>
+                    <?php endif; ?>
+                </div>
 
                 <!-- Image Upload -->
                 <div>
@@ -412,6 +458,23 @@ var LANG = {
     detailNoData:    <?= json_encode(__('blast_detail_no_data')) ?>,
     detailLoadFail:  <?= json_encode(__('blast_detail_load_fail')) ?>,
 };
+
+// ---------------------------------------------------------------
+// Provider selector
+// ---------------------------------------------------------------
+function selectProvider(val) {
+    ['fonnte', 'wasenderapi'].forEach(function(p) {
+        var card = document.getElementById('provider-card-' + p);
+        if (!card) return;
+        if (p === val) {
+            card.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+            card.classList.remove('border-gray-200', 'dark:border-gray-600');
+        } else {
+            card.classList.remove('border-green-500', 'bg-green-50', 'dark:bg-green-900/20');
+            card.classList.add('border-gray-200', 'dark:border-gray-600');
+        }
+    });
+}
 
 // ---------------------------------------------------------------
 // Image upload helpers
