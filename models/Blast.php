@@ -89,6 +89,22 @@ class Blast
         )->execute([':s' => $sent, ':f' => $failed, ':id' => $id]);
     }
 
+    public function markStopped(int $id, int $sent, int $failed): void
+    {
+        $this->db->prepare(
+            "UPDATE blast_logs
+                SET status='stopped', sent_count=:s, failed_count=:f, finished_at=NOW()
+              WHERE id=:id"
+        )->execute([':s' => $sent, ':f' => $failed, ':id' => $id]);
+    }
+
+    public function getStatus(int $id): string
+    {
+        $stmt = $this->db->prepare('SELECT status FROM blast_logs WHERE id=? LIMIT 1');
+        $stmt->execute([$id]);
+        return (string)($stmt->fetchColumn() ?: '');
+    }
+
     public function markFailed(int $id, int $sent, int $failed): void
     {
         $this->db->prepare(

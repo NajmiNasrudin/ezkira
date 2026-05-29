@@ -185,6 +185,34 @@ class BlastController extends Controller
     }
 
     // ----------------------------------------------------------------
+    // POST /blast/{id}/stop  — stop a running/queued blast
+    // ----------------------------------------------------------------
+    public function stop(string $id): void
+    {
+        $this->requireAdmin();
+        CSRF::check();
+
+        $blast = new Blast();
+        $log   = $blast->findLog((int)$id);
+
+        if (!$log) {
+            $this->json(['ok' => false, 'message' => 'Blast not found'], 404);
+            return;
+        }
+
+        if (!in_array($log['status'], ['running', 'queued', 'scheduled'], true)) {
+            $this->json(['ok' => false, 'message' => 'Blast cannot be stopped (status: ' . $log['status'] . ')']);
+            return;
+        }
+
+        $blast->markStopped((int)$id, (int)$log['sent_count'], (int)$log['failed_count']);
+
+        \App\Core\Logger::log('blast_stop', \App\Core\Auth::id(), "Blast #{$id} stopped manually");
+
+        $this->json(['ok' => true, 'message' => 'Blast dihentikan.']);
+    }
+
+    // ----------------------------------------------------------------
     // GET /blast/{id}/status  — AJAX JSON progress
     // ----------------------------------------------------------------
     public function statusJson(string $id): void

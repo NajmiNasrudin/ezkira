@@ -141,6 +141,12 @@ foreach ($recipients as $i => $user) {
     // Update live progress in DB after every send
     $blastModel->updateProgress($blastId, $sentCount, $failedCount);
 
+    // Check if blast was stopped externally (admin clicked Stop)
+    if ($blastModel->getStatus($blastId) === 'stopped') {
+        cronLog("STOPPED blast #{$blastId} at {$sentCount}/{$total} (manual stop)");
+        exit(0);
+    }
+
     // Random delay between sends (skip delay after the last one)
     if ($i < $total - 1) {
         sleep(rand($delayMin, $delayMin + 5));

@@ -67,6 +67,7 @@ $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
                     'running'   => [__('blast_status_running'),  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
                     'done'      => [__('blast_status_done'),     'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'],
                     'failed'    => [__('blast_status_failed'),   'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'],
+                    'stopped'   => ['⏹ Dihentikan',             'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'],
                 ];
                 [$label, $cls] = $badges[$status] ?? [$status, 'bg-gray-100 text-gray-700'];
                 ?>
@@ -130,8 +131,22 @@ $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
             <?php endif; ?>
         </div>
 
+        <!-- Stop button (only when running or queued) -->
+        <?php if (in_array($status, ['running', 'queued', 'scheduled'])): ?>
+        <div id="stop-wrap" class="pt-1">
+            <button type="button" id="stop-btn" onclick="stopBlast()"
+                    class="w-full py-2.5 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"/>
+                </svg>
+                Hentikan Blast
+            </button>
+        </div>
+        <?php endif; ?>
+
         <!-- Done: action buttons -->
-        <div id="done-actions" class="<?= in_array($status, ['done','failed']) ? '' : 'hidden' ?> flex gap-3 pt-1">
+        <div id="done-actions" class="<?= in_array($status, ['done','failed','stopped']) ? '' : 'hidden' ?> flex gap-3 pt-1">
             <a href="<?= BASE_URI ?>/blast"
                class="flex-1 text-center py-2.5 text-sm font-semibold rounded-xl bg-brand-700 hover:bg-brand-800 text-white transition-colors"
                style="background-color:#163020">
@@ -212,6 +227,7 @@ var LANG = {
         running:   <?= json_encode(__('blast_status_running')) ?>,
         done:      <?= json_encode(__('blast_status_done')) ?>,
         failed:    <?= json_encode(__('blast_status_failed')) ?>,
+        stopped:   '⏹ Dihentikan',
     }
 };
 
@@ -226,6 +242,7 @@ var LANG = {
         running:   'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
         done:      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
         failed:    'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+        stopped:   'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
     };
 
     function poll() {
@@ -286,14 +303,54 @@ var LANG = {
             timingRow.innerHTML = '<p>' + LANG.waitingCron + '</p>';
         }
 
-        if (data.status === 'done' || data.status === 'failed') {
+        if (data.status === 'done' || data.status === 'failed' || data.status === 'stopped') {
             document.getElementById('done-actions').classList.remove('hidden');
+            var sw = document.getElementById('stop-wrap');
+            if (sw) sw.classList.add('hidden');
         }
     }
 
-    if (statusNow !== 'done' && statusNow !== 'failed') {
+    if (statusNow !== 'done' && statusNow !== 'failed' && statusNow !== 'stopped') {
         setTimeout(poll, 2000);
     }
+
+    // ---- Stop blast ----
+    window.stopBlast = function () {
+        if (!confirm('Pasti nak hentikan blast ini? Mesej yang belum dihantar akan dibatal.')) return;
+
+        var btn = document.getElementById('stop-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Menghentikan...'; }
+
+        fetch('<?= BASE_URI ?>/blast/' + blastId + '/stop', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-Token': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'csrf_token=' + encodeURIComponent(csrfToken),
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok) {
+                // Hide stop button, show done actions
+                var wrap = document.getElementById('stop-wrap');
+                if (wrap) wrap.classList.add('hidden');
+                document.getElementById('done-actions').classList.remove('hidden');
+
+                // Update status badge
+                var cls = 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300';
+                document.getElementById('status-badge').innerHTML =
+                    '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ' + cls + '">⏹ Dihentikan</span>';
+            } else {
+                alert(data.message || 'Gagal hentikan blast.');
+                if (btn) { btn.disabled = false; btn.textContent = 'Hentikan Blast'; }
+            }
+        })
+        .catch(function() {
+            alert('Gagal sambung ke server.');
+            if (btn) { btn.disabled = false; btn.textContent = 'Hentikan Blast'; }
+        });
+    };
 
     window.loadDetail = function (id) {
         document.getElementById('blast-detail-body').innerHTML = '<p class="text-center py-8">' + LANG.detailLoading + '</p>';
