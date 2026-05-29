@@ -202,6 +202,11 @@
                     </div>
                 </div>
 
+                <!-- Large blast warning (hidden by default) -->
+                <div id="large-blast-warning" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-3">
+                    <p class="text-xs text-red-700 dark:text-red-400" id="large-blast-warning-text"></p>
+                </div>
+
                 <!-- Delay selector -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -209,42 +214,43 @@
                     </label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="delay-options">
 
-                        <!-- Sangat Selamat (default) -->
+                        <!-- Ultra Selamat 60s -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                               id="delay-card-60">
+                            <input type="radio" name="delay_seconds" value="60" class="sr-only" onchange="selectDelay(60)">
+                            <span class="text-lg">🔒</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_ultra_safe') ?></span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">60–65s</span>
+                            <span class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-md font-medium">100+</span>
+                        </label>
+
+                        <!-- Sangat Selamat 30s (default) -->
                         <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-green-500 bg-green-50 dark:bg-green-900/20 text-center"
-                               id="delay-card-12">
-                            <input type="radio" name="delay_seconds" value="12" checked class="sr-only" onchange="selectDelay(12)">
+                               id="delay-card-30">
+                            <input type="radio" name="delay_seconds" value="30" checked class="sr-only" onchange="selectDelay(30)">
                             <span class="text-lg">🛡️</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_very_safe') ?></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">12–17s</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">30–35s</span>
                             <span class="text-xs bg-green-500 text-white px-1.5 py-0.5 rounded-md font-medium"><?= __('blast_delay_default_badge') ?></span>
                         </label>
 
-                        <!-- Selamat -->
+                        <!-- Selamat 12s -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                               id="delay-card-12">
+                            <input type="radio" name="delay_seconds" value="12" class="sr-only" onchange="selectDelay(12)">
+                            <span class="text-lg">🟢</span>
+                            <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_safe') ?></span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">12–17s</span>
+                        </label>
+
+                        <!-- Sederhana 8s -->
                         <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
                                id="delay-card-8">
                             <input type="radio" name="delay_seconds" value="8" class="sr-only" onchange="selectDelay(8)">
-                            <span class="text-lg">🟢</span>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_safe') ?></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">8–13s</span>
-                        </label>
-
-                        <!-- Sederhana -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
-                               id="delay-card-5">
-                            <input type="radio" name="delay_seconds" value="5" class="sr-only" onchange="selectDelay(5)">
                             <span class="text-lg">🟡</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_moderate') ?></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">5–10s</span>
-                        </label>
-
-                        <!-- Pantas -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
-                               id="delay-card-3">
-                            <input type="radio" name="delay_seconds" value="3" class="sr-only" onchange="selectDelay(3)">
-                            <span class="text-lg">⚡</span>
-                            <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_fast') ?></span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">3–8s</span>
-                            <span class="text-xs bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-md font-medium"><?= __('blast_delay_ban_risk') ?></span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">8–13s</span>
+                            <span class="text-xs bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 px-1.5 py-0.5 rounded-md font-medium">&lt;50 sahaja</span>
                         </label>
 
                     </div>
@@ -428,6 +434,7 @@ function updateCount() {
     var el = document.getElementById('selected-count');
     if (el) el.textContent = count;
     updateDelayEta();
+    checkLargeBlastWarning();
 }
 
 function selectAllRecipients() {
@@ -454,12 +461,14 @@ function filterRecipients(q) {
 // ---------------------------------------------------------------
 // Delay selector
 // ---------------------------------------------------------------
-var currentDelay = 12;
+var currentDelay = 30;
 var totalRecipients = <?= count($allUsers) ?>;
+var LARGE_BLAST_WARNING = <?= json_encode(__('blast_large_warning')) ?>;
+var LARGE_BLAST_THRESHOLD = 100;
 
 function selectDelay(val) {
     currentDelay = val;
-    [12, 8, 5, 3].forEach(function(d) {
+    [60, 30, 12, 8].forEach(function(d) {
         var card = document.getElementById('delay-card-' + d);
         if (!card) return;
         if (d === val) {
@@ -471,6 +480,7 @@ function selectDelay(val) {
         }
     });
     updateDelayEta();
+    checkLargeBlastWarning();
 }
 
 function updateDelayEta() {
@@ -483,6 +493,18 @@ function updateDelayEta() {
     var str = h > 0 ? h + 'j ' + m + 'min' : m > 0 ? m + 'min ' + s + 's' : s + 's';
     var el = document.getElementById('delay-eta-val');
     if (el) el.textContent = str;
+}
+
+function checkLargeBlastWarning() {
+    var count = document.querySelectorAll('input[name="recipients[]"]:checked').length;
+    var warning = document.getElementById('large-blast-warning');
+    var text    = document.getElementById('large-blast-warning-text');
+    if (count >= LARGE_BLAST_THRESHOLD && currentDelay < 60) {
+        text.innerHTML = LARGE_BLAST_WARNING.replace(':count', count);
+        warning.classList.remove('hidden');
+    } else {
+        warning.classList.add('hidden');
+    }
 }
 
 // ---------------------------------------------------------------

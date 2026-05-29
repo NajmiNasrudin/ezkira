@@ -62,10 +62,10 @@ class BlastController extends Controller
         $scheduledAt = trim($_POST['scheduled_at']     ?? '');
         $provider    = 'fonnte';
 
-        // Delay preset: 3 | 5 | 8 | 12 (default: 12 = Sangat Selamat)
-        $allowedDelays = [3, 5, 8, 12];
-        $delaySecs     = in_array((int)($_POST['delay_seconds'] ?? 12), $allowedDelays, true)
-                         ? (int)$_POST['delay_seconds'] : 12;
+        // Delay preset: 8 | 12 | 30 | 60 (default: 30 = Sangat Selamat)
+        $allowedDelays = [8, 12, 30, 60];
+        $delaySecs     = in_array((int)($_POST['delay_seconds'] ?? 30), $allowedDelays, true)
+                         ? (int)$_POST['delay_seconds'] : 30;
 
         // Handle optional image upload
         $imagePath = '';

@@ -28,10 +28,10 @@ if ($status === 'running' && $startedAt) {
 
 $delaySecs = (int)($log['delay_seconds'] ?? 12);
 $delayLabels = [
-    3  => '⚡ ' . __('blast_delay_fast')      . ' (3–8s)',
-    5  => '🟡 ' . __('blast_delay_moderate')  . ' (5–10s)',
-    8  => '🟢 ' . __('blast_delay_safe')      . ' (8–13s)',
-    12 => '🛡️ ' . __('blast_delay_very_safe') . ' (12–17s)',
+    8  => '🟡 ' . __('blast_delay_moderate')  . ' (8–13s)',
+    12 => '🟢 ' . __('blast_delay_safe')      . ' (12–17s)',
+    30 => '🛡️ ' . __('blast_delay_very_safe') . ' (30–35s)',
+    60 => '🔒 ' . __('blast_delay_ultra_safe'). ' (60–65s)',
 ];
 $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
 ?>
