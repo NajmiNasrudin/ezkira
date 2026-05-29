@@ -111,54 +111,97 @@
                     <?php endif; ?>
                 </div>
 
-                <!-- Image Upload -->
+                <!-- 3 Image Slots -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('blast_image_header') ?> <span class="text-xs text-gray-400 font-normal">(<?= __('blast_image_optional') ?>)</span>
-                    </label>
-
-                    <div id="image-drop-zone"
-                         onclick="document.getElementById('blast_image').click()"
-                         ondragover="event.preventDefault(); this.classList.add('border-green-500','bg-green-50','dark:bg-green-900/10')"
-                         ondragleave="this.classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10')"
-                         ondrop="handleImageDrop(event)"
-                         class="relative flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-5 cursor-pointer hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors">
-
-                        <img id="image-preview" src="" alt="Preview"
-                             class="hidden max-h-40 rounded-lg object-contain shadow-sm">
-
-                        <div id="image-placeholder" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
-                            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            <p class="text-sm font-medium"><?= __('blast_image_placeholder') ?></p>
-                            <p class="text-xs"><?= __('blast_image_types') ?></p>
-                        </div>
-
-                        <button type="button" id="image-remove-btn"
-                                onclick="removeImage(event)"
-                                class="hidden absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow text-xs transition-colors">
-                            ✕
-                        </button>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <?= __('blast_image_header') ?>
+                            <span class="text-xs text-gray-400 font-normal ml-1">(<?= __('blast_image_optional') ?>)</span>
+                        </label>
+                        <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">
+                            🎲 Rawak per penerima
+                        </span>
                     </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <?php for ($s = 1; $s <= 3; $s++): ?>
+                        <div>
+                            <div id="img-zone-<?= $s ?>"
+                                 onclick="document.getElementById('blast_image_<?= $s ?>').click()"
+                                 ondragover="event.preventDefault(); this.classList.add('border-green-500','bg-green-50','dark:bg-green-900/10')"
+                                 ondragleave="this.classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10')"
+                                 ondrop="handleImgDrop(event, <?= $s ?>)"
+                                 class="relative flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-3 cursor-pointer hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors h-28 overflow-hidden">
 
-                    <input type="file" id="blast_image" name="blast_image"
-                           accept="image/jpeg,image/png,image/webp"
-                           class="sr-only"
-                           onchange="handleImageSelect(this)">
+                                <img id="img-preview-<?= $s ?>" src="" alt=""
+                                     class="hidden absolute inset-0 w-full h-full object-cover rounded-xl">
 
-                    <p id="image-filename" class="text-xs text-gray-400 dark:text-gray-500 mt-1 hidden"></p>
+                                <div id="img-ph-<?= $s ?>" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium">Gambar <?= $s ?></p>
+                                    <?php if ($s === 1): ?><p class="text-xs opacity-60">Optional</p><?php endif; ?>
+                                </div>
+
+                                <button type="button" id="img-rm-<?= $s ?>"
+                                        onclick="removeImg(event,<?= $s ?>)"
+                                        class="hidden absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow text-xs transition-colors z-10">
+                                    ✕
+                                </button>
+
+                                <!-- Slot number badge -->
+                                <span class="absolute bottom-1.5 left-1.5 w-5 h-5 rounded-full bg-gray-900/50 text-white text-xs flex items-center justify-center font-bold"><?= $s ?></span>
+                            </div>
+                            <input type="file" id="blast_image_<?= $s ?>" name="blast_image_<?= $s ?>"
+                                   accept="image/jpeg,image/png,image/webp" class="sr-only"
+                                   onchange="handleImgSelect(this, <?= $s ?>)">
+                        </div>
+                        <?php endfor; ?>
+                    </div>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                        Isi 2–3 gambar → sistem akan pilih secara rawak untuk setiap penerima.
+                    </p>
                 </div>
 
-                <!-- Custom Message -->
+                <!-- 3 Message Variations -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <?= __('blast_message_label') ?> <span class="text-red-500">*</span>
-                    </label>
-                    <textarea name="custom_message" required rows="4"
-                              placeholder="<?= htmlspecialchars(__('blast_message_placeholder'), ENT_QUOTES) ?>"
-                              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none resize-none"></textarea>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Mesej <span class="text-red-500">*</span>
+                        </label>
+                        <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">
+                            🎲 Rawak per penerima
+                        </span>
+                    </div>
+
+                    <!-- Variation tabs -->
+                    <div class="flex rounded-t-xl border border-gray-300 dark:border-gray-600 overflow-hidden text-xs font-semibold">
+                        <?php for ($v = 1; $v <= 3; $v++): ?>
+                        <button type="button" id="msg-tab-<?= $v ?>"
+                                onclick="switchMsgTab(<?= $v ?>)"
+                                class="flex-1 py-2 flex items-center justify-center gap-1.5 transition-colors
+                                       <?= $v === 1 ? 'bg-green-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600' ?>">
+                            <span id="msg-tab-dot-<?= $v ?>" class="hidden w-1.5 h-1.5 rounded-full bg-white"></span>
+                            Variasi <?= $v ?><?= $v === 1 ? ' *' : '' ?>
+                        </button>
+                        <?php endfor; ?>
+                    </div>
+
+                    <?php for ($v = 1; $v <= 3; $v++): ?>
+                    <div id="msg-panel-<?= $v ?>" class="<?= $v !== 1 ? 'hidden' : '' ?>">
+                        <textarea name="custom_message_<?= $v ?>"
+                                  id="msg-area-<?= $v ?>"
+                                  <?= $v === 1 ? 'required' : '' ?>
+                                  oninput="onMsgInput(<?= $v ?>)"
+                                  rows="4"
+                                  placeholder="<?= $v === 1 ? htmlspecialchars(__('blast_message_placeholder'), ENT_QUOTES) : 'Variasi ' . $v . ' (optional) — tulis mesej berbeza untuk lebih natural' ?>"
+                                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 border-t-0 rounded-b-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none resize-none"></textarea>
+                    </div>
+                    <?php endfor; ?>
+
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        <span id="msg-filled-count">0</span>/3 variasi diisi — semakin banyak variasi, semakin natural nampak.
+                    </p>
                 </div>
 
                 <!-- Link -->
@@ -477,54 +520,88 @@ function selectProvider(val) {
 }
 
 // ---------------------------------------------------------------
-// Image upload helpers
+// Image slot helpers (3 slots)
 // ---------------------------------------------------------------
-var MAX_IMAGE_BYTES = 2 * 1024 * 1024;
-var ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+var MAX_IMAGE_BYTES  = 2 * 1024 * 1024;
+var ALLOWED_IMG_MIME = ['image/jpeg', 'image/png', 'image/webp'];
 
-function handleImageSelect(input) {
-    if (input.files && input.files[0]) applyImageFile(input.files[0]);
+function handleImgSelect(input, slot) {
+    if (input.files && input.files[0]) applyImgFile(input.files[0], slot);
 }
 
-function handleImageDrop(e) {
+function handleImgDrop(e, slot) {
     e.preventDefault();
-    var dz = document.getElementById('image-drop-zone');
-    dz.classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10');
+    document.getElementById('img-zone-' + slot).classList.remove('border-green-500','bg-green-50','dark:bg-green-900/10');
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
         var file = e.dataTransfer.files[0];
         var dt = new DataTransfer();
         dt.items.add(file);
-        document.getElementById('blast_image').files = dt.files;
-        applyImageFile(file);
+        document.getElementById('blast_image_' + slot).files = dt.files;
+        applyImgFile(file, slot);
     }
 }
 
-function applyImageFile(file) {
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) { alert('Format tidak disokong. Sila gunakan JPG, PNG, atau WebP.'); return; }
+function applyImgFile(file, slot) {
+    if (!ALLOWED_IMG_MIME.includes(file.type)) { alert('Format tidak disokong. Gunakan JPG, PNG, atau WebP.'); return; }
     if (file.size > MAX_IMAGE_BYTES) { alert('Saiz gambar melebihi 2MB.'); return; }
     var reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('image-preview').src = e.target.result;
-        document.getElementById('image-preview').classList.remove('hidden');
-        document.getElementById('image-placeholder').classList.add('hidden');
-        document.getElementById('image-remove-btn').classList.remove('hidden');
-        var kb = (file.size / 1024).toFixed(0);
-        var fn = document.getElementById('image-filename');
-        fn.textContent = file.name + ' (' + kb + ' KB)';
-        fn.classList.remove('hidden');
+    reader.onload = function(ev) {
+        var preview = document.getElementById('img-preview-' + slot);
+        preview.src = ev.target.result;
+        preview.classList.remove('hidden');
+        document.getElementById('img-ph-' + slot).classList.add('hidden');
+        document.getElementById('img-rm-' + slot).classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
 
-function removeImage(e) {
+function removeImg(e, slot) {
     e.stopPropagation();
-    document.getElementById('blast_image').value = '';
-    document.getElementById('image-preview').classList.add('hidden');
-    document.getElementById('image-preview').src = '';
-    document.getElementById('image-placeholder').classList.remove('hidden');
-    document.getElementById('image-remove-btn').classList.add('hidden');
-    var fn = document.getElementById('image-filename');
-    fn.classList.add('hidden'); fn.textContent = '';
+    document.getElementById('blast_image_' + slot).value = '';
+    var preview = document.getElementById('img-preview-' + slot);
+    preview.src = '';
+    preview.classList.add('hidden');
+    document.getElementById('img-ph-' + slot).classList.remove('hidden');
+    document.getElementById('img-rm-' + slot).classList.add('hidden');
+}
+
+// ---------------------------------------------------------------
+// Message variation tabs
+// ---------------------------------------------------------------
+var activeMsgTab = 1;
+
+function switchMsgTab(tab) {
+    activeMsgTab = tab;
+    [1, 2, 3].forEach(function(t) {
+        var btn   = document.getElementById('msg-tab-' + t);
+        var panel = document.getElementById('msg-panel-' + t);
+        var dot   = document.getElementById('msg-tab-dot-' + t);
+        var active = (t === tab);
+        panel.classList.toggle('hidden', !active);
+        btn.classList.toggle('bg-green-600', active);
+        btn.classList.toggle('text-white',   active);
+        btn.classList.toggle('bg-white',    !active);
+        btn.classList.toggle('dark:bg-gray-700', !active);
+        btn.classList.toggle('text-gray-500', !active);
+        btn.classList.toggle('dark:text-gray-400', !active);
+    });
+}
+
+function onMsgInput(slot) {
+    // Update dot indicator on tab when text is present
+    var val = (document.getElementById('msg-area-' + slot)?.value || '').trim();
+    var dot = document.getElementById('msg-tab-dot-' + slot);
+    if (dot) dot.classList.toggle('hidden', val === '');
+    updateMsgFilledCount();
+}
+
+function updateMsgFilledCount() {
+    var count = 0;
+    [1, 2, 3].forEach(function(s) {
+        if ((document.getElementById('msg-area-' + s)?.value || '').trim() !== '') count++;
+    });
+    var el = document.getElementById('msg-filled-count');
+    if (el) el.textContent = count;
 }
 
 // ---------------------------------------------------------------
@@ -685,17 +762,33 @@ function setScheduleMode(mode) {
 // Confirm before sending
 document.getElementById('blast-form').addEventListener('submit', function(e) {
     var count = document.querySelectorAll('input[name="recipients[]"]:checked').length;
-    if (count === 0) { e.preventDefault(); alert('<?= __('blast_recipients_label') ?>'); return; }
+    if (count === 0) { e.preventDefault(); alert('Pilih sekurang-kurangnya satu penerima.'); return; }
+
+    // Count filled message variations
+    var msgVars = 0;
+    [1,2,3].forEach(function(s) {
+        if ((document.getElementById('msg-area-' + s)?.value || '').trim() !== '') msgVars++;
+    });
+    if (msgVars === 0) { e.preventDefault(); alert('Isikan sekurang-kurangnya Variasi 1 mesej.'); return; }
+
+    // Count filled image slots
+    var imgSlots = 0;
+    [1,2,3].forEach(function(s) {
+        var inp = document.getElementById('blast_image_' + s);
+        if (inp && inp.files && inp.files.length > 0) imgSlots++;
+    });
+
+    var varInfo = msgVars > 1 ? ' (' + msgVars + ' variasi mesej' + (imgSlots > 1 ? ', ' + imgSlots + ' gambar' : '') + ')' : '';
 
     if (scheduleMode === 'later') {
         var dt = document.getElementById('scheduled_at').value;
         if (!dt) { e.preventDefault(); return; }
         if (new Date(dt) <= new Date()) { e.preventDefault(); return; }
         var dtFormatted = new Date(dt).toLocaleString('<?= \App\Core\Lang::current() === 'ms' ? 'ms-MY' : 'en-MY' ?>', {dateStyle:'medium', timeStyle:'short'});
-        var msg = LANG.confirmSchedule.replace(':count', count).replace(':time', dtFormatted);
+        var msg = LANG.confirmSchedule.replace(':count', count).replace(':time', dtFormatted) + varInfo;
         if (!confirm(msg)) e.preventDefault();
     } else {
-        var msg = LANG.confirmNow.replace(':count', count);
+        var msg = LANG.confirmNow.replace(':count', count) + varInfo;
         if (!confirm(msg)) e.preventDefault();
     }
 });

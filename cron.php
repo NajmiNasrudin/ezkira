@@ -55,12 +55,26 @@ if (!$job) {
     exit(0);
 }
 
-$blastId    = (int)$job['id'];
-$message    = $job['custom_message']  ?? '';
-$blastLink  = $job['blast_link']      ?? '';
-$imagePath  = $job['image_path']      ?? '';
-$provider   = $job['provider']        ?? 'fonnte';
-$delayMin   = max(3, (int)($job['delay_seconds'] ?? 12));  // min 3s floor
+$blastId  = (int)$job['id'];
+$blastLink = $job['blast_link'] ?? '';
+$provider  = $job['provider']   ?? 'fonnte';
+$delayMin  = max(3, (int)($job['delay_seconds'] ?? 12));
+
+// Resolve message variations (JSON array or plain string — backward compat)
+$rawMsg       = $job['custom_message'] ?? '';
+$msgDecoded   = json_decode($rawMsg, true);
+$msgVariants  = (json_last_error() === JSON_ERROR_NONE && is_array($msgDecoded) && count($msgDecoded) > 0)
+                ? $msgDecoded : [$rawMsg];
+$msgVariants  = array_values(array_filter($msgVariants)); // remove empty
+
+// Resolve image variations (JSON array, single path, or empty — backward compat)
+$rawImg       = $job['image_path'] ?? '';
+$imgDecoded   = json_decode($rawImg, true);
+if (json_last_error() === JSON_ERROR_NONE && is_array($imgDecoded)) {
+    $imgVariants = array_values(array_filter($imgDecoded));
+} else {
+    $imgVariants = ($rawImg !== '') ? [$rawImg] : [];
+}
 
 cronLog("START blast #{$blastId}");
 
@@ -85,25 +99,30 @@ if (empty($recipients)) {
     exit(0);
 }
 
-// ---- Build full message ----
-$fullMessage = $message;
-if ($blastLink !== '') {
-    $fullMessage .= "\n\n" . $blastLink;
-}
-
 $sentCount   = 0;
 $failedCount = 0;
 $total       = count($recipients);
+$varCount    = count($msgVariants);
+$imgCount    = count($imgVariants);
 
-cronLog("Sending to {$total} recipients, rand({$delayMin}," . ($delayMin + 5) . ")s delay each");
+cronLog("Sending to {$total} recipients | {$varCount} msg variants, {$imgCount} img variants | delay rand({$delayMin}," . ($delayMin + 5) . ")s");
 
 foreach ($recipients as $i => $user) {
-    $phone   = normalisePhone($user['whatsapp_number']);
-    $msg     = "Hai {$user['name']},\n\n" . $fullMessage;
+    $phone = normalisePhone($user['whatsapp_number']);
+
+    // Pick random message + image variation for this recipient
+    $msgBody  = $msgVariants[array_rand($msgVariants)];
+    $imgPath  = $imgCount > 0 ? $imgVariants[array_rand($imgVariants)] : '';
+
+    $fullMsg  = "Hai {$user['name']},\n\n" . $msgBody;
+    if ($blastLink !== '') {
+        $fullMsg .= "\n\n" . $blastLink;
+    }
+
     $result = match($provider) {
-        'whatsapp_api'  => sendWhatsAppCloudAPI($phone, $msg, $imagePath),
-        'wasenderapi'   => sendWaSenderApi($phone, $msg, $imagePath),
-        default         => sendFonnte($phone, $msg, $imagePath),
+        'whatsapp_api'  => sendWhatsAppCloudAPI($phone, $fullMsg, $imgPath),
+        'wasenderapi'   => sendWaSenderApi($phone, $fullMsg, $imgPath),
+        default         => sendFonnte($phone, $fullMsg, $imgPath),
     };
 
     // Debug: log phone + raw response info

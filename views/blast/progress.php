@@ -146,10 +146,32 @@ $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
     </div>
 
     <!-- Message preview -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"><?= __('blast_message_preview') ?></h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed"><?= htmlspecialchars($msg, ENT_QUOTES) ?></p>
-        <p class="text-xs text-gray-400 dark:text-gray-500 mt-3">
+    <?php
+    // Support both plain string and JSON array of variants
+    $msgDecoded  = json_decode($msg, true);
+    $msgVariants = (json_last_error() === JSON_ERROR_NONE && is_array($msgDecoded)) ? $msgDecoded : [$msg];
+    $msgVariants = array_values(array_filter($msgVariants));
+    ?>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-5 space-y-3">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300"><?= __('blast_message_preview') ?></h3>
+            <?php if (count($msgVariants) > 1): ?>
+            <span class="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 px-2 py-0.5 rounded-full font-medium">
+                🎲 <?= count($msgVariants) ?> variasi
+            </span>
+            <?php endif; ?>
+        </div>
+
+        <?php foreach ($msgVariants as $vi => $variant): ?>
+        <div class="<?= count($msgVariants) > 1 ? 'bg-gray-50 dark:bg-gray-700/40 rounded-xl p-3' : '' ?>">
+            <?php if (count($msgVariants) > 1): ?>
+            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Variasi <?= $vi + 1 ?></p>
+            <?php endif; ?>
+            <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap leading-relaxed"><?= htmlspecialchars($variant, ENT_QUOTES) ?></p>
+        </div>
+        <?php endforeach; ?>
+
+        <p class="text-xs text-gray-400 dark:text-gray-500 pt-1 border-t border-gray-100 dark:border-gray-700">
             <?= __('blast_delay_info') ?> <strong><?= $delayLabel ?></strong>
             &nbsp;·&nbsp; <?= $total ?> <?= __('blast_recipients_count') ?>
         </p>

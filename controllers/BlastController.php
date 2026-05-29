@@ -83,14 +83,26 @@ class BlastController extends Controller
         $delaySecs     = in_array((int)($_POST['delay_seconds'] ?? 30), $allowedDelays, true)
                          ? (int)$_POST['delay_seconds'] : 30;
 
-        // Handle optional image upload
-        $imagePath = '';
-        if (!empty($_FILES['blast_image']['tmp_name']) && $_FILES['blast_image']['error'] === UPLOAD_ERR_OK) {
-            $imagePath = $this->handleImageUpload($_FILES['blast_image']);
-            if ($imagePath === null) {
-                Session::flash('error', 'Format atau saiz gambar tidak sah. Gunakan JPG/PNG/WebP, max 2MB.');
-                $this->redirect('/blast');
+        // Handle up to 3 image uploads — store as JSON array
+        $imageFiles = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $key = 'blast_image_' . $i;
+            if (!empty($_FILES[$key]['tmp_name']) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
+                $path = $this->handleImageUpload($_FILES[$key]);
+                if ($path === null) {
+                    Session::flash('error', "Format atau saiz gambar {$i} tidak sah. Gunakan JPG/PNG/WebP, max 2MB.");
+                    $this->redirect('/blast');
+                }
+                $imageFiles[] = $path;
             }
+        }
+        $imagePathJson = count($imageFiles) > 0 ? json_encode($imageFiles) : '';
+
+        // Handle up to 3 message variations — store as JSON array
+        $messages = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $msg = trim($_POST['custom_message_' . $i] ?? '');
+            if ($msg !== '') $messages[] = $msg;
         }
 
         if (empty($selectedIds)) {
@@ -98,10 +110,12 @@ class BlastController extends Controller
             $this->redirect('/blast');
         }
 
-        if ($customMsg === '') {
+        if (empty($messages)) {
             Session::flash('error', 'Mesej tidak boleh kosong.');
             $this->redirect('/blast');
         }
+
+        $customMsg     = count($messages) === 1 ? $messages[0] : json_encode($messages);
 
         $userModel = new User();
 
@@ -134,7 +148,7 @@ class BlastController extends Controller
             $customMsg,
             $recipientIds,
             $total,
-            $imagePath ?? '',
+            $imagePathJson,
             $blastLink,
             $scheduledAtNorm,
             $provider,
