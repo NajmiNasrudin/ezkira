@@ -37,9 +37,10 @@ class BlastController extends Controller
         $configured = defined('FONNTE_TOKEN') && FONNTE_TOKEN !== '';
 
         $this->view('blast/index', [
-            'allUsers'   => $allUsers,
-            'history'    => $history,
-            'configured' => $configured,
+            'allUsers'     => $allUsers,
+            'history'      => $history,
+            'configured'   => $configured,
+            'businessTypes'=> \Models\User::BUSINESS_TYPES,
         ], 'main', 'WhatsApp Blast');
     }
 

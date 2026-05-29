@@ -146,27 +146,69 @@
                         <p class="text-sm"><?= __('blast_no_recipients') ?></p>
                     </div>
                     <?php else: ?>
-                    <input type="text" id="recipient-search" placeholder="<?= htmlspecialchars(__('blast_search_placeholder'), ENT_QUOTES) ?>"
-                           oninput="filterRecipients(this.value)"
-                           class="w-full mb-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none">
+
+                    <!-- Search + Business Type Filter -->
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="recipient-search" placeholder="<?= htmlspecialchars(__('blast_search_placeholder'), ENT_QUOTES) ?>"
+                               oninput="filterRecipients()"
+                               class="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none">
+
+                        <select id="biz-type-filter" onchange="filterRecipients()"
+                                class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none">
+                            <option value="">Semua Bisnes</option>
+                            <?php foreach ($businessTypes as $key => $label): ?>
+                            <option value="<?= $key ?>"><?= htmlspecialchars($label, ENT_QUOTES) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Quick select by type -->
+                    <div class="flex flex-wrap gap-1.5 mb-2" id="biz-type-chips">
+                        <?php
+                        // Count users per business type
+                        $typeCounts = [];
+                        foreach ($allUsers as $u) {
+                            $bt = $u['business_type'] ?? '';
+                            if ($bt !== '') $typeCounts[$bt] = ($typeCounts[$bt] ?? 0) + 1;
+                        }
+                        foreach ($typeCounts as $bt => $cnt):
+                            $btLabel = $businessTypes[$bt] ?? $bt;
+                        ?>
+                        <button type="button"
+                                onclick="selectByType('<?= $bt ?>')"
+                                class="biz-chip text-xs px-2.5 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-green-50 hover:border-green-400 hover:text-green-700 dark:hover:bg-green-900/20 transition-colors"
+                                data-type="<?= $bt ?>">
+                            <?= htmlspecialchars($btLabel, ENT_QUOTES) ?> <span class="font-semibold">(<?= $cnt ?>)</span>
+                        </button>
+                        <?php endforeach; ?>
+                    </div>
 
                     <div id="recipient-list" class="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
-                        <?php foreach ($allUsers as $u): ?>
+                        <?php foreach ($allUsers as $u):
+                            $bt      = $u['business_type'] ?? '';
+                            $btLabel = $bt !== '' ? ($businessTypes[$bt] ?? $bt) : '';
+                        ?>
                         <label class="recipient-row flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer transition-colors"
                                data-name="<?= strtolower(htmlspecialchars($u['name'], ENT_QUOTES)) ?>"
-                               data-phone="<?= htmlspecialchars($u['whatsapp_number'], ENT_QUOTES) ?>">
+                               data-phone="<?= htmlspecialchars($u['whatsapp_number'], ENT_QUOTES) ?>"
+                               data-btype="<?= htmlspecialchars($bt, ENT_QUOTES) ?>">
                             <input type="checkbox" name="recipients[]" value="<?= $u['id'] ?>"
                                    class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 dark:text-white truncate"><?= htmlspecialchars($u['name'], ENT_QUOTES) ?></p>
                                 <p class="text-xs text-gray-400 dark:text-gray-500"><?= htmlspecialchars($u['whatsapp_number'], ENT_QUOTES) ?></p>
                             </div>
-                            <span class="text-xs text-gray-400 dark:text-gray-500"><?= htmlspecialchars($u['role'], ENT_QUOTES) ?></span>
+                            <?php if ($btLabel !== ''): ?>
+                            <span class="text-xs bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 max-w-[90px] truncate">
+                                <?= htmlspecialchars($btLabel, ENT_QUOTES) ?>
+                            </span>
+                            <?php endif; ?>
                         </label>
                         <?php endforeach; ?>
                     </div>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
                         <span id="selected-count">0</span> <?= str_replace(':total', count($allUsers), __('blast_selected_count')) ?>
+                        &nbsp;·&nbsp; <span id="visible-count"><?= count($allUsers) ?></span> ditunjuk
                     </p>
                     <?php endif; ?>
                 </div>
@@ -438,24 +480,61 @@ function updateCount() {
 }
 
 function selectAllRecipients() {
-    document.querySelectorAll('.recipient-row input[type="checkbox"]').forEach(function(cb) {
-        if (!cb.closest('.recipient-row').classList.contains('hidden')) cb.checked = true;
+    document.querySelectorAll('.recipient-row').forEach(function(row) {
+        if (!row.classList.contains('hidden')) row.querySelector('input[type="checkbox"]').checked = true;
     });
     updateCount();
 }
 
 function clearAllRecipients() {
     document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
+    // Reset chips
+    document.querySelectorAll('.biz-chip').forEach(function(c) {
+        c.classList.remove('bg-green-100','border-green-500','text-green-700','dark:bg-green-900/30','dark:text-green-300');
+    });
     updateCount();
 }
 
-function filterRecipients(q) {
-    q = q.toLowerCase();
+function filterRecipients() {
+    var q     = (document.getElementById('recipient-search')?.value || '').toLowerCase();
+    var btype = document.getElementById('biz-type-filter')?.value || '';
+    var vis   = 0;
     document.querySelectorAll('.recipient-row').forEach(function(row) {
-        var name  = row.getAttribute('data-name') || '';
-        var phone = row.getAttribute('data-phone') || '';
-        row.classList.toggle('hidden', q !== '' && !name.includes(q) && !phone.includes(q));
+        var name    = row.getAttribute('data-name')  || '';
+        var phone   = row.getAttribute('data-phone') || '';
+        var rowType = row.getAttribute('data-btype') || '';
+        var matchQ  = q === '' || name.includes(q) || phone.includes(q);
+        var matchT  = btype === '' || rowType === btype;
+        var hide    = !(matchQ && matchT);
+        row.classList.toggle('hidden', hide);
+        if (!hide) vis++;
     });
+    var el = document.getElementById('visible-count');
+    if (el) el.textContent = vis;
+}
+
+// Select all visible recipients of a specific business type (chip click)
+function selectByType(type) {
+    document.querySelectorAll('.recipient-row').forEach(function(row) {
+        if ((row.getAttribute('data-btype') || '') === type) {
+            row.querySelector('input[type="checkbox"]').checked = true;
+            row.classList.remove('hidden');
+        }
+    });
+    // Highlight chip
+    document.querySelectorAll('.biz-chip').forEach(function(c) {
+        var active = c.getAttribute('data-type') === type;
+        c.classList.toggle('bg-green-100',  active);
+        c.classList.toggle('border-green-500', active);
+        c.classList.toggle('text-green-700',   active);
+        c.classList.toggle('dark:bg-green-900/30',  active);
+        c.classList.toggle('dark:text-green-300',   active);
+    });
+    // Sync dropdown
+    var sel = document.getElementById('biz-type-filter');
+    if (sel) sel.value = type;
+    filterRecipients();
+    updateCount();
 }
 
 // ---------------------------------------------------------------
