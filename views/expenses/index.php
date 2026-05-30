@@ -169,7 +169,10 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
         $warn   = !$over && $target > 0 && ($spent / $target) >= 0.8;
         $barColor = $over ? 'bg-red-500' : ($warn ? 'bg-yellow-500' : $cat['bar']);
     ?>
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+    <div id="card-<?= $key ?>"
+         data-cat="<?= $key ?>"
+         onclick="filterByCategory('<?= $key ?>')"
+         class="exp-card bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 shadow-sm cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-all select-none">
         <div class="flex items-start justify-between mb-3">
             <div>
                 <span class="inline-block text-xs font-semibold px-2 py-0.5 rounded-full <?= $cat['badge'] ?> mb-1">
@@ -257,14 +260,22 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
         <div class="flex items-center gap-3">
             <div class="w-2 h-8 rounded-full bg-brand-500"></div>
             <div>
-                <h3 class="font-semibold text-gray-900 dark:text-white"><?= __('expenses') ?></h3>
+                <div class="flex items-center gap-2">
+                    <h3 class="font-semibold text-gray-900 dark:text-white"><?= __('expenses') ?></h3>
+                    <!-- Active filter badge -->
+                    <span id="active-filter-badge" class="hidden items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
+                        <span id="active-filter-label"></span>
+                        <button type="button" onclick="resetFilter()" class="ml-0.5 hover:opacity-70">✕</button>
+                    </span>
+                </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                    <?= date('F Y', mktime(0,0,0,$month,1,$year)) ?> &bull; <?= count($allExpenses) ?> <?= __('records') ?>
+                    <?= date('F Y', mktime(0,0,0,$month,1,$year)) ?> &bull;
+                    <span id="filter-count"><?= count($allExpenses) ?></span> <?= __('records') ?>
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            <span id="filter-total" class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 <?= fmtMoney($grandTotal) ?>
             </span>
         </div>
@@ -288,7 +299,9 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                 <?php foreach ($allExpenses as $row):
                     $cm = $catMeta[$row['category']] ?? ['label' => $row['category'], 'badge' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'];
                 ?>
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                <tr class="exp-row hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
+                    data-cat="<?= htmlspecialchars($row['category'], ENT_QUOTES) ?>"
+                    data-amount="<?= $row['amount'] ?>">
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         <?= date('d M Y', strtotime($row['expense_date'])) ?>
                     </td>
@@ -373,7 +386,7 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                         <?= __('total') ?>
                     </td>
                     <td class="px-6 py-3 text-right font-bold text-gray-900 dark:text-white">
-                        <?= fmtMoney($grandTotal) ?>
+                        <span id="footer-total"><?= fmtMoney($grandTotal) ?></span>
                     </td>
                     <td colspan="3"></td>
                 </tr>
@@ -948,5 +961,116 @@ function deleteReceiptInModal(btn, receiptId) {
         btn.disabled = false;
         alert('Network error. Please try again.');
     });
+}
+
+// ---------------------------------------------------------------
+// Category filter — click summary card to filter expense rows
+// ---------------------------------------------------------------
+var activeFilter = '';
+var grandTotal   = <?= $grandTotal ?>;
+
+// Category label map for the badge
+var catLabels = {
+    opex:      'OPEX',
+    marketing: 'Marketing',
+    cogs:      'COGS',
+    purchases: 'Purchases',
+    ppe:       'PPE',
+    liability: 'Liability',
+};
+
+// Ring colours per category (Tailwind border classes)
+var catRing = {
+    opex:      'border-blue-500',
+    marketing: 'border-purple-500',
+    cogs:      'border-amber-500',
+    purchases: 'border-cyan-500',
+    ppe:       'border-teal-500',
+    liability: 'border-rose-500',
+};
+
+function filterByCategory(cat) {
+    if (activeFilter === cat) { resetFilter(); return; }
+    activeFilter = cat;
+
+    // Highlight active card, dim others
+    document.querySelectorAll('.exp-card').forEach(function(card) {
+        var c = card.getAttribute('data-cat');
+        card.classList.remove(
+            'border-blue-500','border-purple-500','border-amber-500',
+            'border-cyan-500','border-teal-500','border-rose-500',
+            'border-gray-200','dark:border-gray-700'
+        );
+        if (c === cat) {
+            card.classList.add(catRing[cat] || 'border-brand-500');
+            card.style.opacity = '1';
+        } else {
+            card.classList.add('border-gray-200');
+            card.style.opacity = '0.45';
+        }
+    });
+
+    // Filter rows and sum visible total
+    var total = 0, count = 0;
+    document.querySelectorAll('.exp-row').forEach(function(row) {
+        if (row.getAttribute('data-cat') === cat) {
+            row.classList.remove('hidden');
+            total += parseFloat(row.getAttribute('data-amount') || 0);
+            count++;
+        } else {
+            row.classList.add('hidden');
+        }
+    });
+
+    // Update header count + total
+    var fc = document.getElementById('filter-count');
+    if (fc) fc.textContent = count;
+    updateTotals(total);
+
+    // Show filter badge
+    var badge = document.getElementById('active-filter-badge');
+    var label = document.getElementById('active-filter-label');
+    if (badge && label) {
+        label.textContent = catLabels[cat] || cat;
+        badge.classList.remove('hidden');
+        badge.classList.add('inline-flex');
+    }
+}
+
+function resetFilter() {
+    activeFilter = '';
+
+    // Reset card styles
+    document.querySelectorAll('.exp-card').forEach(function(card) {
+        card.classList.remove(
+            'border-blue-500','border-purple-500','border-amber-500',
+            'border-cyan-500','border-teal-500','border-rose-500'
+        );
+        card.classList.add('border-gray-200');
+        card.style.opacity = '1';
+    });
+
+    // Show all rows
+    var total = 0, count = 0;
+    document.querySelectorAll('.exp-row').forEach(function(row) {
+        row.classList.remove('hidden');
+        total += parseFloat(row.getAttribute('data-amount') || 0);
+        count++;
+    });
+
+    var fc = document.getElementById('filter-count');
+    if (fc) fc.textContent = count;
+    updateTotals(total);
+
+    var badge = document.getElementById('active-filter-badge');
+    if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
+}
+
+function updateTotals(total) {
+    var fmt = 'RM ' + total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var ft = document.getElementById('filter-total');
+    var fh = document.getElementById('footer-total');
+    if (ft) ft.textContent = fmt;
+    if (fh) fh.textContent = fmt;
 }
 </script>
