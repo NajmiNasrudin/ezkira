@@ -6,6 +6,16 @@
  */
 ?>
 
+<?php
+/* Clone helpers — safe defaults when no clone */
+$cloneData   = $cloneData   ?? null;
+$cloneMsgs   = $cloneData   ? array_pad($cloneData['messages'],   3, '') : ['','',''];
+$cloneImgs   = $cloneData   ? array_pad($cloneData['images'],     3, '') : ['','',''];
+$cloneLink   = $cloneData   ? ($cloneData['blast_link']    ?? '') : '';
+$cloneDelay  = $cloneData   ? ($cloneData['delay_seconds'] ?? 30) : 30;
+$cloneProvider = $cloneData ? ($cloneData['provider']      ?? 'fonnte') : 'fonnte';
+?>
+
 <!-- Page Header -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
     <div>
@@ -18,6 +28,20 @@
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5"><?= __('blast_subtitle') ?></p>
     </div>
 </div>
+
+<?php if ($cloneData): ?>
+<!-- Clone Notice -->
+<div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-2xl px-5 py-3.5 mb-5 flex items-center gap-3">
+    <svg class="w-5 h-5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+    </svg>
+    <p class="text-sm text-indigo-800 dark:text-indigo-300">
+        <strong>Mesej diambil dari Blast #<?= $cloneData['blast_id'] ?>.</strong>
+        Pilih batch atau penerima baharu di bawah, kemudian blast.
+    </p>
+    <a href="<?= BASE_URI ?>/blast" class="ml-auto text-xs text-indigo-500 hover:text-indigo-700 shrink-0">✕ Mulakan baru</a>
+</div>
+<?php endif; ?>
 
 <?php if (!$configured): ?>
 <!-- API Not Configured Warning -->
@@ -73,11 +97,17 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provider</label>
                     <div class="grid grid-cols-2 gap-3">
 
+                        <?php
+                        // Default provider: honour clone, else configured one
+                        $defaultProvider = $cloneProvider;
+                        if ($defaultProvider === 'fonnte'      && !$fonnteOk   && $wasenderOk) $defaultProvider = 'wasenderapi';
+                        if ($defaultProvider === 'wasenderapi' && !$wasenderOk && $fonnteOk)   $defaultProvider = 'fonnte';
+                        ?>
                         <label class="provider-card flex items-center gap-3 border-2 rounded-xl px-4 py-3 cursor-pointer transition-all
-                                      <?= $fonnteOk ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-600 opacity-60' ?>"
+                                      <?= $defaultProvider === 'fonnte' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ($fonnteOk ? 'border-gray-200 dark:border-gray-600' : 'border-gray-200 dark:border-gray-600 opacity-60') ?>"
                                id="provider-card-fonnte">
                             <input type="radio" name="provider" value="fonnte"
-                                   <?= $fonnteOk ? 'checked' : ($wasenderOk ? '' : 'checked') ?>
+                                   <?= $defaultProvider === 'fonnte' ? 'checked' : '' ?>
                                    class="sr-only" onchange="selectProvider('fonnte')">
                             <span class="text-xl">🟢</span>
                             <div>
@@ -89,10 +119,10 @@
                         </label>
 
                         <label class="provider-card flex items-center gap-3 border-2 rounded-xl px-4 py-3 cursor-pointer transition-all
-                                      <?= $wasenderOk ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-600 opacity-60' ?>"
+                                      <?= $defaultProvider === 'wasenderapi' ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ($wasenderOk ? 'border-gray-200 dark:border-gray-600' : 'border-gray-200 dark:border-gray-600 opacity-60') ?>"
                                id="provider-card-wasenderapi">
                             <input type="radio" name="provider" value="wasenderapi"
-                                   <?= (!$fonnteOk && $wasenderOk) ? 'checked' : '' ?>
+                                   <?= $defaultProvider === 'wasenderapi' ? 'checked' : '' ?>
                                    class="sr-only" onchange="selectProvider('wasenderapi')">
                             <span class="text-xl">📡</span>
                             <div>
@@ -123,7 +153,11 @@
                         </span>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
-                        <?php for ($s = 1; $s <= 3; $s++): ?>
+                        <?php for ($s = 1; $s <= 3; $s++):
+                            $existImg  = $cloneImgs[$s - 1] ?? '';
+                            $existBase = $existImg !== '' ? basename($existImg) : '';
+                            $existUrl  = $existBase !== '' ? (BASE_URI . '/blast/media/' . $existBase) : '';
+                        ?>
                         <div>
                             <div id="img-zone-<?= $s ?>"
                                  onclick="document.getElementById('blast_image_<?= $s ?>').click()"
@@ -132,10 +166,10 @@
                                  ondrop="handleImgDrop(event, <?= $s ?>)"
                                  class="relative flex flex-col items-center justify-center gap-1 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-3 cursor-pointer hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors h-28 overflow-hidden">
 
-                                <img id="img-preview-<?= $s ?>" src="" alt=""
-                                     class="hidden absolute inset-0 w-full h-full object-cover rounded-xl">
+                                <img id="img-preview-<?= $s ?>" src="<?= htmlspecialchars($existUrl, ENT_QUOTES) ?>" alt=""
+                                     class="<?= $existUrl !== '' ? '' : 'hidden' ?> absolute inset-0 w-full h-full object-cover rounded-xl">
 
-                                <div id="img-ph-<?= $s ?>" class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
+                                <div id="img-ph-<?= $s ?>" class="<?= $existUrl !== '' ? 'hidden' : '' ?> flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500">
                                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
@@ -145,7 +179,7 @@
 
                                 <button type="button" id="img-rm-<?= $s ?>"
                                         onclick="removeImg(event,<?= $s ?>)"
-                                        class="hidden absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow text-xs transition-colors z-10">
+                                        class="<?= $existUrl !== '' ? '' : 'hidden' ?> absolute top-1.5 right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center shadow text-xs transition-colors z-10">
                                     ✕
                                 </button>
 
@@ -155,6 +189,9 @@
                             <input type="file" id="blast_image_<?= $s ?>" name="blast_image_<?= $s ?>"
                                    accept="image/jpeg,image/png,image/webp" class="sr-only"
                                    onchange="handleImgSelect(this, <?= $s ?>)">
+                            <!-- Hidden: keep existing image when cloning (cleared if user removes or replaces) -->
+                            <input type="hidden" id="existing_image_<?= $s ?>" name="existing_image_<?= $s ?>"
+                                   value="<?= htmlspecialchars($existBase, ENT_QUOTES) ?>">
                         </div>
                         <?php endfor; ?>
                     </div>
@@ -195,7 +232,7 @@
                                   oninput="onMsgInput(<?= $v ?>)"
                                   rows="4"
                                   placeholder="<?= $v === 1 ? htmlspecialchars(__('blast_message_placeholder'), ENT_QUOTES) : 'Variasi ' . $v . ' (optional) — tulis mesej berbeza untuk lebih natural' ?>"
-                                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 border-t-0 rounded-b-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none resize-none"></textarea>
+                                  class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 border-t-0 rounded-b-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 outline-none resize-none"><?= htmlspecialchars($cloneMsgs[$v - 1] ?? '', ENT_QUOTES) ?></textarea>
                     </div>
                     <?php endfor; ?>
 
@@ -210,6 +247,7 @@
                         <?= __('blast_link_label') ?> <span class="text-xs text-gray-400 font-normal">(<?= __('optional') ?>)</span>
                     </label>
                     <input type="text" name="blast_link"
+                           value="<?= htmlspecialchars($cloneLink, ENT_QUOTES) ?>"
                            placeholder="https://ezkira.com/promo"
                            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none">
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('blast_link_hint') ?></p>
@@ -383,20 +421,25 @@
                     </label>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="delay-options">
 
+                        <?php
+                        $activeDelayCls = 'border-green-500 bg-green-50 dark:bg-green-900/20';
+                        $inactDelayCls  = 'border-gray-200 dark:border-gray-600';
+                        ?>
+
                         <!-- Ultra Selamat 60s -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all <?= $cloneDelay === 60 ? $activeDelayCls : $inactDelayCls ?> text-center"
                                id="delay-card-60">
-                            <input type="radio" name="delay_seconds" value="60" class="sr-only" onchange="selectDelay(60)">
+                            <input type="radio" name="delay_seconds" value="60" <?= $cloneDelay === 60 ? 'checked' : '' ?> class="sr-only" onchange="selectDelay(60)">
                             <span class="text-lg">🔒</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_ultra_safe') ?></span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">60–65s</span>
                             <span class="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-1.5 py-0.5 rounded-md font-medium">100+</span>
                         </label>
 
-                        <!-- Sangat Selamat 30s (default) -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-green-500 bg-green-50 dark:bg-green-900/20 text-center"
+                        <!-- Sangat Selamat 30s -->
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all <?= $cloneDelay === 30 ? $activeDelayCls : $inactDelayCls ?> text-center"
                                id="delay-card-30">
-                            <input type="radio" name="delay_seconds" value="30" checked class="sr-only" onchange="selectDelay(30)">
+                            <input type="radio" name="delay_seconds" value="30" <?= $cloneDelay === 30 ? 'checked' : '' ?> class="sr-only" onchange="selectDelay(30)">
                             <span class="text-lg">🛡️</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_very_safe') ?></span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">30–35s</span>
@@ -404,18 +447,18 @@
                         </label>
 
                         <!-- Selamat 12s -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all <?= $cloneDelay === 12 ? $activeDelayCls : $inactDelayCls ?> text-center"
                                id="delay-card-12">
-                            <input type="radio" name="delay_seconds" value="12" class="sr-only" onchange="selectDelay(12)">
+                            <input type="radio" name="delay_seconds" value="12" <?= $cloneDelay === 12 ? 'checked' : '' ?> class="sr-only" onchange="selectDelay(12)">
                             <span class="text-lg">🟢</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_safe') ?></span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">12–17s</span>
                         </label>
 
                         <!-- Sederhana 8s -->
-                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all border-gray-200 dark:border-gray-600 text-center"
+                        <label class="delay-card flex flex-col items-center gap-1 border-2 rounded-xl p-3 cursor-pointer transition-all <?= $cloneDelay === 8 ? $activeDelayCls : $inactDelayCls ?> text-center"
                                id="delay-card-8">
-                            <input type="radio" name="delay_seconds" value="8" class="sr-only" onchange="selectDelay(8)">
+                            <input type="radio" name="delay_seconds" value="8" <?= $cloneDelay === 8 ? 'checked' : '' ?> class="sr-only" onchange="selectDelay(8)">
                             <span class="text-lg">🟡</span>
                             <span class="text-xs font-semibold text-gray-800 dark:text-white"><?= __('blast_delay_moderate') ?></span>
                             <span class="text-xs text-gray-500 dark:text-gray-400">8–13s</span>
@@ -582,6 +625,9 @@ function handleImgDrop(e, slot) {
 function applyImgFile(file, slot) {
     if (!ALLOWED_IMG_MIME.includes(file.type)) { alert('Format tidak disokong. Gunakan JPG, PNG, atau WebP.'); return; }
     if (file.size > MAX_IMAGE_BYTES) { alert('Saiz gambar melebihi 2MB.'); return; }
+    // New file replaces any existing cloned image
+    var existHidden = document.getElementById('existing_image_' + slot);
+    if (existHidden) existHidden.value = '';
     var reader = new FileReader();
     reader.onload = function(ev) {
         var preview = document.getElementById('img-preview-' + slot);
@@ -596,6 +642,9 @@ function applyImgFile(file, slot) {
 function removeImg(e, slot) {
     e.stopPropagation();
     document.getElementById('blast_image_' + slot).value = '';
+    // Also clear the existing-image hidden input (clone reuse)
+    var existHidden = document.getElementById('existing_image_' + slot);
+    if (existHidden) existHidden.value = '';
     var preview = document.getElementById('img-preview-' + slot);
     preview.src = '';
     preview.classList.add('hidden');
@@ -641,6 +690,21 @@ function updateMsgFilledCount() {
     var el = document.getElementById('msg-filled-count');
     if (el) el.textContent = count;
 }
+
+// ---------------------------------------------------------------
+// Init: run on page load to reflect pre-filled clone data
+// ---------------------------------------------------------------
+(function initClone() {
+    // Sync msg filled-count and tab dots
+    updateMsgFilledCount();
+    [1,2,3].forEach(function(s) {
+        var val = (document.getElementById('msg-area-' + s)?.value || '').trim();
+        var dot = document.getElementById('msg-tab-dot-' + s);
+        if (dot && val !== '') dot.classList.remove('hidden');
+    });
+    // Sync delay ETA
+    updateDelayEta();
+})();
 
 // ---------------------------------------------------------------
 // Track selected count
@@ -761,7 +825,7 @@ function selectByType(type) {
 // ---------------------------------------------------------------
 // Delay selector
 // ---------------------------------------------------------------
-var currentDelay = 30;
+var currentDelay = <?= (int)$cloneDelay ?>;
 var totalRecipients = <?= count($allUsers) ?>;
 var LARGE_BLAST_WARNING = <?= json_encode(__('blast_large_warning')) ?>;
 var LARGE_BLAST_THRESHOLD = 100;

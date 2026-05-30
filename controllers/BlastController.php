@@ -37,11 +37,36 @@ class BlastController extends Controller
         $configured = (defined('FONNTE_TOKEN')     && FONNTE_TOKEN     !== '')
                    || (defined('WASENDER_API_KEY') && WASENDER_API_KEY !== '');
 
+        // Clone: pre-fill form from existing blast
+        $cloneData = null;
+        if (!empty($_GET['clone']) && ctype_digit((string)$_GET['clone'])) {
+            $src = $blast->findLog((int)$_GET['clone']);
+            if ($src) {
+                $msgs = json_decode($src['custom_message'] ?? '', true);
+                if (!is_array($msgs)) {
+                    $msgs = [$src['custom_message'] ?? ''];
+                }
+                $imgs = json_decode($src['image_path'] ?? '', true);
+                if (!is_array($imgs)) {
+                    $imgs = ($src['image_path'] !== '') ? [$src['image_path']] : [];
+                }
+                $cloneData = [
+                    'blast_id'      => (int)$src['id'],
+                    'messages'      => array_values(array_filter($msgs)),
+                    'images'        => array_values(array_filter($imgs)),
+                    'blast_link'    => $src['blast_link']    ?? '',
+                    'provider'      => $src['provider']      ?? 'fonnte',
+                    'delay_seconds' => (int)($src['delay_seconds'] ?? 30),
+                ];
+            }
+        }
+
         $this->view('blast/index', [
             'allUsers'     => $allUsers,
             'history'      => $history,
             'configured'   => $configured,
             'businessTypes'=> \Models\User::BUSINESS_TYPES,
+            'cloneData'    => $cloneData,
         ], 'main', 'WhatsApp Blast');
     }
 
@@ -84,16 +109,27 @@ class BlastController extends Controller
                          ? (int)$_POST['delay_seconds'] : 30;
 
         // Handle up to 3 image uploads — store as JSON array
+        // Falls back to existing_image_X (basename only) when cloning without a new upload
         $imageFiles = [];
         for ($i = 1; $i <= 3; $i++) {
             $key = 'blast_image_' . $i;
             if (!empty($_FILES[$key]['tmp_name']) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
+                // New upload — validate and save
                 $path = $this->handleImageUpload($_FILES[$key]);
                 if ($path === null) {
                     Session::flash('error', "Format atau saiz gambar {$i} tidak sah. Gunakan JPG/PNG/WebP, max 2MB.");
                     $this->redirect('/blast');
                 }
                 $imageFiles[] = $path;
+            } elseif (!empty($_POST['existing_image_' . $i])) {
+                // Reuse existing image from a clone — validate only basenames (no path traversal)
+                $base = basename(trim($_POST['existing_image_' . $i]));
+                if (preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/i', $base)) {
+                    $full = BASE_PATH . '/uploads/blast/' . $base;
+                    if (file_exists($full)) {
+                        $imageFiles[] = $full;
+                    }
+                }
             }
         }
         $imagePathJson = count($imageFiles) > 0 ? json_encode($imageFiles) : '';

@@ -146,17 +146,27 @@ $delayLabel = $delayLabels[$delaySecs] ?? "{$delaySecs}s";
         <?php endif; ?>
 
         <!-- Done: action buttons -->
-        <div id="done-actions" class="<?= in_array($status, ['done','failed','stopped']) ? '' : 'hidden' ?> flex gap-3 pt-1">
-            <a href="<?= BASE_URI ?>/blast"
-               class="flex-1 text-center py-2.5 text-sm font-semibold rounded-xl bg-brand-700 hover:bg-brand-800 text-white transition-colors"
-               style="background-color:#163020">
-                <?= __('blast_new_btn') ?>
+        <div id="done-actions" class="<?= in_array($status, ['done','failed','stopped']) ? '' : 'hidden' ?> space-y-2 pt-1">
+            <!-- Reuse same message, pick new batch -->
+            <a href="<?= BASE_URI ?>/blast?clone=<?= $blastId ?>"
+               class="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+                </svg>
+                Hantar ke Batch Lain
             </a>
-            <button type="button"
-                    onclick="document.getElementById('blast-detail-modal').classList.remove('hidden'); loadDetail(<?= $blastId ?>)"
-                    class="flex-1 py-2.5 text-sm font-semibold rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                <?= __('blast_view_recipients') ?>
-            </button>
+            <div class="flex gap-3">
+                <a href="<?= BASE_URI ?>/blast"
+                   class="flex-1 text-center py-2.5 text-sm font-semibold rounded-xl text-white transition-colors"
+                   style="background-color:#163020">
+                    <?= __('blast_new_btn') ?>
+                </a>
+                <button type="button"
+                        onclick="document.getElementById('blast-detail-modal').classList.remove('hidden'); loadDetail(<?= $blastId ?>)"
+                        class="flex-1 py-2.5 text-sm font-semibold rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <?= __('blast_view_recipients') ?>
+                </button>
+            </div>
         </div>
     </div>
 
