@@ -274,7 +274,20 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                 </p>
             </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
+            <!-- Search box -->
+            <div class="relative">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                </svg>
+                <input type="text" id="exp-search"
+                       placeholder="Cari deskripsi..."
+                       oninput="filterExpenses()"
+                       class="pl-8 pr-8 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none w-44 transition-all focus:w-56">
+                <button type="button" id="exp-search-clear"
+                        onclick="clearSearch()"
+                        class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm leading-none">✕</button>
+            </div>
             <span id="filter-total" class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 <?= fmtMoney($grandTotal) ?>
             </span>
@@ -301,7 +314,8 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                 ?>
                 <tr class="exp-row hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
                     data-cat="<?= htmlspecialchars($row['category'], ENT_QUOTES) ?>"
-                    data-amount="<?= $row['amount'] ?>">
+                    data-amount="<?= $row['amount'] ?>"
+                    data-desc="<?= strtolower(htmlspecialchars($row['description'], ENT_QUOTES)) ?>">
                     <td class="px-6 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                         <?= date('d M Y', strtotime($row['expense_date'])) ?>
                     </td>
@@ -989,58 +1003,83 @@ var catRing = {
     liability: 'border-rose-500',
 };
 
-function filterByCategory(cat) {
-    if (activeFilter === cat) { resetFilter(); return; }
-    activeFilter = cat;
-
-    // Highlight active card, dim others
-    document.querySelectorAll('.exp-card').forEach(function(card) {
-        var c = card.getAttribute('data-cat');
-        card.classList.remove(
-            'border-blue-500','border-purple-500','border-amber-500',
-            'border-cyan-500','border-teal-500','border-rose-500',
-            'border-gray-200','dark:border-gray-700'
-        );
-        if (c === cat) {
-            card.classList.add(catRing[cat] || 'border-brand-500');
-            card.style.opacity = '1';
-        } else {
-            card.classList.add('border-gray-200');
-            card.style.opacity = '0.45';
-        }
-    });
-
-    // Filter rows and sum visible total
+// Core filter — applies BOTH category filter AND search query simultaneously
+function filterExpenses() {
+    var q     = (document.getElementById('exp-search')?.value || '').toLowerCase().trim();
     var total = 0, count = 0;
+
     document.querySelectorAll('.exp-row').forEach(function(row) {
-        if (row.getAttribute('data-cat') === cat) {
-            row.classList.remove('hidden');
+        var matchCat  = (activeFilter === '') || (row.getAttribute('data-cat') === activeFilter);
+        var matchDesc = (q === '') || (row.getAttribute('data-desc') || '').includes(q);
+        var show      = matchCat && matchDesc;
+        row.classList.toggle('hidden', !show);
+        if (show) {
             total += parseFloat(row.getAttribute('data-amount') || 0);
             count++;
-        } else {
-            row.classList.add('hidden');
         }
     });
 
-    // Update header count + total
     var fc = document.getElementById('filter-count');
     if (fc) fc.textContent = count;
     updateTotals(total);
 
-    // Show filter badge
-    var badge = document.getElementById('active-filter-badge');
-    var label = document.getElementById('active-filter-label');
-    if (badge && label) {
-        label.textContent = catLabels[cat] || cat;
-        badge.classList.remove('hidden');
-        badge.classList.add('inline-flex');
+    // Show/hide clear button on search box
+    var clr = document.getElementById('exp-search-clear');
+    if (clr) clr.classList.toggle('hidden', q === '');
+}
+
+function clearSearch() {
+    var inp = document.getElementById('exp-search');
+    if (inp) inp.value = '';
+    filterExpenses();
+}
+
+function filterByCategory(cat) {
+    if (activeFilter === cat) {
+        activeFilter = '';
+        // Reset all cards
+        document.querySelectorAll('.exp-card').forEach(function(card) {
+            card.classList.remove(
+                'border-blue-500','border-purple-500','border-amber-500',
+                'border-cyan-500','border-teal-500','border-rose-500'
+            );
+            card.classList.add('border-gray-200');
+            card.style.opacity = '1';
+        });
+        // Hide filter badge
+        var badge = document.getElementById('active-filter-badge');
+        if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
+    } else {
+        activeFilter = cat;
+        // Highlight active card, dim others
+        document.querySelectorAll('.exp-card').forEach(function(card) {
+            var c = card.getAttribute('data-cat');
+            card.classList.remove(
+                'border-blue-500','border-purple-500','border-amber-500',
+                'border-cyan-500','border-teal-500','border-rose-500','border-gray-200'
+            );
+            if (c === cat) {
+                card.classList.add(catRing[cat] || 'border-brand-500');
+                card.style.opacity = '1';
+            } else {
+                card.classList.add('border-gray-200');
+                card.style.opacity = '0.45';
+            }
+        });
+        // Show filter badge
+        var badge = document.getElementById('active-filter-badge');
+        var label = document.getElementById('active-filter-label');
+        if (badge && label) {
+            label.textContent = catLabels[cat] || cat;
+            badge.classList.remove('hidden');
+            badge.classList.add('inline-flex');
+        }
     }
+    filterExpenses(); // re-run with current search + new category
 }
 
 function resetFilter() {
     activeFilter = '';
-
-    // Reset card styles
     document.querySelectorAll('.exp-card').forEach(function(card) {
         card.classList.remove(
             'border-blue-500','border-purple-500','border-amber-500',
@@ -1049,21 +1088,9 @@ function resetFilter() {
         card.classList.add('border-gray-200');
         card.style.opacity = '1';
     });
-
-    // Show all rows
-    var total = 0, count = 0;
-    document.querySelectorAll('.exp-row').forEach(function(row) {
-        row.classList.remove('hidden');
-        total += parseFloat(row.getAttribute('data-amount') || 0);
-        count++;
-    });
-
-    var fc = document.getElementById('filter-count');
-    if (fc) fc.textContent = count;
-    updateTotals(total);
-
     var badge = document.getElementById('active-filter-badge');
     if (badge) { badge.classList.add('hidden'); badge.classList.remove('inline-flex'); }
+    filterExpenses();
 }
 
 function updateTotals(total) {
