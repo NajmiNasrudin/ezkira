@@ -251,6 +251,31 @@
                         </select>
                     </div>
 
+                    <!-- Batch chips -->
+                    <?php
+                    $batchSize  = 50;
+                    $numBatches = (int)ceil(count($allUsers) / $batchSize);
+                    ?>
+                    <?php if ($numBatches > 1): ?>
+                    <div class="flex flex-wrap gap-1.5 mb-2" id="batch-chips">
+                        <span class="text-xs text-gray-400 dark:text-gray-500 self-center font-medium">Batch:</span>
+                        <?php for ($b = 1; $b <= $numBatches; $b++):
+                            $bStart = ($b - 1) * $batchSize;
+                            $bEnd   = min($b * $batchSize - 1, count($allUsers) - 1);
+                            $bCount = $bEnd - $bStart + 1;
+                        ?>
+                        <button type="button"
+                                id="batch-chip-<?= $b ?>"
+                                onclick="selectBatch(<?= $b ?>, <?= $bStart ?>, <?= $bEnd ?>)"
+                                data-start="<?= $bStart ?>"
+                                data-end="<?= $bEnd ?>"
+                                class="batch-chip text-xs px-2.5 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 dark:hover:bg-indigo-900/20 transition-colors font-medium">
+                            Batch <?= $b ?> <span class="font-semibold">(<?= $bCount ?>)</span>
+                        </button>
+                        <?php endfor; ?>
+                    </div>
+                    <?php endif; ?>
+
                     <!-- Quick select by type -->
                     <div class="flex flex-wrap gap-1.5 mb-2" id="biz-type-chips">
                         <?php
@@ -273,14 +298,15 @@
                     </div>
 
                     <div id="recipient-list" class="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
-                        <?php foreach ($allUsers as $u):
+                        <?php foreach ($allUsers as $uidx => $u):
                             $bt      = $u['business_type'] ?? '';
                             $btLabel = $bt !== '' ? ($businessTypes[$bt] ?? $bt) : '';
                         ?>
                         <label class="recipient-row flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer transition-colors"
                                data-name="<?= strtolower(htmlspecialchars($u['name'], ENT_QUOTES)) ?>"
                                data-phone="<?= htmlspecialchars($u['whatsapp_number'], ENT_QUOTES) ?>"
-                               data-btype="<?= htmlspecialchars($bt, ENT_QUOTES) ?>">
+                               data-btype="<?= htmlspecialchars($bt, ENT_QUOTES) ?>"
+                               data-bidx="<?= $uidx ?>">
                             <input type="checkbox" name="recipients[]" value="<?= $u['id'] ?>"
                                    class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
                             <div class="flex-1 min-w-0">
@@ -628,10 +654,53 @@ function selectAllRecipients() {
 
 function clearAllRecipients() {
     document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
-    // Reset chips
+    // Reset biz-type chips
     document.querySelectorAll('.biz-chip').forEach(function(c) {
         c.classList.remove('bg-green-100','border-green-500','text-green-700','dark:bg-green-900/30','dark:text-green-300');
     });
+    // Reset batch chips
+    resetBatchChips();
+    updateCount();
+}
+
+function resetBatchChips() {
+    document.querySelectorAll('.batch-chip').forEach(function(c) {
+        c.classList.remove('bg-indigo-100','border-indigo-500','text-indigo-700','dark:bg-indigo-900/30','dark:text-indigo-300');
+    });
+}
+
+// Select all recipients in a batch range (by data-bidx)
+function selectBatch(batchNum, start, end) {
+    // Clear all first
+    document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
+    document.querySelectorAll('.biz-chip').forEach(function(c) {
+        c.classList.remove('bg-green-100','border-green-500','text-green-700','dark:bg-green-900/30','dark:text-green-300');
+    });
+    resetBatchChips();
+
+    // Check if clicking already-active batch → deselect (toggle off)
+    var chip = document.getElementById('batch-chip-' + batchNum);
+    var wasActive = chip && chip.classList.contains('bg-indigo-100');
+    if (wasActive) { updateCount(); return; }
+
+    // Select rows in this batch
+    document.querySelectorAll('.recipient-row').forEach(function(row) {
+        var idx = parseInt(row.getAttribute('data-bidx') || '-1');
+        if (idx >= start && idx <= end) {
+            row.querySelector('input[type="checkbox"]').checked = true;
+        }
+    });
+
+    // Highlight active batch chip
+    if (chip) {
+        chip.classList.add('bg-indigo-100','border-indigo-500','text-indigo-700','dark:bg-indigo-900/30','dark:text-indigo-300');
+    }
+
+    // Reset dropdown + sync filter so rows all visible
+    var sel = document.getElementById('biz-type-filter');
+    if (sel) sel.value = '';
+    filterRecipients();
+
     updateCount();
 }
 
