@@ -251,51 +251,63 @@
                         </select>
                     </div>
 
-                    <!-- Batch chips -->
                     <?php
                     $batchSize  = 50;
                     $numBatches = (int)ceil(count($allUsers) / $batchSize);
+
+                    // Count users per business type
+                    $typeCounts = [];
+                    foreach ($allUsers as $u) {
+                        $bt = $u['business_type'] ?? '';
+                        if ($bt !== '') $typeCounts[$bt] = ($typeCounts[$bt] ?? 0) + 1;
+                    }
                     ?>
+
+                    <!-- Batch chips -->
                     <?php if ($numBatches > 1): ?>
-                    <div class="flex flex-wrap gap-1.5 mb-2" id="batch-chips">
-                        <span class="text-xs text-gray-400 dark:text-gray-500 self-center font-medium">Batch:</span>
-                        <?php for ($b = 1; $b <= $numBatches; $b++):
-                            $bStart = ($b - 1) * $batchSize;
-                            $bEnd   = min($b * $batchSize - 1, count($allUsers) - 1);
-                            $bCount = $bEnd - $bStart + 1;
-                        ?>
-                        <button type="button"
-                                id="batch-chip-<?= $b ?>"
-                                onclick="selectBatch(<?= $b ?>, <?= $bStart ?>, <?= $bEnd ?>)"
-                                data-start="<?= $bStart ?>"
-                                data-end="<?= $bEnd ?>"
-                                class="batch-chip text-xs px-2.5 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 dark:hover:bg-indigo-900/20 transition-colors font-medium">
-                            Batch <?= $b ?> <span class="font-semibold">(<?= $bCount ?>)</span>
-                        </button>
-                        <?php endfor; ?>
+                    <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-900/10 px-3 py-2.5 mb-2">
+                        <p class="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1.5">
+                            <span>📦</span> Pilih Batch
+                        </p>
+                        <div class="flex flex-wrap gap-1.5" id="batch-chips">
+                            <?php for ($b = 1; $b <= $numBatches; $b++):
+                                $bStart = ($b - 1) * $batchSize;
+                                $bEnd   = min($b * $batchSize - 1, count($allUsers) - 1);
+                                $bCount = $bEnd - $bStart + 1;
+                            ?>
+                            <button type="button"
+                                    id="batch-chip-<?= $b ?>"
+                                    onclick="selectBatch(<?= $b ?>, <?= $bStart ?>, <?= $bEnd ?>)"
+                                    data-start="<?= $bStart ?>"
+                                    data-end="<?= $bEnd ?>"
+                                    class="batch-chip text-xs px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-300 bg-white dark:bg-gray-800 hover:bg-indigo-100 hover:border-indigo-400 dark:hover:bg-indigo-900/30 transition-colors font-medium">
+                                Batch <?= $b ?> <span class="font-semibold">(<?= $bCount ?>)</span>
+                            </button>
+                            <?php endfor; ?>
+                        </div>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Quick select by type -->
-                    <div class="flex flex-wrap gap-1.5 mb-2" id="biz-type-chips">
-                        <?php
-                        // Count users per business type
-                        $typeCounts = [];
-                        foreach ($allUsers as $u) {
-                            $bt = $u['business_type'] ?? '';
-                            if ($bt !== '') $typeCounts[$bt] = ($typeCounts[$bt] ?? 0) + 1;
-                        }
-                        foreach ($typeCounts as $bt => $cnt):
-                            $btLabel = $businessTypes[$bt] ?? $bt;
-                        ?>
-                        <button type="button"
-                                onclick="selectByType('<?= $bt ?>')"
-                                class="biz-chip text-xs px-2.5 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-green-50 hover:border-green-400 hover:text-green-700 dark:hover:bg-green-900/20 transition-colors"
-                                data-type="<?= $bt ?>">
-                            <?= htmlspecialchars($btLabel, ENT_QUOTES) ?> <span class="font-semibold">(<?= $cnt ?>)</span>
-                        </button>
-                        <?php endforeach; ?>
+                    <!-- Quick select by business type -->
+                    <?php if (!empty($typeCounts)): ?>
+                    <div class="rounded-xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-900/10 px-3 py-2.5 mb-2">
+                        <p class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                            <span>🏢</span> Pilih Jenis Bisnes
+                        </p>
+                        <div class="flex flex-wrap gap-1.5" id="biz-type-chips">
+                            <?php foreach ($typeCounts as $bt => $cnt):
+                                $btLabel = $businessTypes[$bt] ?? $bt;
+                            ?>
+                            <button type="button"
+                                    onclick="selectByType('<?= $bt ?>')"
+                                    class="biz-chip text-xs px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 bg-white dark:bg-gray-800 hover:bg-emerald-100 hover:border-emerald-400 dark:hover:bg-emerald-900/30 transition-colors"
+                                    data-type="<?= $bt ?>">
+                                <?= htmlspecialchars($btLabel, ENT_QUOTES) ?> <span class="font-semibold">(<?= $cnt ?>)</span>
+                            </button>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
+                    <?php endif; ?>
 
                     <div id="recipient-list" class="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl divide-y divide-gray-100 dark:divide-gray-700">
                         <?php foreach ($allUsers as $uidx => $u):
@@ -656,7 +668,7 @@ function clearAllRecipients() {
     document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
     // Reset biz-type chips
     document.querySelectorAll('.biz-chip').forEach(function(c) {
-        c.classList.remove('bg-green-100','border-green-500','text-green-700','dark:bg-green-900/30','dark:text-green-300');
+        c.classList.remove('bg-emerald-100','border-emerald-500','text-emerald-800','dark:bg-emerald-900/30','dark:text-emerald-200');
     });
     // Reset batch chips
     resetBatchChips();
@@ -674,7 +686,7 @@ function selectBatch(batchNum, start, end) {
     // Clear all first
     document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
     document.querySelectorAll('.biz-chip').forEach(function(c) {
-        c.classList.remove('bg-green-100','border-green-500','text-green-700','dark:bg-green-900/30','dark:text-green-300');
+        c.classList.remove('bg-emerald-100','border-emerald-500','text-emerald-800','dark:bg-emerald-900/30','dark:text-emerald-200');
     });
     resetBatchChips();
 
@@ -733,11 +745,11 @@ function selectByType(type) {
     // Highlight chip
     document.querySelectorAll('.biz-chip').forEach(function(c) {
         var active = c.getAttribute('data-type') === type;
-        c.classList.toggle('bg-green-100',  active);
-        c.classList.toggle('border-green-500', active);
-        c.classList.toggle('text-green-700',   active);
-        c.classList.toggle('dark:bg-green-900/30',  active);
-        c.classList.toggle('dark:text-green-300',   active);
+        c.classList.toggle('bg-emerald-100',       active);
+        c.classList.toggle('border-emerald-500',   active);
+        c.classList.toggle('text-emerald-800',     active);
+        c.classList.toggle('dark:bg-emerald-900/30',  active);
+        c.classList.toggle('dark:text-emerald-200',   active);
     });
     // Sync dropdown
     var sel = document.getElementById('biz-type-filter');
