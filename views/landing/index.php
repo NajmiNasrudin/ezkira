@@ -138,7 +138,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 <a href="#faq"        class="hover:text-white transition-colors" data-i18n="nav_faq">FAQ</a>
             </div>
 
-            <!-- Lang toggle -->
+            <!-- Lang toggle (desktop only — mobile has it inline in right group) -->
             <div class="hidden md:flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5 mr-1">
                 <button onclick="setLang('ms')" id="lang-btn-ms"
                     class="text-xs font-black px-2.5 py-1 rounded-md transition-all cursor-pointer text-white" style="background:rgba(201,168,76,0.8);color:#163020">BM</button>
@@ -155,30 +155,41 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 </a>
             </div>
 
-            <!-- Mobile hamburger -->
-            <button id="hamburger" class="md:hidden text-slate-300 hover:text-white p-2 rounded-lg" aria-label="Menu">
-                <svg id="ham-open"   class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                <svg id="ham-close" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <!-- Mobile right: lang + login + register + hamburger -->
+            <div class="flex md:hidden items-center gap-2">
+                <!-- Lang toggle (mobile inline) -->
+                <div class="flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5">
+                    <button onclick="setLang('ms')" id="lang-btn-ms"
+                        class="text-xs font-black px-2 py-1 rounded-md transition-all cursor-pointer text-white" style="background:rgba(201,168,76,0.8);color:#163020">BM</button>
+                    <button onclick="setLang('en')" id="lang-btn-en"
+                        class="text-xs font-black px-2 py-1 rounded-md transition-all cursor-pointer text-slate-400">EN</button>
+                </div>
+                <!-- Login button always visible -->
+                <a href="<?= $siteBase ?>/login"
+                   class="text-xs font-semibold text-slate-300 hover:text-white transition-colors border border-white/20 hover:border-white/40 px-3 py-1.5 rounded-lg whitespace-nowrap"
+                   data-i18n="nav_login">Log Masuk</a>
+                <!-- Cuba Percuma small -->
+                <a href="<?= $siteBase ?>/register"
+                   class="btn-gold text-xs px-3 py-1.5 rounded-lg whitespace-nowrap hidden sm:inline-flex"
+                   data-i18n="nav_register">Cuba Percuma</a>
+                <!-- Hamburger (for nav links only) -->
+                <button id="hamburger" class="text-slate-300 hover:text-white p-1.5 rounded-lg" aria-label="Menu">
+                    <svg id="ham-open"   class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    <svg id="ham-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
         </div>
 
-        <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden py-4 border-t border-white/10" style="background:#163020">
-            <div class="flex flex-col gap-3 text-sm font-medium text-slate-300">
-                <a href="#features"     class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_features">Ciri-ciri</a>
-                <a href="#how-it-works" class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_howto">Cara Guna</a>
-                <a href="#showcase"     class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_dashboard">Dashboard</a>
-                <a href="#faq"          class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_faq">FAQ</a>
-                <div class="flex gap-1 pb-2">
-                    <button onclick="setLang('ms')" id="lang-btn-ms-mob"
-                        class="flex-1 text-center py-1.5 text-xs font-black rounded-lg cursor-pointer transition-all" style="background:rgba(201,168,76,0.9);color:#163020">BM</button>
-                    <button onclick="setLang('en')" id="lang-btn-en-mob"
-                        class="flex-1 text-center py-1.5 text-xs font-black rounded-lg text-slate-300 border border-white/20 cursor-pointer hover:bg-white/10 transition-all">EN</button>
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 btn-outline-white rounded-xl" data-i18n="nav_login">Log Masuk</a>
-                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 btn-gold rounded-xl" data-i18n="nav_register">Cuba Percuma</a>
-                </div>
+        <!-- Mobile menu (nav links only) -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-white/10" style="background:#163020">
+            <div class="flex flex-col py-3 text-sm font-medium text-slate-300">
+                <a href="#features"     class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_features">Ciri-ciri</a>
+                <a href="#how-it-works" class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_howto">Cara Guna</a>
+                <a href="#showcase"     class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_dashboard">Dashboard</a>
+                <a href="#faq"          class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_faq">FAQ</a>
+                <a href="<?= $siteBase ?>/register"
+                   class="mt-2 btn-gold text-center py-3 rounded-xl text-sm sm:hidden"
+                   data-i18n="nav_register">Cuba Percuma</a>
             </div>
         </div>
     </div>
