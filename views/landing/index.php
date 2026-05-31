@@ -554,255 +554,355 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
     </div>
 </section>
 
+
 <!-- ============================================================ -->
-<!-- SECTION 6: DASHBOARD SHOWCASE                                -->
+<!-- SECTION 6: DASHBOARD SHOWCASE (HTML Mockup)                  -->
 <!-- ============================================================ -->
-<?php
-// Screenshot tabs config — save files to assets/img/screenshots/
-$screenshots = [
-    ['file' => 'dashboard.png',  'label' => 'Dashboard',        'badge' => 'Gambaran Keseluruhan'],
-    ['file' => 'expenses.png',   'label' => 'Perbelanjaan',      'badge' => 'Expense Tracking'],
-    ['file' => 'reports.png',    'label' => 'Laporan P&L',       'badge' => 'Auto-generated'],
-];
-$hasAny = false;
-foreach ($screenshots as $sc) {
-    if (file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) { $hasAny = true; break; }
-}
-?>
 <section id="showcase" class="py-24 bg-cream section-fade">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
             <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Platform Preview</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Dashboard Yang <span class="gradient-text">Profesional & Lengkap</span></h2>
+            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-4">Dashboard Yang <span class="gradient-text">Profesional &amp; Lengkap</span></h2>
             <p class="text-slate-500 text-lg max-w-xl mx-auto">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
         </div>
 
-        <?php if ($hasAny): ?>
-        <!-- Real screenshot tabs -->
-        <div class="max-w-5xl mx-auto">
-            <!-- Tab buttons -->
-            <div class="flex flex-wrap gap-2 justify-center mb-8">
-                <?php foreach ($screenshots as $i => $sc):
-                    if (!file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) continue;
-                ?>
-                <button onclick="switchTab(<?= $i ?>)"
-                        id="tab-btn-<?= $i ?>"
-                        class="text-sm font-semibold px-5 py-2 rounded-full border-2 transition-all <?= $i === 0 ? 'text-white border-transparent' : 'text-slate-500 border-slate-200 hover:border-slate-300' ?>"
-                        style="<?= $i === 0 ? 'background:#163020' : '' ?>">
-                    <?= htmlspecialchars($sc['label']) ?>
-                </button>
-                <?php endforeach; ?>
-            </div>
-
-            <!-- Screenshot panels -->
-            <?php foreach ($screenshots as $i => $sc):
-                if (!file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) continue;
-            ?>
-            <div id="tab-panel-<?= $i ?>" class="<?= $i !== 0 ? 'hidden' : '' ?>">
-                <!-- Browser chrome frame -->
-                <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200">
-                    <!-- Fake browser bar -->
-                    <div class="flex items-center gap-2 px-4 py-3" style="background:#1e293b">
-                        <span class="w-3 h-3 rounded-full bg-red-400"></span>
-                        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-                        <span class="w-3 h-3 rounded-full bg-green-400"></span>
-                        <div class="flex-1 mx-4">
-                            <div class="flex items-center gap-2 bg-slate-700 rounded-md px-3 py-1 max-w-xs mx-auto">
-                                <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                                <span class="text-slate-300 text-xs">ezkira.com/<?= strtolower(str_replace(' ', '', $sc['label'])) ?></span>
-                            </div>
-                        </div>
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:rgba(201,168,76,0.2);color:#C9A84C"><?= htmlspecialchars($sc['badge']) ?></span>
-                    </div>
-                    <!-- Screenshot -->
-                    <img src="<?= $baseUri ?>/assets/img/screenshots/<?= $sc['file'] ?>"
-                         alt="<?= htmlspecialchars($sc['label']) ?> — Ezkira"
-                         class="w-full block"
-                         loading="lazy">
-                </div>
-            </div>
-            <?php endforeach; ?>
+        <!-- Tab buttons -->
+        <div class="flex flex-wrap gap-2 justify-center mb-6">
+            <button onclick="showTab('dash')" id="tab-dash" class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer active-tab">📊 Dashboard</button>
+            <button onclick="showTab('exp')"  id="tab-exp"  class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer inactive-tab">💰 Perbelanjaan</button>
+            <button onclick="showTab('bs')"   id="tab-bs"   class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer inactive-tab">📋 Balance Sheet</button>
         </div>
 
-        <script>
-        function switchTab(idx) {
-            var panels = document.querySelectorAll('[id^="tab-panel-"]');
-            var btns   = document.querySelectorAll('[id^="tab-btn-"]');
-            panels.forEach(function(p) { p.classList.add('hidden'); });
-            btns.forEach(function(b) {
-                b.style.background = '';
-                b.classList.remove('text-white', 'border-transparent');
-                b.classList.add('text-slate-500', 'border-slate-200');
-            });
-            var panel = document.getElementById('tab-panel-' + idx);
-            var btn   = document.getElementById('tab-btn-'   + idx);
-            if (panel) panel.classList.remove('hidden');
-            if (btn) {
-                btn.style.background = '#163020';
-                btn.classList.add('text-white', 'border-transparent');
-                btn.classList.remove('text-slate-500', 'border-slate-200');
-            }
-        }
-        </script>
-
-        <?php else: ?>
-        <!-- Fallback: HTML mockup cards (while screenshots not yet uploaded) -->
-        <div class="grid lg:grid-cols-3 gap-5">
-
-            <!-- P&L Report Card -->
-            <div class="lg:col-span-2 bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <div class="flex items-center justify-between mb-5">
-                    <div>
-                        <h3 class="font-bold text-slate-800">Laporan Untung &amp; Rugi (P&amp;L)</h3>
-                        <p class="text-slate-500 text-xs mt-0.5">Januari – Mei 2026</p>
-                    </div>
-                    <span class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full font-semibold">✓ Auto-generated</span>
-                </div>
-                <div class="space-y-3">
-                    <?php
-                    $pnl = [
-                        ['label'=>'Jualan Kasar',          'value'=>'RM 124,580', 'cls'=>'text-slate-800 font-bold', 'bar'=>100, 'color'=>'bg-emerald-600'],
-                        ['label'=>'Kos Barang Dijual (COGS)', 'value'=>'- RM 42,000','cls'=>'text-red-600', 'bar'=>34, 'color'=>'bg-red-400'],
-                        ['label'=>'Untung Kasar',           'value'=>'RM 82,580',  'cls'=>'text-emerald-700 font-semibold', 'bar'=>66, 'color'=>'bg-emerald-400'],
-                        ['label'=>'Perbelanjaan Operasi',   'value'=>'- RM 28,500','cls'=>'text-red-600', 'bar'=>23, 'color'=>'bg-orange-400'],
-                        ['label'=>'EBITDA',                 'value'=>'RM 54,080',  'cls'=>'text-slate-700 font-semibold', 'bar'=>43, 'color'=>'bg-blue-400'],
-                        ['label'=>'Untung Bersih',          'value'=>'RM 54,080',  'cls'=>'text-emerald-700 font-bold text-base', 'bar'=>43, 'color'=>'bg-emerald-500'],
-                    ];
-                    foreach ($pnl as $row):
-                    ?>
-                    <div class="flex items-center gap-3">
-                        <p class="text-sm text-slate-500 w-44 shrink-0"><?= htmlspecialchars($row['label']) ?></p>
-                        <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full <?= $row['color'] ?> rounded-full" style="width:<?= $row['bar'] ?>%"></div>
-                        </div>
-                        <p class="text-sm <?= $row['cls'] ?> w-28 text-right shrink-0"><?= $row['value'] ?></p>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <!-- Balance Sheet Card -->
-            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <h3 class="font-bold text-slate-800 mb-1">Kunci Kira-Kira</h3>
-                <p class="text-slate-500 text-xs mb-5">31 Mei 2026</p>
-                <div class="space-y-4">
-                    <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">ASET</p>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm"><span class="text-slate-600">Tunai &amp; Bank</span><span class="font-semibold text-slate-800">RM 38,200</span></div>
-                            <div class="flex justify-between text-sm"><span class="text-slate-600">Stok</span><span class="font-semibold text-slate-800">RM 15,400</span></div>
-                            <div class="flex justify-between text-sm"><span class="text-slate-600">Aset Tetap</span><span class="font-semibold text-slate-800">RM 22,000</span></div>
-                            <div class="flex justify-between text-sm font-bold border-t pt-2"><span class="text-slate-800">Jumlah Aset</span><span class="text-blue-700">RM 75,600</span></div>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">LIABILITI</p>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm"><span class="text-slate-600">Hutang Semasa</span><span class="font-semibold text-red-600">RM 8,500</span></div>
-                            <div class="flex justify-between text-sm font-bold border-t pt-2"><span class="text-slate-800">Ekuiti Pemilik</span><span class="text-emerald-600">RM 67,100</span></div>
-                        </div>
-                    </div>
-                    <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
-                        <p class="text-xs text-emerald-600 font-semibold">Nisbah Kecairan: <span class="text-emerald-700 font-black">4.5x</span></p>
-                        <p class="text-xs text-emerald-500 mt-0.5">Kedudukan kewangan sihat ✓</p>
+        <!-- Browser frame -->
+        <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200">
+            <!-- Chrome bar -->
+            <div class="flex items-center gap-2 px-4 py-2.5" style="background:#1e293b">
+                <span class="w-3 h-3 rounded-full bg-red-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
+                <span class="w-3 h-3 rounded-full bg-green-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
+                <div class="flex-1 mx-3">
+                    <div class="flex items-center gap-1.5 bg-slate-700 rounded px-3 py-1 max-w-xs mx-auto">
+                        <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <span class="text-slate-300 text-xs" id="url-bar">ezkira.com/dashboard</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Revenue Analytics -->
-            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <h3 class="font-bold text-slate-800 mb-1">Analitik Pendapatan</h3>
-                <p class="text-slate-500 text-xs mb-5">Mengikut kategori</p>
-                <div class="space-y-3">
-                    <?php
-                    $revenues = [
-                        ['label'=>'Jualan Online','pct'=>55,'val'=>'RM 68,520','color'=>'bg-emerald-600'],
-                        ['label'=>'Walk-in',      'pct'=>28,'val'=>'RM 34,882','color'=>'bg-emerald-700'],
-                        ['label'=>'Wholesale',    'pct'=>17,'val'=>'RM 21,178','color'=>'bg-emerald-400'],
-                    ];
-                    foreach ($revenues as $r):
-                    ?>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-slate-600 font-medium"><?= $r['label'] ?></span>
-                            <span class="text-slate-800 font-bold"><?= $r['val'] ?></span>
-                        </div>
-                        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full <?= $r['color'] ?> rounded-full" style="width:<?= $r['pct'] ?>%"></div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
+            <!-- App nav -->
+            <div class="flex items-center justify-between px-6 py-3" style="background:#163020">
+                <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="Ezkira" class="h-6 w-auto brightness-200">
+                <div class="hidden sm:flex items-center gap-5 text-xs font-semibold">
+                    <span id="nav-dashboard" class="mock-nav-item cursor-pointer pb-0.5 transition-colors border-b-2" style="color:#C9A84C;border-color:#C9A84C">Dashboard</span>
+                    <span id="nav-revenue"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Revenue</span>
+                    <span id="nav-expenses"  class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Expenses</span>
+                    <span id="nav-balance"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Balance Sheet</span>
+                    <span id="nav-profile"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">My Profile</span>
                 </div>
-                <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <span class="text-xs text-slate-500">Jumlah Pendapatan</span>
-                    <span class="font-black text-slate-900">RM 124,580</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-slate-400 cursor-pointer hover:text-white transition-colors">BM</span>
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black cursor-pointer hover:opacity-80 transition-opacity" style="background:#C9A84C;color:#163020">T</div>
                 </div>
             </div>
 
-            <!-- Expense Analytics -->
-            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <h3 class="font-bold text-slate-800 mb-1">Analitik Perbelanjaan</h3>
-                <p class="text-slate-500 text-xs mb-5">Breakdown kategori</p>
-                <div class="space-y-3">
-                    <?php
-                    $exps = [
-                        ['label'=>'COGS',          'pct'=>60,'val'=>'RM 42,000','color'=>'bg-red-500'],
-                        ['label'=>'Gaji',          'pct'=>20,'val'=>'RM 14,000','color'=>'bg-orange-400'],
-                        ['label'=>'Marketing',     'pct'=>11,'val'=>'RM 7,700', 'color'=>'bg-yellow-400'],
-                        ['label'=>'Operasi Lain',  'pct'=>9, 'val'=>'RM 6,800', 'color'=>'bg-slate-400'],
-                    ];
-                    foreach ($exps as $e):
-                    ?>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1.5">
-                            <span class="text-slate-600 font-medium"><?= $e['label'] ?></span>
-                            <span class="text-slate-800 font-bold"><?= $e['val'] ?></span>
-                        </div>
-                        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full <?= $e['color'] ?> rounded-full" style="width:<?= $e['pct'] ?>%"></div>
-                        </div>
-                    </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <span class="text-xs text-slate-500">Jumlah Perbelanjaan</span>
-                    <span class="font-black text-slate-900">RM 70,500</span>
-                </div>
-            </div>
-
-            <!-- Costing Analysis -->
-            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <h3 class="font-bold text-slate-800 mb-1">Analisis Costing</h3>
-                <p class="text-slate-500 text-xs mb-5">Margin untung produk</p>
-                <div class="space-y-4">
-                    <?php
-                    $products = [
-                        ['name'=>'Produk A','cost'=>'RM 12','price'=>'RM 35','margin'=>66,'cls'=>'text-emerald-600'],
-                        ['name'=>'Produk B','cost'=>'RM 28','price'=>'RM 55','margin'=>49,'cls'=>'text-slate-700'],
-                        ['name'=>'Produk C','cost'=>'RM 5', 'price'=>'RM 18','margin'=>72,'cls'=>'text-emerald-600'],
-                    ];
-                    foreach ($products as $p):
-                    ?>
-                    <div class="flex items-center gap-3">
-                        <div class="flex-1">
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="font-semibold text-slate-700"><?= $p['name'] ?></span>
-                                <span class="<?= $p['cls'] ?> font-bold"><?= $p['margin'] ?>% margin</span>
+            <!-- ── DASHBOARD PANEL ───────────────────────── -->
+            <div id="panel-dash" class="bg-slate-50 p-4">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="lg:col-span-2 space-y-4">
+                        <!-- Expenses Overview -->
+                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-slate-800 text-sm">Expenses Overview</h4>
+                                <span class="text-xs text-slate-400 border border-slate-200 rounded-md px-2 py-0.5 cursor-pointer hover:bg-slate-50 transition-colors">Monthly ▾</span>
                             </div>
-                            <div class="text-xs text-slate-400">Kos: <?= $p['cost'] ?> &nbsp;→&nbsp; Jual: <?= $p['price'] ?></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">EXPENSES COMPOSITION</p>
+                                    <div class="flex justify-center mb-3">
+                                        <div class="relative w-24 h-24">
+                                            <div class="w-24 h-24 rounded-full" style="background:conic-gradient(#3b82f6 0% 10%,#a855f7 10% 11%,#f97316 11% 52%,#e5e7eb 52% 100%)"></div>
+                                            <div class="absolute inset-3 bg-white rounded-full flex flex-col items-center justify-center">
+                                                <p class="text-xs font-black text-slate-800 leading-none">RM 893</p>
+                                                <p class="text-slate-400" style="font-size:9px">Total Spent</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span><span class="text-slate-600 flex-1">OPEX</span><span class="font-semibold">RM 92</span></div>
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span><span class="text-slate-600 flex-1">Marketing</span><span class="font-semibold">RM 0</span></div>
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span><span class="text-slate-600 flex-1">COGS</span><span class="font-semibold">RM 801</span></div>
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0"></span><span class="text-slate-600 flex-1">Remaining</span><span class="font-semibold">RM 2,107</span></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">BUDGET HEALTH</p>
+                                    <div class="flex justify-center mb-3">
+                                        <div class="relative w-24 h-24">
+                                            <div class="w-24 h-24 rounded-full" style="background:conic-gradient(#ef4444 0% 44%,#10b981 44% 100%)"></div>
+                                            <div class="absolute inset-3 bg-white rounded-full flex flex-col items-center justify-center">
+                                                <p class="text-xs font-black text-slate-800 leading-none">43.6%</p>
+                                                <p class="text-slate-400" style="font-size:9px">Expenses used</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1 text-xs">
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 shrink-0"></span><span class="text-slate-600 flex-1">Total Expenses</span><span class="font-semibold">43.6%</span></div>
+                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span><span class="text-slate-600 flex-1">Net Profit</span><span class="font-bold text-emerald-600">RM 1,156.90</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Daily Overview -->
+                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
+                            <div class="flex items-center justify-between mb-1">
+                                <div><h4 class="font-bold text-slate-800 text-sm">Daily Overview</h4><p class="text-xs text-slate-400">May 2026</p></div>
+                                <div class="flex gap-1">
+                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-white cursor-pointer" style="background:#163020">Day</button>
+                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">Month</button>
+                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">Year</button>
+                                </div>
+                            </div>
+                            <div class="flex items-end gap-px h-20 mt-4 px-1">
+<?php
+$rev = [1,1,1,60,40,2,1,5,1,4,3,2,5,1,6,3,5,1,95,65,4,3,2,4,1,2,5,2,1,3,1];
+$exp = [0,0,0,35,10,0,0,0,0,0,0,0,0,0,0,0,0,0,75,15,0,0,0,0,0,0,0,2,0,0,0];
+foreach ($rev as $di => $rv):
+    $ev = $exp[$di]??0;
+?>
+                                <div class="flex-1 flex gap-px items-end h-full group">
+                                    <div class="flex-1 rounded-t transition-all group-hover:opacity-70 cursor-pointer" style="height:<?= max(2,$rv) ?>%;background:#163020" title="Day <?= $di+1 ?>: RM <?= $rv*10 ?>"></div>
+                                    <?php if($ev>0):?><div class="w-1 rounded-t group-hover:opacity-70 cursor-pointer" style="height:<?= $ev ?>%;background:#f87171"></div><?php endif;?>
+                                </div>
+<?php endforeach; ?>
+                            </div>
+                            <div class="flex gap-4 mt-2 text-xs text-slate-500">
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:#163020"></span>Revenue</span>
+                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-400"></span>Expenses</span>
+                            </div>
                         </div>
                     </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="mt-5 rounded-xl p-3" style="background:#F0EBD8;border:1px solid #E8D47A">
-                    <p class="text-xs font-medium text-center" style="color:#163020">📊 BEP dicapai pada RM 18,500/bulan</p>
+                    <!-- Recent Transactions -->
+                    <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="font-bold text-slate-800 text-sm">Recent Transactions</h4>
+                            <div class="flex gap-2 text-xs">
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>In</span>
+                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-400"></span>Out</span>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-slate-50">
+<?php
+$txns=[
+    ['n'=>'Raw materials',     'c'=>'COGS · 27 May',             'a'=>'− RM 44.30',  'in'=>false],
+    ['n'=>'Agent',             'c'=>'Agent Setia Alam · 19 May', 'a'=>'+ RM 748.00', 'in'=>true],
+    ['n'=>'Raw material (NSK)','c'=>'COGS · 18 May',             'a'=>'− RM 360.80', 'in'=>false],
+    ['n'=>'Outlet meru',       'c'=>'Walk-in · 17 May',          'a'=>'+ RM 57.00',  'in'=>true],
+    ['n'=>'Outlet meru',       'c'=>'Walk-in · 16 May',          'a'=>'+ RM 89.00',  'in'=>true],
+    ['n'=>'Outlet meru',       'c'=>'Walk-in · 15 May',          'a'=>'+ RM 110.00', 'in'=>true],
+];
+foreach($txns as $t):
+?>
+                            <div class="flex items-center gap-2.5 py-2.5 px-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
+                                <span class="w-2 h-2 rounded-full shrink-0 <?= $t['in']?'bg-emerald-500':'bg-red-400' ?>"></span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($t['n']) ?></p>
+                                    <p class="text-xs text-slate-400"><?= htmlspecialchars($t['c']) ?></p>
+                                </div>
+                                <span class="text-xs font-bold shrink-0 <?= $t['in']?'text-emerald-600':'text-red-500' ?>"><?= $t['a'] ?></span>
+                            </div>
+<?php endforeach; ?>
+                        </div>
+                        <div class="flex justify-between mt-3 pt-3 border-t border-slate-100">
+                            <span class="text-xs font-semibold cursor-pointer hover:underline" style="color:#163020">Revenue →</span>
+                            <span class="text-xs font-semibold text-red-500 cursor-pointer hover:underline">Expenses →</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-        </div><!-- end grid -->
-        <?php endif; ?>
+            <!-- ── EXPENSES PANEL ────────────────────────── -->
+            <div id="panel-exp" class="hidden bg-slate-50 p-4">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Expenses</h3>
+                        <p class="text-xs text-slate-500">Track OPEX, Marketing &amp; COGS against your revenue targets</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="text-xs font-bold text-white px-4 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-opacity" style="background:#163020">+ Add Expense</button>
+                        <button class="text-xs font-semibold text-slate-600 border border-slate-200 bg-white px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">↓ Export</button>
+                        <button class="text-xs font-semibold text-slate-600 border border-slate-200 bg-white px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">⚙ Configure Budget %</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center gap-4 mb-5">
+                    <button class="text-slate-400 hover:text-slate-700 cursor-pointer text-xl leading-none">‹</button>
+                    <div class="text-center"><p class="font-bold text-slate-800 text-sm">May 2026</p><p class="text-xs text-slate-400">Current Month</p></div>
+                    <button class="text-slate-400 hover:text-slate-700 cursor-pointer text-xl leading-none">›</button>
+                </div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+<?php
+$bc=[
+    ['lbl'=>'25% of target','bg'=>'bg-blue-100 text-blue-700',    't'=>'OPEX',             's'=>'Rent, Utilities, Salaries','v'=>'RM 92.00', 'tg'=>'RM 750.00', 'p'=>12,'b'=>'bg-blue-500'],
+    ['lbl'=>'5% of target', 'bg'=>'bg-purple-100 text-purple-700','t'=>'Marketing Expenses','s'=>'Ads, Promotions',           'v'=>'RM 0.00',  'tg'=>'RM 150.00', 'p'=>0, 'b'=>'bg-purple-400'],
+    ['lbl'=>'40% of target','bg'=>'bg-yellow-100 text-yellow-700','t'=>'COGS',              's'=>'Raw Materials, Production',  'v'=>'RM 801.10','tg'=>'RM 1,200.00','p'=>67,'b'=>'bg-yellow-400'],
+    ['lbl'=>'70.2% Net Profit','bg'=>'bg-emerald-100 text-emerald-700','t'=>'Expected Profit','s'=>'Revenue after expenses','v'=>'RM 2,106.90','tg'=>'RM 3,000.00','p'=>70,'b'=>'bg-emerald-500','pr'=>true],
+];
+foreach($bc as $c):
+?>
+                    <div class="bg-white border border-slate-100 rounded-xl p-3 shadow-sm card-hover cursor-pointer">
+                        <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-2 <?= $c['bg'] ?>"><?= $c['lbl'] ?></span>
+                        <p class="font-bold text-slate-800 text-sm"><?= $c['t'] ?></p>
+                        <p class="text-xs text-slate-400 mb-2"><?= $c['s'] ?></p>
+                        <p class="font-black text-slate-900 <?= ($c['pr']??false)?'text-emerald-600':'' ?>"><?= $c['v'] ?></p>
+                        <p class="text-xs text-slate-400">/ <?= $c['tg'] ?></p>
+                        <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full <?= $c['b'] ?> rounded-full" style="width:<?= $c['p'] ?>%"></div></div>
+                    </div>
+<?php endforeach; ?>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1 h-4 rounded-full" style="background:#163020"></span>
+                            <div><p class="font-bold text-slate-800 text-sm">Expenses</p><p class="text-xs text-slate-400">May 2026 · 4 records</p></div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-1.5 cursor-text">
+                                <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <span class="text-xs text-slate-400">Cari deskripsi...</span>
+                            </div>
+                            <span class="font-bold text-slate-800 text-sm">RM 893.10</span>
+                        </div>
+                    </div>
+                    <table class="w-full text-xs">
+                        <thead><tr class="border-b border-slate-100 bg-slate-50">
+                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Date</th>
+                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Category</th>
+                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider hidden sm:table-cell">Description</th>
+                            <th class="text-right px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Amount</th>
+                            <th class="px-4 py-2 hidden sm:table-cell"></th>
+                        </tr></thead>
+                        <tbody>
+<?php
+$er=[
+    ['d'=>'27 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw materials',      'a'=>'RM 44.30'],
+    ['d'=>'18 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw material (NSK)',  'a'=>'RM 360.80'],
+    ['d'=>'15 May 2026','cat'=>'OPEX','cc'=>'bg-blue-100 text-blue-700',    'desc'=>'Grab express',        'a'=>'RM 92.00'],
+    ['d'=>'04 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw materials (NSK)', 'a'=>'RM 396.00'],
+];
+foreach($er as $r):
+?>
+                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group">
+                            <td class="px-4 py-3 text-slate-500"><?= $r['d'] ?></td>
+                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full font-bold <?= $r['cc'] ?>"><?= $r['cat'] ?></span></td>
+                            <td class="px-4 py-3 font-medium text-slate-700 group-hover:text-slate-900 hidden sm:table-cell"><?= htmlspecialchars($r['desc']) ?></td>
+                            <td class="px-4 py-3 font-bold text-slate-800 text-right"><?= $r['a'] ?></td>
+                            <td class="px-4 py-3 text-center hidden sm:table-cell"><span class="text-slate-400 hover:text-slate-700 cursor-pointer mr-2 transition-colors">✏</span><span class="text-red-400 hover:text-red-600 cursor-pointer transition-colors">🗑</span></td>
+                        </tr>
+<?php endforeach; ?>
+                        <tr class="bg-slate-50 border-t-2 border-slate-200"><td class="px-4 py-2 font-bold text-slate-500 text-xs uppercase tracking-wider" colspan="3">TOTAL</td><td class="px-4 py-2 font-black text-slate-800 text-right" colspan="2">RM 893.10</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── BALANCE SHEET PANEL ───────────────────── -->
+            <div id="panel-bs" class="hidden bg-slate-50 p-4">
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div><h3 class="text-lg font-black text-slate-900">Balance Sheet</h3><p class="text-xs text-slate-400">Statement of Financial Position</p></div>
+                        <button class="text-xs font-bold text-white px-4 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-opacity" style="background:#163020">↓ Download CSV ▾</button>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+                        <p class="text-xs text-slate-500 mb-2">As at date</p>
+                        <div class="flex gap-2">
+                            <div class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 cursor-text bg-slate-50">31/05/2026</div>
+                            <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 cursor-pointer hover:bg-slate-50 transition-colors">Load</button>
+                        </div>
+                    </div>
+                    <!-- P&L Summary -->
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                                <span class="font-bold text-slate-800 text-sm">P&amp;L Summary</span>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Auto</span>
+                            </div>
+                            <span class="text-slate-400">∧</span>
+                        </div>
+                        <div class="border-t border-slate-100 px-4 py-3 space-y-1.5">
+<?php
+$pls=[
+    ['l'=>'Revenue',             'v'=>'RM 2,050.00', 'c'=>'text-emerald-600 font-bold','indent'=>false],
+    ['l'=>'Less: Cost of Sales', 'v'=>'RM 801.10 (−)','c'=>'text-red-500',             'indent'=>true],
+    ['l'=>'Gross Profit',        'v'=>'RM 1,248.90',  'c'=>'font-bold text-slate-800', 'indent'=>false,'border'=>true],
+    ['l'=>'Less: OPEX',          'v'=>'RM 92.00 (−)', 'c'=>'text-red-500',             'indent'=>true],
+    ['l'=>'Less: Marketing',     'v'=>'RM 0.00',      'c'=>'text-slate-500',           'indent'=>true],
+    ['l'=>'Net Profit / (Loss)', 'v'=>'RM 1,156.90',  'c'=>'text-emerald-600 font-black','indent'=>false,'border'=>true],
+];
+foreach($pls as $p):
+?>
+                            <div class="flex justify-between text-xs py-0.5 <?= ($p['indent']??false)?'pl-5':'' ?> <?= ($p['border']??false)?'border-t border-slate-200 pt-2 mt-1':'' ?>">
+                                <span class="text-slate-600"><?= htmlspecialchars($p['l']) ?></span>
+                                <span class="<?= $p['c'] ?>"><?= $p['v'] ?></span>
+                            </div>
+<?php endforeach; ?>
+                        </div>
+                    </div>
+                    <!-- Assets -->
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <div class="px-4 py-3 font-bold text-white text-xs uppercase tracking-widest" style="background:#163020">ASSETS</div>
+                        <div class="px-4 py-4 space-y-2">
+                            <p class="font-bold text-slate-700 text-xs mb-2">Non-Current Asset</p>
+                            <div class="flex justify-between text-xs items-center py-1.5 hover:bg-slate-50 rounded px-1 cursor-pointer transition-colors border-b border-slate-50">
+                                <span class="text-slate-600">Property, plant and equipment <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 ml-1">Auto</span></span>
+                                <span class="font-bold text-slate-800">RM 0.00</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold py-1.5 border-b border-slate-200">
+                                <span class="text-slate-500">Total non-current asset</span><span class="text-slate-800">RM 0.00</span>
+                            </div>
+                            <p class="font-bold text-slate-700 text-xs mt-3 mb-2">Current Assets</p>
+<?php foreach(['Inventories','Trade receivables','Other receivables'] as $a): ?>
+                            <div class="flex justify-between text-xs items-center py-1.5 hover:bg-slate-50 rounded px-1 cursor-pointer transition-colors border-b border-slate-50">
+                                <span class="text-slate-600"><?= htmlspecialchars($a) ?> <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 ml-1">Auto</span></span>
+                                <span class="font-bold text-slate-800">RM 0.00</span>
+                            </div>
+<?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /browser frame -->
+
+        <div class="text-center mt-8">
+            <a href="<?= $siteBase ?>/register" class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm">Cuba Sendiri — Percuma →</a>
+        </div>
     </div>
 </section>
+
+<style>
+.active-tab   { color:#fff!important; border-color:transparent!important; background:#163020!important; }
+.inactive-tab { color:#475569; border-color:#e2e8f0; background:#fff; }
+.inactive-tab:hover { border-color:#163020; color:#163020; }
+</style>
+<script>
+function showTab(name) {
+    var urls  = {dash:'dashboard', exp:'expenses', bs:'balance-sheet'};
+    var navs  = {dash:'dashboard', exp:'expenses', bs:'balance'};
+    ['dash','exp','bs'].forEach(function(t) {
+        var p = document.getElementById('panel-'+t);
+        var b = document.getElementById('tab-'+t);
+        if (p) p.classList.toggle('hidden', t !== name);
+        if (b) { b.className = b.className.replace('active-tab','inactive-tab'); }
+    });
+    var btn = document.getElementById('tab-'+name);
+    if (btn) btn.className = btn.className.replace('inactive-tab','active-tab');
+    var bar = document.getElementById('url-bar');
+    if (bar) bar.textContent = 'ezkira.com/' + (urls[name]||name);
+    document.querySelectorAll('.mock-nav-item').forEach(function(el) {
+        el.style.color=''; el.style.borderBottomColor='transparent';
+    });
+    var nav = document.getElementById('nav-'+navs[name]);
+    if (nav) { nav.style.color='#C9A84C'; nav.style.borderBottomColor='#C9A84C'; }
+}
+</script>
 
 <!-- ============================================================ -->
 <!-- SECTION 7: SOCIAL PROOF                                      -->
