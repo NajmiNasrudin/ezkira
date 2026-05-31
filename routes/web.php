@@ -85,4 +85,4 @@ $router->post('/theme/toggle',  'AuthController@toggleTheme',  []);
 // ============================================================
 // Root redirect
 // ============================================================
-$router->get('/', 'DashboardController@index', [AuthMiddleware::class]);
+$router->get('/', 'LandingController@index');
