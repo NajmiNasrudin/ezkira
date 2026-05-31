@@ -3,9 +3,10 @@
  * Ezkira Landing Page — standalone, no layout dependency.
  * Variables available: BASE_URI (string), APP_URL (string), APP_NAME (string)
  */
-$appUrl  = defined('APP_URL')  ? rtrim(APP_URL, '/')  : '';
-$baseUri = defined('BASE_URI') ? BASE_URI              : '';
-$appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
+$appUrl   = 'https://ezkira.com';
+$baseUri  = defined('BASE_URI') ? BASE_URI : '';
+$appName  = defined('APP_NAME') ? APP_NAME : 'Ezkira';
+$siteBase = 'https://ezkira.com'; // All CTA links point to live site
 ?>
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
@@ -117,11 +118,11 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
 
             <!-- CTA buttons -->
             <div class="hidden md:flex items-center gap-3">
-                <a href="<?= $baseUri ?>/login"
+                <a href="<?= $siteBase ?>/login"
                    class="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-4 py-2">
                     Log Masuk
                 </a>
-                <a href="<?= $baseUri ?>/register"
+                <a href="<?= $siteBase ?>/register"
                    class="text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20">
                     Cuba Percuma
                 </a>
@@ -142,8 +143,8 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
                 <a href="#showcase"     class="py-2 hover:text-white" onclick="closeMobile()">Dashboard</a>
                 <a href="#faq"          class="py-2 hover:text-white" onclick="closeMobile()">FAQ</a>
                 <div class="flex gap-3 pt-2">
-                    <a href="<?= $baseUri ?>/login"    class="flex-1 text-center py-2.5 border border-white/20 rounded-xl text-white">Log Masuk</a>
-                    <a href="<?= $baseUri ?>/register" class="flex-1 text-center py-2.5 bg-blue-600 rounded-xl text-white font-semibold">Cuba Percuma</a>
+                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 border border-white/20 rounded-xl text-white">Log Masuk</a>
+                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 bg-blue-600 rounded-xl text-white font-semibold">Cuba Percuma</a>
                 </div>
             </div>
         </div>
@@ -182,7 +183,7 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="<?= $baseUri ?>/register"
+                    <a href="<?= $siteBase ?>/register"
                        class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-blue-600/30 text-base hover:-translate-y-0.5">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Cuba Percuma — Tiada Bayaran
@@ -478,7 +479,7 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
         </div>
 
         <div class="text-center mt-16">
-            <a href="<?= $baseUri ?>/register"
+            <a href="<?= $siteBase ?>/register"
                class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-blue-600/20 text-base hover:-translate-y-0.5">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Mula Sekarang — Percuma
@@ -499,7 +500,7 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
                 <p class="text-slate-400 text-lg leading-relaxed mb-10">
                     Jangan habiskan masa berharga anda dengan kerja pentadbiran kewangan. Biar Ezkira uruskan bahagian yang membosankan, supaya anda boleh fokus mengembangkan bisnes.
                 </p>
-                <a href="<?= $baseUri ?>/register"
+                <a href="<?= $siteBase ?>/register"
                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-7 py-3.5 rounded-xl transition-all text-sm">
                     Cuba Percuma Sekarang →
                 </a>
@@ -872,7 +873,7 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="<?= $baseUri ?>/register"
+                <a href="<?= $siteBase ?>/register"
                    class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-5 rounded-2xl transition-all shadow-2xl shadow-blue-600/30 text-lg hover:-translate-y-1">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     Mulakan Percuma Sekarang
@@ -931,8 +932,8 @@ $appName = defined('APP_NAME') ? APP_NAME              : 'Ezkira';
             <div>
                 <h4 class="text-white font-semibold text-sm mb-4">Akaun</h4>
                 <ul class="space-y-2.5 text-sm">
-                    <li><a href="<?= $baseUri ?>/register" class="hover:text-white transition-colors">Daftar Percuma</a></li>
-                    <li><a href="<?= $baseUri ?>/login"    class="hover:text-white transition-colors">Log Masuk</a></li>
+                    <li><a href="<?= $siteBase ?>/register" class="hover:text-white transition-colors">Daftar Percuma</a></li>
+                    <li><a href="<?= $siteBase ?>/login"    class="hover:text-white transition-colors">Log Masuk</a></li>
                     <li><a href="https://wa.me/60122541050?text=Saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20Ezkira" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Hubungi Kami</a></li>
                 </ul>
                 <div class="mt-6 pt-4 border-t border-slate-800">
