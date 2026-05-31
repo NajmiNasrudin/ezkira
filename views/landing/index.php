@@ -132,18 +132,23 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <!-- Desktop nav links -->
             <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300" id="nav-links">
-                <a href="#features"   class="hover:text-white transition-colors">Ciri-ciri</a>
-                <a href="#how-it-works" class="hover:text-white transition-colors">Cara Guna</a>
-                <a href="#showcase"   class="hover:text-white transition-colors">Dashboard</a>
-                <a href="#faq"        class="hover:text-white transition-colors">FAQ</a>
+                <a href="#features"   class="hover:text-white transition-colors" data-i18n="nav_features">Ciri-ciri</a>
+                <a href="#how-it-works" class="hover:text-white transition-colors" data-i18n="nav_howto">Cara Guna</a>
+                <a href="#showcase"   class="hover:text-white transition-colors" data-i18n="nav_dashboard">Dashboard</a>
+                <a href="#faq"        class="hover:text-white transition-colors" data-i18n="nav_faq">FAQ</a>
             </div>
 
+            <!-- Lang toggle -->
+            <div class="hidden md:flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5 mr-1">
+                <button onclick="setLang('ms')" id="lang-btn-ms"
+                    class="text-xs font-black px-2.5 py-1 rounded-md transition-all cursor-pointer text-white" style="background:rgba(201,168,76,0.8);color:#163020">BM</button>
+                <button onclick="setLang('en')" id="lang-btn-en"
+                    class="text-xs font-black px-2.5 py-1 rounded-md transition-all cursor-pointer text-slate-400 hover:text-white">EN</button>
+            </div>
             <!-- CTA buttons -->
             <div class="hidden md:flex items-center gap-3">
                 <a href="<?= $siteBase ?>/login"
-                   class="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-4 py-2">
-                    Log Masuk
-                </a>
+                   class="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-4 py-2" data-i18n="nav_login">Log Masuk</a>
                 <a href="<?= $siteBase ?>/register"
                    class="btn-gold btn-gold-shadow text-sm px-5 py-2.5 rounded-xl">
                     Cuba Percuma
@@ -160,13 +165,19 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden py-4 border-t border-white/10">
             <div class="flex flex-col gap-3 text-sm font-medium text-slate-300">
-                <a href="#features"     class="py-2 hover:text-white" onclick="closeMobile()">Ciri-ciri</a>
-                <a href="#how-it-works" class="py-2 hover:text-white" onclick="closeMobile()">Cara Guna</a>
-                <a href="#showcase"     class="py-2 hover:text-white" onclick="closeMobile()">Dashboard</a>
-                <a href="#faq"          class="py-2 hover:text-white" onclick="closeMobile()">FAQ</a>
+                <a href="#features"     class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_features">Ciri-ciri</a>
+                <a href="#how-it-works" class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_howto">Cara Guna</a>
+                <a href="#showcase"     class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_dashboard">Dashboard</a>
+                <a href="#faq"          class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_faq">FAQ</a>
+                <div class="flex gap-1 pb-2">
+                    <button onclick="setLang('ms')" id="lang-btn-ms-mob"
+                        class="flex-1 text-center py-1.5 text-xs font-black rounded-lg cursor-pointer transition-all" style="background:rgba(201,168,76,0.9);color:#163020">BM</button>
+                    <button onclick="setLang('en')" id="lang-btn-en-mob"
+                        class="flex-1 text-center py-1.5 text-xs font-black rounded-lg text-slate-300 border border-white/20 cursor-pointer hover:bg-white/10 transition-all">EN</button>
+                </div>
                 <div class="flex gap-3 pt-2">
-                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 btn-outline-white rounded-xl">Log Masuk</a>
-                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 btn-gold rounded-xl">Cuba Percuma</a>
+                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 btn-outline-white rounded-xl" data-i18n="nav_login">Log Masuk</a>
+                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 btn-gold rounded-xl" data-i18n="nav_register">Cuba Percuma</a>
                 </div>
             </div>
         </div>
@@ -192,7 +203,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
             <div class="text-center lg:text-left">
                 <div class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-6" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:#E8D47A">
                     <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background:#C9A84C"></span>
-                    Platform Kewangan untuk PKS Malaysia
+                    <span data-i18n="hero_badge">Platform Kewangan untuk PKS Malaysia</span>
                 </div>
 
                 <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-6">
@@ -206,12 +217,14 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="<?= $siteBase ?>/register"
-                       class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base">
+                       class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base"
+                       data-i18n="hero_cta1">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Cuba Percuma — Tiada Bayaran
                     </a>
                     <a href="#showcase"
-                       class="btn-outline-white inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold">
+                       class="btn-outline-white inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold"
+                       data-i18n="hero_cta2">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Lihat Demo
                     </a>
@@ -342,9 +355,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="problem" class="py-24 bg-white section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Adakah Ini Masalah Anda?</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Masih Urus Kewangan<br><span class="gradient-text">Secara Manual?</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto">Ramai pemilik bisnes masih bergelut dengan masalah yang sama. Anda tidak bersendirian.</p>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="problem_label">Adakah Ini Masalah Anda?</span>
+            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="problem_h2">Masih Urus Kewangan<br><span class="gradient-text">Secara Manual?</span></h2>
+            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="problem_subtitle">Ramai pemilik bisnes masih bergelut dengan masalah yang sama. Anda tidak bersendirian.</p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -357,13 +370,13 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 ['icon'=>'⏳', 'title'=>'Ambil Masa Buat Laporan',  'desc'=>'Berjam-jam habis untuk susun data dan siapkan laporan kewangan setiap bulan.'],
                 ['icon'=>'🔀', 'title'=>'Data Kewangan Tak Tersusun','desc'=>'Tiada gambaran jelas tentang perbelanjaan, pendapatan dan kedudukan kewangan semasa.'],
             ];
-            foreach ($problems as $p):
+            foreach ($problems as $idx => $p):
             ?>
             <div class="relative bg-red-50 border border-red-100 rounded-2xl p-6 card-hover">
                 <div class="text-3xl mb-4"><?= $p['icon'] ?></div>
                 <div class="absolute top-4 right-4 text-red-400 font-bold text-lg">✕</div>
-                <h3 class="font-bold text-slate-800 text-base mb-2"><?= htmlspecialchars($p['title']) ?></h3>
-                <p class="text-slate-500 text-sm leading-relaxed"><?= htmlspecialchars($p['desc']) ?></p>
+                <h3 class="font-bold text-slate-800 text-base mb-2" data-i18n="pain_<?= $idx ?>_title"><?= htmlspecialchars($p['title']) ?></h3>
+                <p class="text-slate-500 text-sm leading-relaxed" data-i18n="pain_<?= $idx ?>_desc"><?= htmlspecialchars($p['desc']) ?></p>
             </div>
             <?php endforeach; ?>
         </div>
@@ -371,7 +384,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         <!-- Transition arrow -->
         <div class="text-center mt-16">
             <div class="inline-flex flex-col items-center gap-2">
-                <p class="text-slate-500 text-sm font-medium">Ezkira menyelesaikan semua masalah ini</p>
+                <p class="text-slate-500 text-sm font-medium" data-i18n="problem_cta_text">Ezkira menyelesaikan semua masalah ini</p>
                 <div class="w-8 h-8 rounded-full flex items-center justify-center animate-bounce" style="background:#C9A84C">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                 </div>
@@ -386,9 +399,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="features" class="py-24 bg-cream section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Ciri-Ciri Platform</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Semua Yang Anda Perlukan<br><span class="gradient-text">Dalam Satu Platform</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto">Direka khas untuk pemilik bisnes Malaysia yang mahu urus kewangan dengan lebih profesional dan efisien.</p>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="feat_label">Ciri-Ciri Platform</span>
+            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="feat_h2">Semua Yang Anda Perlukan<br><span class="gradient-text">Dalam Satu Platform</span></h2>
+            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="feat_subtitle">Direka khas untuk pemilik bisnes Malaysia yang mahu urus kewangan dengan lebih profesional dan efisien.</p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -445,7 +458,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 'indigo' => 'border',  // handled via inline style
             ];
             $inlineStyle = ['blue' => 'background:#F0EBD8;color:#163020;border-color:#E8D47A', 'indigo' => 'background:#EDF7F0;color:#163020;border-color:#C9A84C'];
-            foreach ($features as $f):
+            foreach ($features as $fidx => $f):
                 $cls   = $colorMap[$f['color']] ?? 'border';
                 $style = $inlineStyle[$f['color']] ?? '';
             ?>
@@ -453,8 +466,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 <div class="w-12 h-12 <?= $cls ?> rounded-xl flex items-center justify-center mb-4" style="<?= $style ?>">
                     <?= $f['icon'] ?>
                 </div>
-                <h3 class="font-bold text-slate-800 text-sm mb-2"><?= htmlspecialchars($f['title']) ?></h3>
-                <p class="text-slate-500 text-sm leading-relaxed"><?= $f['desc'] ?></p>
+                <h3 class="font-bold text-slate-800 text-sm mb-2" data-i18n="feat_<?= $fidx ?>_title"><?= htmlspecialchars($f['title']) ?></h3>
+                <p class="text-slate-500 text-sm leading-relaxed" data-i18n="feat_<?= $fidx ?>_desc"><?= $f['desc'] ?></p>
             </div>
             <?php endforeach; ?>
         </div>
@@ -467,9 +480,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="how-it-works" class="py-24 bg-white section-fade">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Cara Penggunaan</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Mulakan Dalam<br><span class="gradient-text">3 Langkah Mudah</span></h2>
-            <p class="text-slate-500 text-lg">Setup pantas — tidak perlukan latihan khas atau pengetahuan perakaunan.</p>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="howto_label">Cara Penggunaan</span>
+            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="howto_h2">Mulakan Dalam<br><span class="gradient-text">3 Langkah Mudah</span></h2>
+            <p class="text-slate-500 text-lg" data-i18n="howto_subtitle">Setup pantas — tidak perlukan latihan khas atau pengetahuan perakaunan.</p>
         </div>
 
         <div class="relative">
@@ -487,7 +500,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 $stepNumStyle = 'background:#163020;color:#C9A84C';
                 $stepBgStyle  = ['blue'=>'background:#F0EBD8;border-color:#E8D47A','indigo'=>'background:#EDF7F0;border-color:#C9A84C','emerald'=>'background:#EDF7F0;border-color:#C9A84C'];
                 $stepIconStyle= 'color:#163020';
-                foreach ($steps as $s):
+                foreach ($steps as $sidx => $s):
                 ?>
                 <div class="flex flex-col items-center text-center">
                     <div class="relative mb-8">
@@ -496,8 +509,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                         </div>
                         <span class="absolute -top-3 -right-3 w-8 h-8 text-xs font-black rounded-xl flex items-center justify-center" style="<?= $stepNumStyle ?>"><?= $s['num'] ?></span>
                     </div>
-                    <h3 class="font-bold text-slate-800 text-base mb-3"><?= htmlspecialchars($s['title']) ?></h3>
-                    <p class="text-slate-500 text-sm leading-relaxed"><?= htmlspecialchars($s['desc']) ?></p>
+                    <h3 class="font-bold text-slate-800 text-base mb-3" data-i18n="step_<?= $sidx ?>_title"><?= htmlspecialchars($s['title']) ?></h3>
+                    <p class="text-slate-500 text-sm leading-relaxed" data-i18n="step_<?= $sidx ?>_desc"><?= htmlspecialchars($s['desc']) ?></p>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -505,7 +518,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
         <div class="text-center mt-16">
             <a href="<?= $siteBase ?>/register"
-               class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-base">
+               class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-base"
+               data-i18n="howto_cta">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Mula Sekarang — Percuma
             </a>
@@ -520,8 +534,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-                <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Kenapa Ezkira</span>
-                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6">Lebih Masa Untuk<br><span class="gradient-text">Fokus Kepada Bisnes</span></h2>
+                <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="benefits_label">Kenapa Ezkira</span>
+                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6" data-i18n="benefits_h2">Lebih Masa Untuk<br><span class="gradient-text">Fokus Kepada Bisnes</span></h2>
                 <p class="text-slate-400 text-lg leading-relaxed mb-10">
                     Jangan habiskan masa berharga anda dengan kerja pentadbiran kewangan. Biar Ezkira uruskan bahagian yang membosankan, supaya anda boleh fokus mengembangkan bisnes.
                 </p>
@@ -541,12 +555,12 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     ['icon'=>'🧾', 'title'=>'Mudah Urus Cukai',       'desc'=>'Semua rekod tersedia untuk pengemukaan cukai tahunan.'],
                     ['icon'=>'🎯', 'title'=>'Keputusan Lebih Tepat',  'desc'=>'Data real-time untuk buat keputusan bisnes yang bijak.'],
                 ];
-                foreach ($benefits as $b):
+                foreach ($benefits as $bidx => $b):
                 ?>
                 <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
                     <div class="text-2xl mb-3"><?= $b['icon'] ?></div>
-                    <h3 class="font-bold text-white text-sm mb-1.5"><?= htmlspecialchars($b['title']) ?></h3>
-                    <p class="text-slate-400 text-xs leading-relaxed"><?= htmlspecialchars($b['desc']) ?></p>
+                    <h3 class="font-bold text-white text-sm mb-1.5" data-i18n="ben_<?= $bidx ?>_title"><?= htmlspecialchars($b['title']) ?></h3>
+                    <p class="text-slate-400 text-xs leading-relaxed" data-i18n="ben_<?= $bidx ?>_desc"><?= htmlspecialchars($b['desc']) ?></p>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -561,9 +575,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="showcase" class="py-24 bg-cream section-fade">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Platform Preview</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-4">Dashboard Yang <span class="gradient-text">Profesional &amp; Lengkap</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="showcase_label">Platform Preview</span>
+            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-4" data-i18n="showcase_h2">Dashboard Yang <span class="gradient-text">Profesional &amp; Lengkap</span></h2>
+            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="showcase_subtitle">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
         </div>
 
         <!-- Tab buttons -->
@@ -872,7 +886,7 @@ foreach($pls as $p):
         </div><!-- /browser frame -->
 
         <div class="text-center mt-8">
-            <a href="<?= $siteBase ?>/register" class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm">Cuba Sendiri — Percuma →</a>
+            <a href="<?= $siteBase ?>/register" class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm" data-i18n="showcase_cta">Cuba Sendiri — Percuma →</a>
         </div>
     </div>
 </section>
@@ -931,8 +945,8 @@ function showTab(name) {
 
         <!-- Testimonials -->
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-black text-slate-900 mb-3">Apa Kata Pengguna Kami</h2>
-            <p class="text-slate-500">Bisnes nyata. Hasil nyata.</p>
+            <h2 class="text-3xl font-black text-slate-900 mb-3" data-i18n="proof_h2">Apa Kata Pengguna Kami</h2>
+            <p class="text-slate-500" data-i18n="proof_subtitle">Bisnes nyata. Hasil nyata.</p>
         </div>
 
         <div class="grid md:grid-cols-3 gap-6">
@@ -993,8 +1007,8 @@ function showTab(name) {
 <section id="faq" class="py-24 bg-cream section-fade">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Soalan Lazim</span>
-            <h2 class="text-4xl font-black text-slate-900 mb-4">Ada Soalan?<br><span class="gradient-text">Kami Ada Jawapannya</span></h2>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="faq_label">Soalan Lazim</span>
+            <h2 class="text-4xl font-black text-slate-900 mb-4" data-i18n="faq_h2">Ada Soalan?<br><span class="gradient-text">Kami Ada Jawapannya</span></h2>
         </div>
 
         <div class="space-y-3" id="faq-list">
@@ -1051,7 +1065,7 @@ function showTab(name) {
         </div>
 
         <div class="text-center mt-12">
-            <p class="text-slate-500 text-sm">Masih ada soalan? <a href="https://wa.me/60122541050?text=Saya%20ada%20soalan%20tentang%20Ezkira" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank" rel="noopener noreferrer">Hubungi kami di WhatsApp →</a></p>
+            <p class="text-slate-500 text-sm" data-i18n="faq_contact">Masih ada soalan? <a href="https://wa.me/60122541050?text=Saya%20ada%20soalan%20tentang%20Ezkira" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank" rel="noopener noreferrer">Hubungi kami di WhatsApp →</a></p>
         </div>
     </div>
 </section>
@@ -1127,22 +1141,22 @@ function showTab(name) {
 
             <!-- Platform links -->
             <div>
-                <h4 class="text-white font-semibold text-sm mb-4">Platform</h4>
+                <h4 class="text-white font-semibold text-sm mb-4" data-i18n="footer_platform">Platform</h4>
                 <ul class="space-y-2.5 text-sm">
                     <li><a href="#features"     class="hover:text-white transition-colors">Ciri-Ciri</a></li>
-                    <li><a href="#how-it-works" class="hover:text-white transition-colors">Cara Guna</a></li>
+                    <li><a href="#how-it-works" class="hover:text-white transition-colors" data-i18n="nav_howto">Cara Guna</a></li>
                     <li><a href="#showcase"     class="hover:text-white transition-colors">Dashboard Demo</a></li>
-                    <li><a href="#faq"          class="hover:text-white transition-colors">FAQ</a></li>
+                    <li><a href="#faq"          class="hover:text-white transition-colors" data-i18n="nav_faq">FAQ</a></li>
                 </ul>
             </div>
 
             <!-- Akaun links -->
             <div>
-                <h4 class="text-white font-semibold text-sm mb-4">Akaun</h4>
+                <h4 class="text-white font-semibold text-sm mb-4" data-i18n="footer_account">Akaun</h4>
                 <ul class="space-y-2.5 text-sm">
-                    <li><a href="<?= $siteBase ?>/register" class="hover:text-white transition-colors">Daftar Percuma</a></li>
-                    <li><a href="<?= $siteBase ?>/login"    class="hover:text-white transition-colors">Log Masuk</a></li>
-                    <li><a href="https://wa.me/60122541050?text=Saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20Ezkira" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Hubungi Kami</a></li>
+                    <li><a href="<?= $siteBase ?>/register" class="hover:text-white transition-colors" data-i18n="footer_register">Daftar Percuma</a></li>
+                    <li><a href="<?= $siteBase ?>/login"    class="hover:text-white transition-colors" data-i18n="footer_login">Log Masuk</a></li>
+                    <li><a href="https://wa.me/60122541050?text=Saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20Ezkira" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" data-i18n="footer_contact">Hubungi Kami</a></li>
                 </ul>
                 <div class="mt-6 pt-4 border-t border-slate-800">
                     <p class="text-xs mb-1">📞 <a href="tel:+60122541050" class="hover:text-white">+6012-2541050</a></p>
@@ -1153,7 +1167,7 @@ function showTab(name) {
 
         <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p class="text-xs text-slate-500">© <?= date('Y') ?> <?= htmlspecialchars($appName) ?>. Hak cipta terpelihara.</p>
-            <p class="text-xs text-slate-500">Dibina untuk usahawan Malaysia 🇲🇾</p>
+            <p class="text-xs text-slate-500" data-i18n="footer_built">Dibina untuk usahawan Malaysia 🇲🇾</p>
         </div>
     </div>
 </footer>
@@ -1248,6 +1262,120 @@ function showTab(name) {
         observer.observe(el);
     });
 
+})();
+</script>
+
+
+<script>
+// ── i18n translations ──────────────────────────────────────────
+var LANG_EN = {
+    nav_features:'Features', nav_howto:'How It Works', nav_dashboard:'Dashboard', nav_faq:'FAQ',
+    nav_login:'Login', nav_register:'Try Free',
+    hero_badge:'Financial Platform for Malaysian SMEs',
+    hero_h1:'Manage Your Business Finances<br><span class="gradient-text">Without the Headache</span>',
+    hero_subtitle:'Track profit &amp; loss, manage costing, store receipts and automatically generate financial reports in one platform.',
+    hero_cta1:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Try Free &#8212; No Payment',
+    hero_cta2:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> View Demo',
+    hero_trust:'&#10003; No credit card required &nbsp;&middot;&nbsp; &#10003; 2-minute setup &nbsp;&middot;&nbsp; &#10003; Safe &amp; private data',
+    problem_label:'Is This Your Problem?',
+    problem_h2:'Still Managing Your Finances<br><span class="gradient-text">Manually?</span>',
+    problem_subtitle:'Many business owners still struggle with the same problems. You are not alone.',
+    problem_cta_text:'Ezkira solves all these problems',
+    pain_0_title:'Scattered Receipts',        pain_0_desc:'Physical and digital receipts scattered without an organised storage system.',
+    pain_1_title:'Messy Spreadsheets',         pain_1_desc:'Complex Excel formulas, inconsistent data and hard to update daily.',
+    pain_2_title:"Don't Know Actual Profit",   pain_2_desc:"Money comes in but you don't know if the business is actually profitable.",
+    pain_3_title:'Hard to Manage Tax',         pain_3_desc:'When tax time comes, panic searching for documents to prepare statements.',
+    pain_4_title:'Reports Take Too Long',      pain_4_desc:'Hours wasted arranging data and preparing monthly financial reports.',
+    pain_5_title:'Unorganised Financial Data', pain_5_desc:'No clear picture of expenses, income and current financial position.',
+    feat_label:'Platform Features',
+    feat_h2:'Everything You Need<br><span class="gradient-text">In One Platform</span>',
+    feat_subtitle:'Designed for Malaysian business owners who want to manage finances more professionally.',
+    feat_0_title:'Costing Management',    feat_0_desc:'Calculate product costs, profit margin and break-even point easily.',
+    feat_1_title:'Expense Tracking',      feat_1_desc:'Record all business expenses with categories and monitor your budget.',
+    feat_2_title:'Revenue Tracking',      feat_2_desc:'Record all sales and income, set targets and monitor achievements.',
+    feat_3_title:'Receipt Storage',       feat_3_desc:'Save and manage digital receipts in one safe and organised place.',
+    feat_4_title:'Profit & Loss Report',  feat_4_desc:'P&L statement automatically generated — ready for accountant or tax.',
+    feat_5_title:'Balance Sheet',         feat_5_desc:'Automatic balance sheet — assets, liabilities and equity at a glance.',
+    feat_6_title:'Financial Dashboard',   feat_6_desc:'Visual dashboard with charts and financial KPIs for your business.',
+    feat_7_title:'Monthly Business Insights', feat_7_desc:'Monthly performance summary with trends and action recommendations.',
+    howto_label:'How To Use',
+    howto_h2:'Get Started In<br><span class="gradient-text">3 Easy Steps</span>',
+    howto_subtitle:'Fast setup — no special training or accounting knowledge required.',
+    step_0_title:'Enter Sales &amp; Expenses',  step_0_desc:'Record all your business transactions easily. Categorise expenses and record every sale.',
+    step_1_title:'Upload Receipts',             step_1_desc:'Take a photo of receipts or upload directly. All receipts saved securely and searchable anytime.',
+    step_2_title:'View Automatic Reports',      step_2_desc:'P&L, Balance Sheet and all financial reports generated automatically.',
+    howto_cta:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Now &#8212; Free',
+    benefits_label:'Why Ezkira',
+    benefits_h2:'More Time To<br><span class="gradient-text">Focus On Your Business</span>',
+    benefits_subtitle:"Don't spend your precious time on financial administration. Let Ezkira handle the boring parts so you can focus on growing your business.",
+    benefits_cta:'Try Free Now →',
+    ben_0_title:'Save Time',                ben_0_desc:'Reduce financial management time by up to 80%.',
+    ben_1_title:'Less Manual Work',          ben_1_desc:'Automate calculations, reports and data organisation.',
+    ben_2_title:'Organised Records',         ben_2_desc:'All financial documents and data in one place.',
+    ben_3_title:'Easy Account Management',   ben_3_desc:'Data ready for accountant — save professional costs.',
+    ben_4_title:'Easy Tax Management',       ben_4_desc:'All records available for annual tax submission.',
+    ben_5_title:'Better Decisions',          ben_5_desc:'Real-time data for making smart business decisions.',
+    showcase_label:'Platform Preview',
+    showcase_h2:'Professional &amp; Complete <span class="gradient-text">Dashboard</span>',
+    showcase_subtitle:'All your business financial data in a clear, interactive and easy-to-understand view.',
+    showcase_cta:'Try It Yourself &#8212; Free →',
+    proof_h2:'What Our Users Say', proof_subtitle:'Real businesses. Real results.',
+    stat_0:'Business Owners', stat_1:'Transactions Recorded', stat_2:'User Satisfaction', stat_3:'Average Setup Time',
+    testimonial_0_name:'Aisyah Rahimi',  testimonial_0_role:'Online Fashion Shop Owner',
+    testimonial_1_name:'Hafiz Mustaffa', testimonial_1_role:'F&amp;B Entrepreneur (2 outlets)',
+    testimonial_2_name:'Siti Norzahra',  testimonial_2_role:'Freelancer &amp; Service Provider',
+    faq_label:'Frequently Asked Questions',
+    faq_h2:'Have Questions?<br><span class="gradient-text">We Have Answers</span>',
+    faq_0_q:'Is my financial data safe?',
+    faq_1_q:'Can I use Ezkira for tax preparation?',
+    faq_2_q:'What reports can I generate with Ezkira?',
+    faq_3_q:'How does receipt storage work?',
+    faq_4_q:'Is there a free trial period?',
+    faq_5_q:'Is Ezkira suitable for SMEs and small businesses?',
+    faq_6_q:'How does Costing Management work?',
+    faq_7_q:'Can I share data with my accountant?',
+    faq_contact:'Still have questions? <a href="https://wa.me/60122541050" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank">Contact us on WhatsApp →</a>',
+    cta_h2:'Know Your Business<br>Financial Position<br><span class="gradient-text">Today</span>',
+    cta_subtitle:'All financial data in one easy-to-use platform. Start free &#8212; no credit card required.',
+    cta_btn:'Start Free Now',
+    footer_tagline:'Business finance management platform designed for Malaysian entrepreneurs and SMEs.',
+    footer_platform:'Platform', footer_account:'Account',
+    footer_register:'Register Free', footer_login:'Login', footer_contact:'Contact Us',
+    footer_built:'Built for Malaysian entrepreneurs 🇲🇾',
+};
+
+var _orig = {}, _lang = localStorage.getItem('ezlang') || 'ms';
+
+function setLang(lang) {
+    _lang = lang;
+    localStorage.setItem('ezlang', lang);
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var k = el.getAttribute('data-i18n');
+        if (!_orig[k]) _orig[k] = el.innerHTML;
+        el.innerHTML = (lang === 'en' && LANG_EN[k] !== undefined) ? LANG_EN[k] : (_orig[k] || el.innerHTML);
+    });
+    // Update toggle button styles
+    ['ms','en'].forEach(function(l) {
+        ['','  -mob'].forEach(function(sfx) {
+            var btn = document.getElementById('lang-btn-' + l + sfx.trim());
+            if (!btn) return;
+            if (l === lang) {
+                btn.style.background = 'rgba(201,168,76,0.9)'; btn.style.color = '#163020';
+                btn.classList.remove('text-slate-400','text-slate-300');
+            } else {
+                btn.style.background = ''; btn.style.color = '';
+                btn.classList.add(l==='en' ? 'text-slate-400' : 'text-slate-300');
+            }
+        });
+    });
+    // Update html lang attribute
+    document.documentElement.lang = lang === 'en' ? 'en' : 'ms';
+}
+
+// Init
+(function() {
+    document.querySelectorAll('[data-i18n]').forEach(function(el) { _orig[el.getAttribute('data-i18n')] = el.innerHTML; });
+    setLang(_lang);
 })();
 </script>
 
