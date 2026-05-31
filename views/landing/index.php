@@ -163,7 +163,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         </div>
 
         <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden py-4 border-t border-white/10">
+        <div id="mobile-menu" class="hidden md:hidden py-4 border-t border-white/10" style="background:#163020">
             <div class="flex flex-col gap-3 text-sm font-medium text-slate-300">
                 <a href="#features"     class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_features">Ciri-ciri</a>
                 <a href="#how-it-works" class="py-2 hover:text-white" onclick="closeMobile()" data-i18n="nav_howto">Cara Guna</a>
@@ -1205,6 +1205,8 @@ function showTab(name) {
         mobileMenu.classList.toggle('hidden', !menuOpen);
         hamOpen.classList.toggle('hidden', menuOpen);
         hamClose.classList.toggle('hidden', !menuOpen);
+        // Solid nav background when menu is open
+        navbar.style.background = menuOpen ? '#163020' : (window.scrollY > 20 ? 'rgba(22,48,32,0.95)' : '');
     });
 
     window.closeMobile = function () {
@@ -1212,6 +1214,7 @@ function showTab(name) {
         mobileMenu.classList.add('hidden');
         hamOpen.classList.remove('hidden');
         hamClose.classList.add('hidden');
+        navbar.style.background = window.scrollY > 20 ? 'rgba(22,48,32,0.95)' : '';
     };
 
     // ── Smooth scroll for anchor links ─────────────────────────
