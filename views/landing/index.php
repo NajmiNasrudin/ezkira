@@ -557,6 +557,18 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 6: DASHBOARD SHOWCASE                                -->
 <!-- ============================================================ -->
+<?php
+// Screenshot tabs config — save files to assets/img/screenshots/
+$screenshots = [
+    ['file' => 'dashboard.png',  'label' => 'Dashboard',        'badge' => 'Gambaran Keseluruhan'],
+    ['file' => 'expenses.png',   'label' => 'Perbelanjaan',      'badge' => 'Expense Tracking'],
+    ['file' => 'reports.png',    'label' => 'Laporan P&L',       'badge' => 'Auto-generated'],
+];
+$hasAny = false;
+foreach ($screenshots as $sc) {
+    if (file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) { $hasAny = true; break; }
+}
+?>
 <section id="showcase" class="py-24 bg-cream section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
@@ -565,6 +577,76 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
             <p class="text-slate-500 text-lg max-w-xl mx-auto">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
         </div>
 
+        <?php if ($hasAny): ?>
+        <!-- Real screenshot tabs -->
+        <div class="max-w-5xl mx-auto">
+            <!-- Tab buttons -->
+            <div class="flex flex-wrap gap-2 justify-center mb-8">
+                <?php foreach ($screenshots as $i => $sc):
+                    if (!file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) continue;
+                ?>
+                <button onclick="switchTab(<?= $i ?>)"
+                        id="tab-btn-<?= $i ?>"
+                        class="text-sm font-semibold px-5 py-2 rounded-full border-2 transition-all <?= $i === 0 ? 'text-white border-transparent' : 'text-slate-500 border-slate-200 hover:border-slate-300' ?>"
+                        style="<?= $i === 0 ? 'background:#163020' : '' ?>">
+                    <?= htmlspecialchars($sc['label']) ?>
+                </button>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Screenshot panels -->
+            <?php foreach ($screenshots as $i => $sc):
+                if (!file_exists(BASE_PATH . '/assets/img/screenshots/' . $sc['file'])) continue;
+            ?>
+            <div id="tab-panel-<?= $i ?>" class="<?= $i !== 0 ? 'hidden' : '' ?>">
+                <!-- Browser chrome frame -->
+                <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200">
+                    <!-- Fake browser bar -->
+                    <div class="flex items-center gap-2 px-4 py-3" style="background:#1e293b">
+                        <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                        <div class="flex-1 mx-4">
+                            <div class="flex items-center gap-2 bg-slate-700 rounded-md px-3 py-1 max-w-xs mx-auto">
+                                <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                <span class="text-slate-300 text-xs">ezkira.com/<?= strtolower(str_replace(' ', '', $sc['label'])) ?></span>
+                            </div>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:rgba(201,168,76,0.2);color:#C9A84C"><?= htmlspecialchars($sc['badge']) ?></span>
+                    </div>
+                    <!-- Screenshot -->
+                    <img src="<?= $baseUri ?>/assets/img/screenshots/<?= $sc['file'] ?>"
+                         alt="<?= htmlspecialchars($sc['label']) ?> — Ezkira"
+                         class="w-full block"
+                         loading="lazy">
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+
+        <script>
+        function switchTab(idx) {
+            var panels = document.querySelectorAll('[id^="tab-panel-"]');
+            var btns   = document.querySelectorAll('[id^="tab-btn-"]');
+            panels.forEach(function(p) { p.classList.add('hidden'); });
+            btns.forEach(function(b) {
+                b.style.background = '';
+                b.classList.remove('text-white', 'border-transparent');
+                b.classList.add('text-slate-500', 'border-slate-200');
+            });
+            var panel = document.getElementById('tab-panel-' + idx);
+            var btn   = document.getElementById('tab-btn-'   + idx);
+            if (panel) panel.classList.remove('hidden');
+            if (btn) {
+                btn.style.background = '#163020';
+                btn.classList.add('text-white', 'border-transparent');
+                btn.classList.remove('text-slate-500', 'border-slate-200');
+            }
+        }
+        </script>
+
+        <?php else: ?>
+        <!-- Fallback: HTML mockup cards (while screenshots not yet uploaded) -->
         <div class="grid lg:grid-cols-3 gap-5">
 
             <!-- P&L Report Card -->
@@ -717,7 +799,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 </div>
             </div>
 
-        </div>
+        </div><!-- end grid -->
+        <?php endif; ?>
     </div>
 </section>
 
@@ -935,7 +1018,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                        class="w-9 h-9 bg-emerald-600 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
                         <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     </a>
-                    <a href="mailto:sifuimmarketing@gmail.com"
+                    <a href="mailto:bizbuddyhq@gmail.com"
                        class="w-9 h-9 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center transition-colors">
                         <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                     </a>
@@ -963,7 +1046,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 </ul>
                 <div class="mt-6 pt-4 border-t border-slate-800">
                     <p class="text-xs mb-1">📞 <a href="tel:+60122541050" class="hover:text-white">+6012-2541050</a></p>
-                    <p class="text-xs">✉️ <a href="mailto:sifuimmarketing@gmail.com" class="hover:text-white">sifuimmarketing@gmail.com</a></p>
+                    <p class="text-xs">✉️ <a href="mailto:bizbuddyhq@gmail.com" class="hover:text-white">bizbuddyhq@gmail.com</a></p>
                 </div>
             </div>
         </div>
