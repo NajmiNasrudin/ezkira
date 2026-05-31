@@ -75,9 +75,20 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
     <script>tailwind.config = window.tailwind_config;</script>
 
     <style>
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
-        .hero-gradient { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); }
-        .gradient-text { background: linear-gradient(135deg, #38bdf8, #2563eb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        /* ── Brand palette ─────────────────────────────────────────── */
+        :root {
+            --green:       #163020;   /* primary dark */
+            --green-mid:   #1e4a2e;   /* medium forest */
+            --green-light: #2d6a42;   /* lighter forest */
+            --gold:        #C9A84C;   /* accent gold */
+            --gold-light:  #E8D47A;   /* soft gold */
+            --gold-dark:   #A88030;   /* deep gold */
+            --cream:       #F7F4EE;   /* warm off-white */
+            --cream-dark:  #EDE8DC;   /* card border */
+        }
+        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background: #fff; }
+        .hero-gradient { background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 50%, var(--green) 100%); }
+        .gradient-text { background: linear-gradient(135deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
         .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
@@ -88,8 +99,19 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         .section-fade.visible { opacity: 1; transform: translateY(0); }
         .chart-bar { animation: growUp 1s ease-out forwards; transform-origin: bottom; }
         @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-        .glow-blue { box-shadow: 0 0 40px rgba(37, 99, 235, 0.15); }
+        .glow-gold { box-shadow: 0 0 40px rgba(201, 168, 76, 0.20); }
         .nav-blur { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        /* Gold CTA button */
+        .btn-gold { background: var(--gold); color: var(--green); font-weight: 700; transition: background 0.2s, transform 0.2s; }
+        .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
+        .btn-gold-shadow { box-shadow: 0 12px 28px rgba(201,168,76,0.30); }
+        /* Dark green outlined button */
+        .btn-outline-white { border: 1.5px solid rgba(255,255,255,0.25); color: white; transition: border-color 0.2s, background 0.2s; }
+        .btn-outline-white:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
+        /* Section label accent */
+        .label-gold { color: var(--gold); }
+        /* Light section bg */
+        .bg-cream { background: var(--cream); }
         ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
@@ -123,7 +145,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     Log Masuk
                 </a>
                 <a href="<?= $siteBase ?>/register"
-                   class="text-sm font-semibold bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20">
+                   class="btn-gold btn-gold-shadow text-sm px-5 py-2.5 rounded-xl">
                     Cuba Percuma
                 </a>
             </div>
@@ -143,8 +165,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 <a href="#showcase"     class="py-2 hover:text-white" onclick="closeMobile()">Dashboard</a>
                 <a href="#faq"          class="py-2 hover:text-white" onclick="closeMobile()">FAQ</a>
                 <div class="flex gap-3 pt-2">
-                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 border border-white/20 rounded-xl text-white">Log Masuk</a>
-                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 bg-blue-600 rounded-xl text-white font-semibold">Cuba Percuma</a>
+                    <a href="<?= $siteBase ?>/login"    class="flex-1 text-center py-2.5 btn-outline-white rounded-xl">Log Masuk</a>
+                    <a href="<?= $siteBase ?>/register" class="flex-1 text-center py-2.5 btn-gold rounded-xl">Cuba Percuma</a>
                 </div>
             </div>
         </div>
@@ -158,9 +180,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
     <!-- Background decorations -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-sky-400/5 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-800/5 rounded-full blur-3xl"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl" style="background:rgba(201,168,76,0.08)"></div>
+        <div class="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl"  style="background:rgba(201,168,76,0.05)"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl" style="background:rgba(46,74,46,0.15)"></div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
@@ -168,8 +190,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <!-- Left: Copy -->
             <div class="text-center lg:text-left">
-                <div class="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 text-blue-300 text-xs font-semibold px-4 py-2 rounded-full mb-6">
-                    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse-slow"></span>
+                <div class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-6" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:#E8D47A">
+                    <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background:#C9A84C"></span>
                     Platform Kewangan untuk PKS Malaysia
                 </div>
 
@@ -184,12 +206,12 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                     <a href="<?= $siteBase ?>/register"
-                       class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-blue-600/30 text-base hover:-translate-y-0.5">
+                       class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         Cuba Percuma — Tiada Bayaran
                     </a>
                     <a href="#showcase"
-                       class="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-4 rounded-2xl transition-all text-base hover:bg-white/5">
+                       class="btn-outline-white inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Lihat Demo
                     </a>
@@ -202,7 +224,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <!-- Right: Dashboard mockup -->
             <div class="relative hidden lg:block">
-                <div class="relative glow-blue rounded-3xl overflow-hidden" style="animation: float 6s ease-in-out infinite;">
+                <div class="relative glow-gold rounded-3xl overflow-hidden" style="animation: float 6s ease-in-out infinite;">
 
                     <!-- Main dashboard card -->
                     <div class="bg-slate-800/80 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
@@ -293,8 +315,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 </div>
                 <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100" style="animation: float 7s ease-in-out infinite 2s;">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#F0EBD8">
+                            <svg class="w-4 h-4" style="color:#163020" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                         </div>
                         <div>
                             <p class="text-xs font-bold text-slate-800">Untung Naik 32%</p>
@@ -320,7 +342,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="problem" class="py-24 bg-white section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase text-blue-600 mb-4">Adakah Ini Masalah Anda?</span>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Adakah Ini Masalah Anda?</span>
             <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Masih Urus Kewangan<br><span class="gradient-text">Secara Manual?</span></h2>
             <p class="text-slate-500 text-lg max-w-xl mx-auto">Ramai pemilik bisnes masih bergelut dengan masalah yang sama. Anda tidak bersendirian.</p>
         </div>
@@ -350,7 +372,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         <div class="text-center mt-16">
             <div class="inline-flex flex-col items-center gap-2">
                 <p class="text-slate-500 text-sm font-medium">Ezkira menyelesaikan semua masalah ini</p>
-                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center animate-bounce">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center animate-bounce" style="background:#C9A84C">
                     <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                 </div>
             </div>
@@ -361,10 +383,10 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 3: FEATURES                                          -->
 <!-- ============================================================ -->
-<section id="features" class="py-24 bg-slate-50 section-fade">
+<section id="features" class="py-24 bg-cream section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase text-blue-600 mb-4">Ciri-Ciri Platform</span>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Ciri-Ciri Platform</span>
             <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Semua Yang Anda Perlukan<br><span class="gradient-text">Dalam Satu Platform</span></h2>
             <p class="text-slate-500 text-lg max-w-xl mx-auto">Direka khas untuk pemilik bisnes Malaysia yang mahu urus kewangan dengan lebih profesional dan efisien.</p>
         </div>
@@ -414,19 +436,21 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 ],
             ];
             $colorMap = [
-                'blue'   => 'bg-blue-50 text-blue-600 border-blue-100',
+                'blue'   => 'border',  // handled via inline style
                 'red'    => 'bg-red-50 text-red-600 border-red-100',
-                'emerald'=> 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                'emerald'=> 'bg-emerald-50 text-emerald-700 border-emerald-100',
                 'purple' => 'bg-purple-50 text-purple-600 border-purple-100',
                 'orange' => 'bg-orange-50 text-orange-600 border-orange-100',
                 'teal'   => 'bg-teal-50 text-teal-600 border-teal-100',
-                'indigo' => 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                'indigo' => 'border',  // handled via inline style
             ];
+            $inlineStyle = ['blue' => 'background:#F0EBD8;color:#163020;border-color:#E8D47A', 'indigo' => 'background:#EDF7F0;color:#163020;border-color:#C9A84C'];
             foreach ($features as $f):
-                $cls = $colorMap[$f['color']] ?? 'bg-blue-50 text-blue-600 border-blue-100';
+                $cls   = $colorMap[$f['color']] ?? 'border';
+                $style = $inlineStyle[$f['color']] ?? '';
             ?>
             <div class="bg-white border border-slate-100 rounded-2xl p-6 card-hover shadow-sm">
-                <div class="w-12 h-12 <?= $cls ?> rounded-xl flex items-center justify-center mb-4 border">
+                <div class="w-12 h-12 <?= $cls ?> rounded-xl flex items-center justify-center mb-4" style="<?= $style ?>">
                     <?= $f['icon'] ?>
                 </div>
                 <h3 class="font-bold text-slate-800 text-sm mb-2"><?= htmlspecialchars($f['title']) ?></h3>
@@ -443,14 +467,14 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <section id="how-it-works" class="py-24 bg-white section-fade">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase text-blue-600 mb-4">Cara Penggunaan</span>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Cara Penggunaan</span>
             <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Mulakan Dalam<br><span class="gradient-text">3 Langkah Mudah</span></h2>
             <p class="text-slate-500 text-lg">Setup pantas — tidak perlukan latihan khas atau pengetahuan perakaunan.</p>
         </div>
 
         <div class="relative">
             <!-- Connector line (desktop) -->
-            <div class="hidden md:block absolute top-12 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200" style="width:calc(100% - 8rem); left:4rem;"></div>
+            <div class="hidden md:block absolute top-12 left-0 right-0 h-0.5" style="width:calc(100% - 8rem); left:4rem; background:linear-gradient(90deg,#E8D47A,#C9A84C,#E8D47A)"></div>
 
             <div class="grid md:grid-cols-3 gap-10">
                 <?php
@@ -459,17 +483,18 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     ['num'=>'02', 'color'=>'indigo',  'title'=>'Upload Resit', 'desc'=>'Ambil gambar resit atau upload terus. Semua resit disimpan dengan selamat dan boleh dicari bila-bila masa.', 'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>'],
                     ['num'=>'03', 'color'=>'emerald', 'title'=>'Lihat Laporan Automatik', 'desc'=>'P&L, Balance Sheet dan semua laporan kewangan dijana secara automatik — sedia untuk akauntan atau cukai.', 'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>'],
                 ];
-                $stepColors = ['blue'=>'bg-blue-600','indigo'=>'bg-indigo-600','emerald'=>'bg-emerald-500'];
-                $stepBg     = ['blue'=>'bg-blue-50 border-blue-100','indigo'=>'bg-indigo-50 border-indigo-100','emerald'=>'bg-emerald-50 border-emerald-100'];
-                $stepIcon   = ['blue'=>'text-blue-600','indigo'=>'text-indigo-600','emerald'=>'text-emerald-600'];
+                // All steps use brand green/gold palette
+                $stepNumStyle = 'background:#163020;color:#C9A84C';
+                $stepBgStyle  = ['blue'=>'background:#F0EBD8;border-color:#E8D47A','indigo'=>'background:#EDF7F0;border-color:#C9A84C','emerald'=>'background:#EDF7F0;border-color:#C9A84C'];
+                $stepIconStyle= 'color:#163020';
                 foreach ($steps as $s):
                 ?>
                 <div class="flex flex-col items-center text-center">
                     <div class="relative mb-8">
-                        <div class="w-24 h-24 <?= $stepBg[$s['color']] ?> border-2 rounded-3xl flex items-center justify-center mb-0">
-                            <svg class="w-10 h-10 <?= $stepIcon[$s['color']] ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><?= $s['icon'] ?></svg>
+                        <div class="w-24 h-24 border-2 rounded-3xl flex items-center justify-center mb-0" style="<?= $stepBgStyle[$s['color']] ?>">
+                            <svg class="w-10 h-10" style="<?= $stepIconStyle ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><?= $s['icon'] ?></svg>
                         </div>
-                        <span class="absolute -top-3 -right-3 w-8 h-8 <?= $stepColors[$s['color']] ?> text-white text-xs font-black rounded-xl flex items-center justify-center"><?= $s['num'] ?></span>
+                        <span class="absolute -top-3 -right-3 w-8 h-8 text-xs font-black rounded-xl flex items-center justify-center" style="<?= $stepNumStyle ?>"><?= $s['num'] ?></span>
                     </div>
                     <h3 class="font-bold text-slate-800 text-base mb-3"><?= htmlspecialchars($s['title']) ?></h3>
                     <p class="text-slate-500 text-sm leading-relaxed"><?= htmlspecialchars($s['desc']) ?></p>
@@ -480,7 +505,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
         <div class="text-center mt-16">
             <a href="<?= $siteBase ?>/register"
-               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-2xl transition-all shadow-xl shadow-blue-600/20 text-base hover:-translate-y-0.5">
+               class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-base">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Mula Sekarang — Percuma
             </a>
@@ -491,17 +516,17 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 5: BENEFITS                                          -->
 <!-- ============================================================ -->
-<section id="benefits" class="py-24 section-fade" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+<section id="benefits" class="py-24 section-fade" style="background: linear-gradient(135deg, #163020 0%, #1e4a2e 100%);">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-                <span class="inline-block text-xs font-bold tracking-widest uppercase text-sky-400 mb-4">Kenapa Ezkira</span>
+                <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Kenapa Ezkira</span>
                 <h2 class="text-4xl sm:text-5xl font-black text-white mb-6">Lebih Masa Untuk<br><span class="gradient-text">Fokus Kepada Bisnes</span></h2>
                 <p class="text-slate-400 text-lg leading-relaxed mb-10">
                     Jangan habiskan masa berharga anda dengan kerja pentadbiran kewangan. Biar Ezkira uruskan bahagian yang membosankan, supaya anda boleh fokus mengembangkan bisnes.
                 </p>
                 <a href="<?= $siteBase ?>/register"
-                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-7 py-3.5 rounded-xl transition-all text-sm">
+                   class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm">
                     Cuba Percuma Sekarang →
                 </a>
             </div>
@@ -532,10 +557,10 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 6: DASHBOARD SHOWCASE                                -->
 <!-- ============================================================ -->
-<section id="showcase" class="py-24 bg-slate-50 section-fade">
+<section id="showcase" class="py-24 bg-cream section-fade">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase text-blue-600 mb-4">Platform Preview</span>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Platform Preview</span>
             <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5">Dashboard Yang <span class="gradient-text">Profesional & Lengkap</span></h2>
             <p class="text-slate-500 text-lg max-w-xl mx-auto">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
         </div>
@@ -554,11 +579,11 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 <div class="space-y-3">
                     <?php
                     $pnl = [
-                        ['label'=>'Jualan Kasar',          'value'=>'RM 124,580', 'cls'=>'text-slate-800 font-bold', 'bar'=>100, 'color'=>'bg-blue-500'],
+                        ['label'=>'Jualan Kasar',          'value'=>'RM 124,580', 'cls'=>'text-slate-800 font-bold', 'bar'=>100, 'color'=>'bg-emerald-600'],
                         ['label'=>'Kos Barang Dijual (COGS)', 'value'=>'- RM 42,000','cls'=>'text-red-600', 'bar'=>34, 'color'=>'bg-red-400'],
                         ['label'=>'Untung Kasar',           'value'=>'RM 82,580',  'cls'=>'text-emerald-700 font-semibold', 'bar'=>66, 'color'=>'bg-emerald-400'],
                         ['label'=>'Perbelanjaan Operasi',   'value'=>'- RM 28,500','cls'=>'text-red-600', 'bar'=>23, 'color'=>'bg-orange-400'],
-                        ['label'=>'EBITDA',                 'value'=>'RM 54,080',  'cls'=>'text-blue-700 font-semibold', 'bar'=>43, 'color'=>'bg-blue-400'],
+                        ['label'=>'EBITDA',                 'value'=>'RM 54,080',  'cls'=>'text-slate-700 font-semibold', 'bar'=>43, 'color'=>'bg-blue-400'],
                         ['label'=>'Untung Bersih',          'value'=>'RM 54,080',  'cls'=>'text-emerald-700 font-bold text-base', 'bar'=>43, 'color'=>'bg-emerald-500'],
                     ];
                     foreach ($pnl as $row):
@@ -609,9 +634,9 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                 <div class="space-y-3">
                     <?php
                     $revenues = [
-                        ['label'=>'Jualan Online','pct'=>55,'val'=>'RM 68,520','color'=>'bg-blue-500'],
-                        ['label'=>'Walk-in',      'pct'=>28,'val'=>'RM 34,882','color'=>'bg-indigo-500'],
-                        ['label'=>'Wholesale',    'pct'=>17,'val'=>'RM 21,178','color'=>'bg-sky-400'],
+                        ['label'=>'Jualan Online','pct'=>55,'val'=>'RM 68,520','color'=>'bg-emerald-600'],
+                        ['label'=>'Walk-in',      'pct'=>28,'val'=>'RM 34,882','color'=>'bg-emerald-700'],
+                        ['label'=>'Wholesale',    'pct'=>17,'val'=>'RM 21,178','color'=>'bg-emerald-400'],
                     ];
                     foreach ($revenues as $r):
                     ?>
@@ -671,7 +696,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     <?php
                     $products = [
                         ['name'=>'Produk A','cost'=>'RM 12','price'=>'RM 35','margin'=>66,'cls'=>'text-emerald-600'],
-                        ['name'=>'Produk B','cost'=>'RM 28','price'=>'RM 55','margin'=>49,'cls'=>'text-blue-600'],
+                        ['name'=>'Produk B','cost'=>'RM 28','price'=>'RM 55','margin'=>49,'cls'=>'text-slate-700'],
                         ['name'=>'Produk C','cost'=>'RM 5', 'price'=>'RM 18','margin'=>72,'cls'=>'text-emerald-600'],
                     ];
                     foreach ($products as $p):
@@ -687,8 +712,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     </div>
                     <?php endforeach; ?>
                 </div>
-                <div class="mt-5 bg-blue-50 border border-blue-100 rounded-xl p-3">
-                    <p class="text-xs text-blue-600 font-medium text-center">📊 BEP dicapai pada RM 18,500/bulan</p>
+                <div class="mt-5 rounded-xl p-3" style="background:#F0EBD8;border:1px solid #E8D47A">
+                    <p class="text-xs font-medium text-center" style="color:#163020">📊 BEP dicapai pada RM 18,500/bulan</p>
                 </div>
             </div>
 
@@ -742,7 +767,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
                     'name'   => 'Hafiz Mustaffa',
                     'role'   => 'Pengusaha F&B (2 cawangan)',
                     'avatar' => 'HM',
-                    'color'  => 'bg-blue-500',
+                    'color'  => 'bg-emerald-600',
                     'quote'  => '"Saya mula guna Ezkira masa nak sediakan dokumen untuk loan bank. Akauntan cakap rekod kewangan saya sangat tersusun. Loan pun approved! Highly recommended."',
                     'stars'  => 5,
                 ],
@@ -782,10 +807,10 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 8: FAQ                                               -->
 <!-- ============================================================ -->
-<section id="faq" class="py-24 bg-slate-50 section-fade">
+<section id="faq" class="py-24 bg-cream section-fade">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase text-blue-600 mb-4">Soalan Lazim</span>
+            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4">Soalan Lazim</span>
             <h2 class="text-4xl font-black text-slate-900 mb-4">Ada Soalan?<br><span class="gradient-text">Kami Ada Jawapannya</span></h2>
         </div>
 
@@ -843,7 +868,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
         </div>
 
         <div class="text-center mt-12">
-            <p class="text-slate-500 text-sm">Masih ada soalan? <a href="https://wa.me/60122541050?text=Saya%20ada%20soalan%20tentang%20Ezkira" class="text-blue-600 font-semibold hover:underline" target="_blank" rel="noopener noreferrer">Hubungi kami di WhatsApp →</a></p>
+            <p class="text-slate-500 text-sm">Masih ada soalan? <a href="https://wa.me/60122541050?text=Saya%20ada%20soalan%20tentang%20Ezkira" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank" rel="noopener noreferrer">Hubungi kami di WhatsApp →</a></p>
         </div>
     </div>
 </section>
@@ -851,16 +876,16 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- SECTION 9: FINAL CTA                                         -->
 <!-- ============================================================ -->
-<section id="cta" class="py-24 section-fade" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);">
+<section id="cta" class="py-24 section-fade" style="background: linear-gradient(135deg, #163020 0%, #1e4a2e 50%, #163020 100%);">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
         <!-- Glow -->
         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+            <div class="w-96 h-96 rounded-full blur-3xl" style="background:rgba(201,168,76,0.12)"></div>
         </div>
 
         <div class="relative">
-            <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 text-blue-300 text-xs font-bold px-4 py-2 rounded-full mb-6">
-                <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse-slow"></span>
+            <div class="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full mb-6" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:#E8D47A">
+                <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background:#C9A84C"></span>
                 Mula Hari Ini — Percuma
             </div>
 
@@ -874,7 +899,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="<?= $siteBase ?>/register"
-                   class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-5 rounded-2xl transition-all shadow-2xl shadow-blue-600/30 text-lg hover:-translate-y-1">
+                   class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-lg">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     Mulakan Percuma Sekarang
                 </a>
@@ -893,7 +918,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 <!-- ============================================================ -->
 <!-- FOOTER                                                        -->
 <!-- ============================================================ -->
-<footer class="bg-slate-900 text-slate-400 pt-16 pb-8">
+<footer class="text-slate-400 pt-16 pb-8" style="background:#163020">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 
@@ -961,10 +986,10 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
     var navbar = document.getElementById('navbar');
     function updateNav() {
         if (window.scrollY > 20) {
-            navbar.classList.add('bg-slate-900/95', 'nav-blur', 'shadow-lg', 'shadow-slate-900/20');
+            navbar.classList.add('nav-blur', 'shadow-lg'); navbar.style.background = 'rgba(22,48,32,0.95)';
             navbar.classList.remove('bg-transparent');
         } else {
-            navbar.classList.remove('bg-slate-900/95', 'nav-blur', 'shadow-lg', 'shadow-slate-900/20');
+            navbar.classList.remove('nav-blur', 'shadow-lg'); navbar.style.background = '';
             navbar.classList.add('bg-transparent');
         }
     }
@@ -1022,7 +1047,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
             item.classList.add('open');
             body.classList.add('open');
             body.style.maxHeight = body.scrollHeight + 'px';
-            item.style.borderColor = '#2563eb';
+            item.style.borderColor = '#C9A84C';
         }
     };
 
