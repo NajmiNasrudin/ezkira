@@ -730,12 +730,14 @@ function selectAllRecipients() {
 
 function clearAllRecipients() {
     document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
-    // Reset biz-type chips
     document.querySelectorAll('.biz-chip').forEach(function(c) {
         c.classList.remove('bg-emerald-100','border-emerald-500','text-emerald-800','dark:bg-emerald-900/30','dark:text-emerald-200');
     });
-    // Reset batch chips
     resetBatchChips();
+    activeBatchRange = null;
+    var sel = document.getElementById('biz-type-filter');
+    if (sel) sel.value = '';
+    filterRecipients();
     updateCount();
 }
 
@@ -745,21 +747,47 @@ function resetBatchChips() {
     });
 }
 
-// Select all recipients in a batch range (by data-bidx)
+// Active batch filter range (null = show all)
+var activeBatchRange = null;
+
+// Select batch: filter list to show only that batch + pre-tick all, allow manual untick
 function selectBatch(batchNum, start, end) {
-    // Clear all first
-    document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
+    var chip = document.getElementById('batch-chip-' + batchNum);
+    var wasActive = chip && chip.classList.contains('bg-indigo-100');
+
+    // Reset all batch chips + biz chips
+    resetBatchChips();
     document.querySelectorAll('.biz-chip').forEach(function(c) {
         c.classList.remove('bg-emerald-100','border-emerald-500','text-emerald-800','dark:bg-emerald-900/30','dark:text-emerald-200');
     });
-    resetBatchChips();
 
-    // Check if clicking already-active batch → deselect (toggle off)
-    var chip = document.getElementById('batch-chip-' + batchNum);
-    var wasActive = chip && chip.classList.contains('bg-indigo-100');
-    if (wasActive) { updateCount(); return; }
+    // Toggle off: show all rows, clear selections
+    if (wasActive) {
+        activeBatchRange = null;
+        document.querySelectorAll('input[name="recipients[]"]').forEach(function(cb) { cb.checked = false; });
+        var sel = document.getElementById('biz-type-filter');
+        if (sel) sel.value = '';
+        filterRecipients();
+        updateCount();
+        return;
+    }
 
-    // Select rows in this batch
+    // Activate this batch
+    activeBatchRange = { start: start, end: end };
+
+    // Highlight chip
+    if (chip) {
+        chip.classList.add('bg-indigo-100','border-indigo-500','text-indigo-700','dark:bg-indigo-900/30','dark:text-indigo-300');
+    }
+
+    // Reset search + biz-type filter
+    var searchEl = document.getElementById('recipient-search');
+    if (searchEl) searchEl.value = '';
+    var sel = document.getElementById('biz-type-filter');
+    if (sel) sel.value = '';
+
+    // Filter list to show only batch rows, pre-tick all of them
+    filterRecipients();
     document.querySelectorAll('.recipient-row').forEach(function(row) {
         var idx = parseInt(row.getAttribute('data-bidx') || '-1');
         if (idx >= start && idx <= end) {
@@ -767,30 +795,26 @@ function selectBatch(batchNum, start, end) {
         }
     });
 
-    // Highlight active batch chip
-    if (chip) {
-        chip.classList.add('bg-indigo-100','border-indigo-500','text-indigo-700','dark:bg-indigo-900/30','dark:text-indigo-300');
-    }
-
-    // Reset dropdown + sync filter so rows all visible
-    var sel = document.getElementById('biz-type-filter');
-    if (sel) sel.value = '';
-    filterRecipients();
-
     updateCount();
+    // Scroll recipient list into view
+    var list = document.getElementById('recipient-list');
+    if (list) list.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function filterRecipients() {
-    var q     = (document.getElementById('recipient-search')?.value || '').toLowerCase();
-    var btype = document.getElementById('biz-type-filter')?.value || '';
-    var vis   = 0;
+    var q      = (document.getElementById('recipient-search')?.value || '').toLowerCase();
+    var btype  = document.getElementById('biz-type-filter')?.value || '';
+    var batch  = activeBatchRange;
+    var vis    = 0;
     document.querySelectorAll('.recipient-row').forEach(function(row) {
         var name    = row.getAttribute('data-name')  || '';
         var phone   = row.getAttribute('data-phone') || '';
         var rowType = row.getAttribute('data-btype') || '';
+        var idx     = parseInt(row.getAttribute('data-bidx') || '-1');
         var matchQ  = q === '' || name.includes(q) || phone.includes(q);
         var matchT  = btype === '' || rowType === btype;
-        var hide    = !(matchQ && matchT);
+        var matchB  = !batch || (idx >= batch.start && idx <= batch.end);
+        var hide    = !(matchQ && matchT && matchB);
         row.classList.toggle('hidden', hide);
         if (!hide) vis++;
     });
