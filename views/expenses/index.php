@@ -252,6 +252,40 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
     </div>
 </div>
 
+<?php
+$ppeTot       = $totals['ppe']       ?? 0;
+$liabilityTot = $totals['liability'] ?? 0;
+$bsTot        = $ppeTot + $liabilityTot;
+?>
+<?php if ($bsTot > 0 || true): // always show so user knows these categories exist ?>
+<div class="mb-6 rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20 px-4 py-3 flex flex-wrap items-center gap-4">
+    <div class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span class="text-xs font-semibold text-teal-700 dark:text-teal-300">Rekod Balance Sheet (bukan P&amp;L)</span>
+    </div>
+    <div class="flex flex-wrap gap-4 text-sm">
+        <span class="flex items-center gap-1.5">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+            <span class="text-gray-600 dark:text-gray-300">Aset Tetap (PPE):</span>
+            <strong class="text-teal-700 dark:text-teal-300"><?= fmtMoney($ppeTot) ?></strong>
+        </span>
+        <?php if ($liabilityTot > 0): ?>
+        <span class="flex items-center gap-1.5">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            <span class="text-gray-600 dark:text-gray-300">Liability:</span>
+            <strong class="text-rose-600 dark:text-rose-400"><?= fmtMoney($liabilityTot) ?></strong>
+        </span>
+        <?php endif; ?>
+        <span class="text-xs text-gray-400 dark:text-gray-500 italic self-center">
+            → Nilai ini auto-masuk ke Balance Sheet (PPE &amp; Liabilities)
+        </span>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- ===== UNIFIED EXPENSE LIST ===== -->
 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
@@ -310,7 +344,12 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                 <?php foreach ($allExpenses as $row):
-                    $cm = $catMeta[$row['category']] ?? ['label' => $row['category'], 'badge' => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'];
+                    $cm = $catMeta[$row['category']] ?? [
+                        'label' => ($row['category'] ? strtoupper($row['category']) : 'Tiada Kategori'),
+                        'badge'  => ($row['category']
+                            ? 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'),
+                    ];
                 ?>
                 <tr class="exp-row hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
                     data-cat="<?= htmlspecialchars($row['category'], ENT_QUOTES) ?>"
@@ -462,13 +501,16 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                                 <option value="opex">Operating Expenses (OPEX)</option>
                                 <option value="marketing">Marketing &amp; Advertising</option>
                             </optgroup>
-                            <optgroup label="🏢 Balance Sheet — Assets">
-                                <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
+                            <optgroup label="🏢 Balance Sheet — Aset (CapEx)">
+                                <option value="ppe">Aset Tetap / PPE (mesin, perabot, kenderaan)</option>
                             </optgroup>
                             <optgroup label="📋 Balance Sheet — Liabilities">
                                 <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
                             </optgroup>
                         </select>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            💡 Pilih <strong>Aset Tetap/PPE</strong> untuk belian aset (mesin, meja, kenderaan) — ia masuk Balance Sheet, bukan P&amp;L
+                        </p>
                     </div>
                     <!-- Amount -->
                     <div>
@@ -709,21 +751,24 @@ $totalPctUsed = $targetRevenue > 0 ? ($totalSpent / $targetRevenue) * 100 : 0;
                     <!-- Category -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1"><?= __('category') ?></label>
-                        <select id="edit-expense-cat" name="category"
+                        <select id="edit-expense-cat" name="category" required
                                 class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                            <option value="" disabled>— Pilih Kategori —</option>
                             <optgroup label="📊 P&amp;L — Expenses">
                                 <option value="cogs">Cost of Goods Sold (COGS)</option>
-
                                 <option value="opex">Operating Expenses (OPEX)</option>
                                 <option value="marketing">Marketing &amp; Advertising</option>
                             </optgroup>
-                            <optgroup label="🏢 Balance Sheet — Assets">
-                                <option value="ppe">Property, Plant &amp; Equipment (PPE)</option>
+                            <optgroup label="🏢 Balance Sheet — Aset (CapEx)">
+                                <option value="ppe">Aset Tetap / Property, Plant &amp; Equipment (PPE)</option>
                             </optgroup>
                             <optgroup label="📋 Balance Sheet — Liabilities">
                                 <option value="liability"><?= __('liability') ?> / Loan Repayment</option>
                             </optgroup>
                         </select>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            💡 PPE = aset tetap (mesin, peralatan, perabot) — masuk Balance Sheet, bukan P&amp;L
+                        </p>
                     </div>
                     <!-- Amount -->
                     <div>
@@ -887,7 +932,10 @@ function openEditExpense(row) {
     document.getElementById('edit-expense-amount').value  = row.amount;
     document.getElementById('edit-expense-desc').value    = row.description;
     document.getElementById('edit-expense-date').value    = row.expense_date;
-    document.getElementById('edit-expense-cat').value     = row.category;
+    var catEl = document.getElementById('edit-expense-cat');
+    catEl.value = row.category || '';
+    // If category value doesn't match any option (e.g. null/old records), force blank select
+    if (catEl.value !== (row.category || '')) { catEl.value = ''; }
     document.getElementById('edit-expense-action').action = '<?= BASE_URI ?>/expenses/' + row.id + '/update';
 
     document.getElementById('edit-file-label').textContent = '<?= __('upload_files_hint') ?>';
