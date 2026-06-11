@@ -84,7 +84,7 @@ INSERT IGNORE INTO `settings` (`key`, `value`) VALUES
 CREATE TABLE IF NOT EXISTS `expenses` (
   `id`           INT UNSIGNED       NOT NULL AUTO_INCREMENT,
   `user_id`      INT UNSIGNED       NOT NULL,
-  `category`     ENUM('opex','marketing','cogs','liability') NOT NULL,
+  `category`     VARCHAR(50)        NULL DEFAULT NULL,
   `amount`       DECIMAL(15,2)      NOT NULL DEFAULT 0.00,
   `description`  VARCHAR(500)       NOT NULL DEFAULT '',
   `expense_date` DATE               NOT NULL,
