@@ -52,7 +52,7 @@ $catMeta = [
     'marketing' => ['label' => 'Marketing',  'badge' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'],
     'cogs'      => ['label' => 'COGS',       'badge' => 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'],
     'purchases' => ['label' => 'Purchases',  'badge' => 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300'],
-    'ppe'       => ['label' => 'PPE',        'badge' => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300'],
+    'ppe'       => ['label' => 'Aset',       'badge' => 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300'],
     'liability' => ['label' => 'Liability',  'badge' => 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'],
 ];
 
