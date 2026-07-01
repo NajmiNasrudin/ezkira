@@ -594,6 +594,10 @@ $bsTot        = $ppeTot + $liabilityTot;
 
         <!-- Mode toggle -->
         <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5 mb-5">
+            <button type="button" id="exp-btn-daily" onclick="switchExportMode('daily')"
+                    class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                Harian
+            </button>
             <button type="button" id="exp-btn-month" onclick="switchExportMode('month')"
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
                 <?= __('export_by_month') ?>
@@ -602,6 +606,16 @@ $bsTot        = $ppeTot + $liabilityTot;
                     class="flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                 <?= __('export_by_range') ?>
             </button>
+        </div>
+
+        <!-- By Daily -->
+        <div id="exp-daily-panel" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Pilih Tarikh</label>
+            <input type="date" id="exp-daily-date"
+                   value="<?= date('Y-m-d') ?>"
+                   max="<?= date('Y-m-d') ?>"
+                   class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5">Export semua rekod untuk satu hari sahaja</p>
         </div>
 
         <!-- By Month -->
@@ -900,8 +914,10 @@ var _expBtnInactive = 'flex-1 py-1.5 text-sm font-medium rounded-lg transition-c
 
 function switchExportMode(m) {
     _exportMode = m;
+    document.getElementById('exp-btn-daily').className = m === 'daily' ? _expBtnActive : _expBtnInactive;
     document.getElementById('exp-btn-month').className = m === 'month' ? _expBtnActive : _expBtnInactive;
     document.getElementById('exp-btn-range').className = m === 'range' ? _expBtnActive : _expBtnInactive;
+    document.getElementById('exp-daily-panel').classList.toggle('hidden', m !== 'daily');
     document.getElementById('exp-month-panel').classList.toggle('hidden', m !== 'month');
     document.getElementById('exp-range-panel').classList.toggle('hidden', m !== 'range');
 }
@@ -909,7 +925,11 @@ function switchExportMode(m) {
 function doExport() {
     var base = '<?= BASE_URI ?>/expenses/export';
     var url;
-    if (_exportMode === 'month') {
+    if (_exportMode === 'daily') {
+        var d = document.getElementById('exp-daily-date').value;
+        if (!d) { alert('Sila pilih tarikh.'); return; }
+        url = base + '?mode=range&from=' + d + '&to=' + d;
+    } else if (_exportMode === 'month') {
         var m = document.getElementById('exp-month').value;
         var y = document.getElementById('exp-year').value;
         url = base + '?mode=month&year=' + y + '&month=' + m;
