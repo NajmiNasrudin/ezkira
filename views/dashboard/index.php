@@ -175,16 +175,68 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
         <?php endif; ?>
     </div>
 
-    <!-- Export Button -->
-    <a href="<?= $exportUrl ?>"
-       class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-        </svg>
-        <?= __('export_pnl') ?>
-    </a>
+    <div class="flex items-center gap-2">
+        <!-- Export Harian quick button -->
+        <button type="button" onclick="document.getElementById('dash-daily-export-modal').classList.remove('hidden')"
+                class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Export Harian
+        </button>
+        <!-- Export P&L (current period) -->
+        <a href="<?= $exportUrl ?>"
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <?= __('export_pnl') ?>
+        </a>
+    </div>
 </div>
+
+<!-- Daily Export Modal -->
+<div id="dash-daily-export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('dash-daily-export-modal').classList.add('hidden')"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 w-full max-w-xs">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Export P&amp;L Harian</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pilih tarikh untuk export laporan P&amp;L</p>
+            </div>
+            <button type="button" onclick="document.getElementById('dash-daily-export-modal').classList.add('hidden')"
+                    class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        <input type="date" id="dash-daily-date"
+               value="<?= date('Y-m-d') ?>"
+               max="<?= date('Y-m-d') ?>"
+               class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 mb-4">
+        <button type="button" onclick="doDashDailyExport()"
+                class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors text-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download CSV
+        </button>
+    </div>
+</div>
+<script>
+function doDashDailyExport() {
+    var d = document.getElementById('dash-daily-date').value;
+    if (!d) { alert('Sila pilih tarikh.'); return; }
+    var url = '<?= BASE_URI ?>/revenue/export-pnl?period=daily&date=' + d +
+              '&year=' + d.substring(0,4) + '&month=' + parseInt(d.substring(5,7)) + '&week=1';
+    window.location.href = url;
+    document.getElementById('dash-daily-export-modal').classList.add('hidden');
+}
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>

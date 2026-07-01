@@ -180,29 +180,35 @@ class RevenueController extends Controller
         $year   = (int)($_GET['year']  ?? date('Y'));
         $month  = (int)($_GET['month'] ?? date('n'));
         $week   = (int)($_GET['week']  ?? date('W'));
+        $date   = $_GET['date'] ?? date('Y-m-d');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $date = date('Y-m-d');
+        }
 
         $user        = Auth::user();
         $companyName = $user['name']     ?? 'My Business';
         $picName     = $user['pic_name'] ?? '';
 
-        // Revenue data
+        // Revenue data — pass $date for daily period
         $revenue       = new Revenue();
-        $revTotal      = $revenue->totalByPeriod($period, $year, $month, $userId, $week);
-        $revByPlatform = $revenue->platformBreakdown($period, $year, $month, $userId, $week);
+        $revTotal      = $revenue->totalByPeriod($period, $year, $month, $userId, $week, $date);
+        $revByPlatform = $revenue->platformBreakdown($period, $year, $month, $userId, $week, $date);
 
         // Expense data — filtered by same period as revenue
         $expense = new \Models\Expense();
+        $expDate = ($period === 'daily') ? $date : '';
         [$expYear, $expMonth, $expWeek] = match($period) {
             'annual'  => [$year,  0,      0],
             'weekly'  => [$year,  0,      $week],
             'monthly' => [$year,  $month, 0],
-            default   => [0,      0,      0],
+            'daily'   => [0,      0,      0],
+            default   => [$year,  $month, 0],
         };
 
-        $cogs      = $expense->totalByCategory('cogs',      $userId, $expYear, $expMonth, '', $expWeek);
-        $purchases = $expense->totalByCategory('purchases', $userId, $expYear, $expMonth, '', $expWeek);
-        $opex      = $expense->totalByCategory('opex',      $userId, $expYear, $expMonth, '', $expWeek);
-        $marketing = $expense->totalByCategory('marketing', $userId, $expYear, $expMonth, '', $expWeek);
+        $cogs      = $expense->totalByCategory('cogs',      $userId, $expYear, $expMonth, $expDate, $expWeek);
+        $purchases = $expense->totalByCategory('purchases', $userId, $expYear, $expMonth, $expDate, $expWeek);
+        $opex      = $expense->totalByCategory('opex',      $userId, $expYear, $expMonth, $expDate, $expWeek);
+        $marketing = $expense->totalByCategory('marketing', $userId, $expYear, $expMonth, $expDate, $expWeek);
 
         // P&L calculations
         $costOfSales     = $cogs + $purchases;
@@ -213,7 +219,7 @@ class RevenueController extends Controller
         $periodLabel = match($period) {
             'annual'  => "Year {$year}",
             'weekly'  => "Week {$week}, {$year}",
-            'daily'   => date('d M Y'),
+            'daily'   => date('d M Y', strtotime($date)),
             default   => date('F Y', mktime(0, 0, 0, $month, 1, $year)),
         };
 
