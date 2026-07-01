@@ -235,18 +235,10 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
             <!-- Monthly -->
             <div id="ep-monthly">
                 <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pilih Bulan</label>
-                <div class="flex gap-2">
-                    <select id="ep-month" class="flex-1 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <?php for ($m=1; $m<=12; $m++): ?>
-                        <option value="<?= $m ?>" <?= $m===$month ? 'selected' : '' ?>><?= date('F', mktime(0,0,0,$m,1)) ?></option>
-                        <?php endfor; ?>
-                    </select>
-                    <select id="ep-year" class="w-24 px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <?php for ($y=(int)date('Y'); $y>=2020; $y--): ?>
-                        <option value="<?= $y ?>" <?= $y===$year ? 'selected' : '' ?>><?= $y ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
+                <input type="month" id="ep-month-input"
+                       value="<?= $year ?>-<?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>"
+                       max="<?= date('Y-m') ?>"
+                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
             </div>
             <!-- Annual -->
             <div id="ep-annual" class="hidden">
@@ -332,8 +324,10 @@ function _buildExportUrl(forView) {
         return base + '/revenue/export-pnl?period=weekly&year=' + yr + '&week=' + wk;
     }
     if (_epMode === 'monthly') {
-        var m = document.getElementById('ep-month').value;
-        var y = document.getElementById('ep-year').value;
+        var mv = document.getElementById('ep-month-input').value; // "YYYY-MM"
+        if (!mv) { alert('Sila pilih bulan.'); return null; }
+        var y = mv.substring(0, 4);
+        var m = parseInt(mv.substring(5, 7));
         if (forView) return base + '/dashboard?period=monthly&year=' + y + '&month=' + m;
         return base + '/revenue/export-pnl?period=monthly&year=' + y + '&month=' + m;
     }
