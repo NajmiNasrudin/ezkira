@@ -16,12 +16,14 @@ CREATE TABLE IF NOT EXISTS `users` (
   `language`             ENUM('en','ms')  NOT NULL DEFAULT 'en',
   `dark_mode`            TINYINT(1)       NOT NULL DEFAULT 0,
   `profile_image`        VARCHAR(500)     NULL DEFAULT NULL,
+  `google_id`            VARCHAR(100)     NULL DEFAULT NULL,
   `business_type`        VARCHAR(50)      NULL DEFAULT NULL,
   `business_type_other`  VARCHAR(255)     NULL DEFAULT NULL,
   `created_at`           DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`           DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_email` (`email`),
+  UNIQUE KEY `uq_google_id` (`google_id`),
   KEY `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
