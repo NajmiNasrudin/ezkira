@@ -208,10 +208,10 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
             <!-- Period tabs -->
             <div>
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Tempoh Laporan</p>
-                <div class="grid grid-cols-5 gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
+                <div class="grid grid-cols-5 gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-xl p-0.5">
                     <?php foreach (['daily'=>'Harian','weekly'=>'Mingguan','monthly'=>'Bulanan','annual'=>'Tahunan','range'=>'Custom'] as $pk=>$pl): ?>
                     <button type="button" id="epbtn-<?= $pk ?>" onclick="switchExportPeriod('<?= $pk ?>')"
-                            class="py-1.5 text-xs font-medium rounded-lg transition-colors <?= $pk==='monthly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' ?>">
+                            class="py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight <?= $pk==='monthly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' ?>">
                         <?= $pl ?>
                     </button>
                     <?php endforeach; ?>
@@ -290,8 +290,8 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
 
 <script>
 var _epMode = 'monthly';
-var _epBtnA = 'py-1.5 text-xs font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
-var _epBtnI = 'py-1.5 text-xs font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
+var _epBtnA = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
+var _epBtnI = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
 
 function openExportModal() {
     document.getElementById('dash-export-modal').classList.remove('hidden');
@@ -375,11 +375,16 @@ function doExportPnl() {
     var dailyEl = document.getElementById('picker-daily');
     if (dailyEl) {
         flatpickr(dailyEl, {
-            dateFormat: 'Y-m-d',
+            dateFormat: 'd M Y',
             maxDate: 'today',
             defaultDate: dailyEl.getAttribute('data-date'),
-            onChange: function(selectedDates, dateStr) {
-                window.location.href = base + '?period=daily&date=' + dateStr;
+            onChange: function(selectedDates) {
+                if (!selectedDates.length) return;
+                var d = selectedDates[0];
+                var y   = d.getFullYear();
+                var mo  = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                window.location.href = base + '?period=daily&date=' + y + '-' + mo + '-' + day;
             }
         });
     }
@@ -391,6 +396,12 @@ function doExportPnl() {
             defaultDate: weeklyEl.getAttribute('data-date'),
             weekNumbers: true,
             maxDate: 'today',
+            onReady: function(selectedDates) {
+                if (selectedDates.length) {
+                    var d = selectedDates[0];
+                    weeklyEl.value = 'Week ' + getISOWeek(d) + ', ' + d.getFullYear();
+                }
+            },
             onChange: function(selectedDates) {
                 if (!selectedDates.length) return;
                 var d = selectedDates[0];
