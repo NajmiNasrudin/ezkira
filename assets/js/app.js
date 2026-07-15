@@ -66,28 +66,50 @@ function updateThemeIcon(isDark) {
 // Mobile Navigation
 // ============================================================
 function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    if (menu) {
-        menu.classList.toggle('hidden');
-    }
+    var menu      = document.getElementById('mobile-menu');
+    var iconOpen  = document.getElementById('hamburger-icon-open');
+    var iconClose = document.getElementById('hamburger-icon-close');
+    if (!menu) return;
+    var isHidden = menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', !isHidden);
+    if (iconOpen)  iconOpen.classList.toggle('hidden',  !isHidden);
+    if (iconClose) iconClose.classList.toggle('hidden', isHidden);
+}
+
+function closeMobileMenu() {
+    var menu      = document.getElementById('mobile-menu');
+    var iconOpen  = document.getElementById('hamburger-icon-open');
+    var iconClose = document.getElementById('hamburger-icon-close');
+    if (menu)      menu.classList.add('hidden');
+    if (iconOpen)  iconOpen.classList.remove('hidden');
+    if (iconClose) iconClose.classList.add('hidden');
 }
 
 // ============================================================
 // User Dropdown
 // ============================================================
 function toggleUserMenu() {
-    const dropdown = document.getElementById('user-dropdown');
+    var dropdown = document.getElementById('user-dropdown');
     if (dropdown) {
         dropdown.classList.toggle('hidden');
     }
 }
 
-// Close dropdown when clicking outside
+// Close menus when clicking outside
 document.addEventListener('click', function (e) {
-    const wrapper  = document.getElementById('user-menu-wrapper');
-    const dropdown = document.getElementById('user-dropdown');
+    // Close user dropdown
+    var wrapper  = document.getElementById('user-menu-wrapper');
+    var dropdown = document.getElementById('user-dropdown');
     if (wrapper && dropdown && !wrapper.contains(e.target)) {
         dropdown.classList.add('hidden');
+    }
+    // Close mobile menu if click is outside hamburger + menu
+    var hamburger  = document.getElementById('hamburger');
+    var mobileMenu = document.getElementById('mobile-menu');
+    if (hamburger && mobileMenu
+            && !hamburger.contains(e.target)
+            && !mobileMenu.contains(e.target)) {
+        closeMobileMenu();
     }
 });
 
