@@ -70,19 +70,25 @@ function toggleMobileMenu() {
     var iconOpen  = document.getElementById('hamburger-icon-open');
     var iconClose = document.getElementById('hamburger-icon-close');
     if (!menu) return;
-    var isHidden = menu.classList.contains('hidden');
-    menu.classList.toggle('hidden', !isHidden);
-    if (iconOpen)  iconOpen.classList.toggle('hidden',  !isHidden);
-    if (iconClose) iconClose.classList.toggle('hidden', isHidden);
+    var isOpen = menu.style.display !== 'none' && menu.style.display !== '';
+    if (isOpen) {
+        menu.style.display = 'none';
+        if (iconOpen)  iconOpen.style.display = '';
+        if (iconClose) iconClose.style.display = 'none';
+    } else {
+        menu.style.display = 'block';
+        if (iconOpen)  iconOpen.style.display = 'none';
+        if (iconClose) iconClose.style.display = '';
+    }
 }
 
 function closeMobileMenu() {
     var menu      = document.getElementById('mobile-menu');
     var iconOpen  = document.getElementById('hamburger-icon-open');
     var iconClose = document.getElementById('hamburger-icon-close');
-    if (menu)      menu.classList.add('hidden');
-    if (iconOpen)  iconOpen.classList.remove('hidden');
-    if (iconClose) iconClose.classList.add('hidden');
+    if (menu)      menu.style.display = 'none';
+    if (iconOpen)  iconOpen.style.display = '';
+    if (iconClose) iconClose.style.display = 'none';
 }
 
 // ============================================================
