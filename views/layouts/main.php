@@ -80,6 +80,6 @@
     </a>
 
     <script>window.BASE_URI = '<?= BASE_URI ?>';</script>
-    <script src="<?= BASE_URI ?>/assets/js/app.js"></script>
+    <script src="<?= BASE_URI ?>/assets/js/app.js?v=<?= filemtime(BASE_PATH . '/assets/js/app.js') ?>"></script>
 </body>
 </html>

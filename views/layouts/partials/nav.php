@@ -43,8 +43,17 @@ function navActive(string $path, string $current): string {
 }
 ?>
 
+<style>
+#nav-toggle { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+#mobile-menu { display:none; }
+#nav-toggle:checked ~ #mobile-menu { display:block; }
+</style>
+
 <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- CSS-only mobile nav toggle -->
+        <input type="checkbox" id="nav-toggle">
+
         <div class="flex items-center justify-between h-16">
 
             <!-- Brand -->
@@ -162,21 +171,18 @@ function navActive(string $path, string $current): string {
                     </div>
                 </div>
 
-                <!-- Hamburger (mobile) -->
-                <button type="button" id="hamburger" onclick="toggleMobileMenu()"
-                        class="md:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <svg id="hamburger-icon-open" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <!-- Hamburger (mobile) — label toggles the #nav-toggle checkbox, no JS -->
+                <label for="nav-toggle"
+                       class="md:hidden cursor-pointer p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
-                    <svg id="hamburger-icon-close" class="w-5 h-5" style="display:none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+                </label>
             </div>
         </div>
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" style="display:none" class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-3 space-y-1">
+        <!-- Mobile Menu — shown via CSS when #nav-toggle checkbox is checked -->
+        <div id="mobile-menu" class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-3 space-y-1">
             <?php foreach ($navLinks as $href => $label): ?>
                 <a href="<?= BASE_URI . $href ?>"
                    class="block px-3 py-2 rounded-lg text-sm transition-colors <?= str_starts_with($currentPath, $href) ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' ?>">
