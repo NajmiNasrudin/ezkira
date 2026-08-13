@@ -223,7 +223,7 @@ class Revenue
         $dailyDate = ($date !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) ? $date : date('Y-m-d');
         return match($period) {
             'annual'  => ['YEAR(sale_date) = ? AND user_id = ?', [$year, $userId]],
-            'weekly'  => ['YEAR(sale_date) = ? AND WEEK(sale_date, 1) = ? AND user_id = ?', [$year, $week, $userId]],
+            'weekly'  => ['YEAR(sale_date) = ? AND WEEK(sale_date, 3) = ? AND user_id = ?', [$year, $week, $userId]],
             'daily'   => ['sale_date = ? AND user_id = ?', [$dailyDate, $userId]],
             default   => ['YEAR(sale_date) = ? AND MONTH(sale_date) = ? AND user_id = ?', [$year, $month, $userId]],
         };

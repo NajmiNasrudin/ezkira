@@ -145,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `revenue_targets` (
   `user_id`    INT UNSIGNED  NOT NULL,
   `year`       SMALLINT      NOT NULL,
   `month`      TINYINT       NOT NULL,
-  `amount`     DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  `target_amount` DECIMAL(15,2) NOT NULL DEFAULT 0.00,
   `updated_at` DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_user_ym` (`user_id`, `year`, `month`),

@@ -207,9 +207,16 @@ class AuthController extends Controller
             Session::set('user', $user);
         }
 
-        // Redirect back to referrer
-        $ref = $_SERVER['HTTP_REFERER'] ?? '/dashboard';
-        $this->redirect($ref);
+        // Redirect back to referrer — validate host to prevent open redirect
+        $ref     = $_SERVER['HTTP_REFERER'] ?? '';
+        $parsed  = $ref !== '' ? parse_url($ref) : [];
+        $allowed = parse_url(APP_URL, PHP_URL_HOST);
+        if (empty($parsed['host']) || $parsed['host'] === $allowed) {
+            $target = $ref ?: '/dashboard';
+        } else {
+            $target = '/dashboard';
+        }
+        $this->redirect($target);
     }
 
     // -------------------------------------------------------------------------

@@ -209,7 +209,7 @@ class ExpenseController extends Controller
         CSRF::check();
 
         $expense = (new Expense())->findById((int)$id);
-        if (!$expense) {
+        if (!$expense || (int)$expense['user_id'] !== Auth::id()) {
             Session::flash('error', 'Rekod tidak dijumpai.');
             $this->redirect('/expenses');
         }
@@ -237,7 +237,7 @@ class ExpenseController extends Controller
     public function receipt(string $id): void
     {
         $expense = (new Expense())->findById((int)$id);
-        if (!$expense || empty($expense['receipt_path'])) {
+        if (!$expense || empty($expense['receipt_path']) || (int)$expense['user_id'] !== Auth::id()) {
             http_response_code(404);
             exit('Fail tidak dijumpai.');
         }
@@ -261,10 +261,16 @@ class ExpenseController extends Controller
     // Serve a file from expense_receipts table
     public function receiptFile(string $id): void
     {
-        $receipt = (new Expense())->findReceiptById((int)$id);
+        $expenseModel = new Expense();
+        $receipt      = $expenseModel->findReceiptById((int)$id);
         if (!$receipt) {
             http_response_code(404);
             exit('Fail tidak dijumpai.');
+        }
+        $parentExpense = $expenseModel->findById((int)$receipt['expense_id']);
+        if (!$parentExpense || (int)$parentExpense['user_id'] !== Auth::id()) {
+            http_response_code(403);
+            exit('Forbidden.');
         }
 
         $full = BASE_PATH . '/' . $receipt['path'];
