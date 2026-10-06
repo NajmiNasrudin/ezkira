@@ -17,4 +17,12 @@ class LandingController extends \App\Core\Controller
         include BASE_PATH . '/views/landing/index.php';
         exit;
     }
+
+    /** Redesigned landing page, viewable for review before it replaces the live one. */
+    public function preview(): void
+    {
+        $landingPreview = true;
+        include BASE_PATH . '/views/landing/v2.php';
+        exit;
+    }
 }
