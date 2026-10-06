@@ -239,7 +239,7 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
             <!-- Floating cards -->
             <div class="absolute z-20 left-0 sm:left-[2%] bottom-3 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
                 <span class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><?= $icon('M7 17L17 7M17 7H9m8 0v8', 'w-4 h-4') ?></span>
-                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Jualan baru · Shopee', 'New sale · Shopee') ?></span><b class="ez-num text-sm text-emerald-600">+ RM 189.00</b></span>
+                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Jualan baru · Marketplace', 'New sale · Marketplace') ?></span><b class="ez-num text-sm text-emerald-600">+ RM 189.00</b></span>
             </div>
             <div class="absolute z-20 right-0 top-1 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
                 <span class="w-8 h-8 rounded-full bg-sage-100 text-brand-600 flex items-center justify-center"><?= $icon($I['camera'], 'w-4 h-4') ?></span>
@@ -252,7 +252,7 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pb-14">
         <p class="text-center text-xs font-semibold uppercase tracking-[0.18em] text-gray-400"><?= $L('Rekod jualan dari mana-mana saluran', 'Record sales from every channel') ?></p>
         <div class="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3 text-lg sm:text-xl font-extrabold text-gray-400">
-            <span>Shopee</span><span>Lazada</span><span>TikTok Shop</span><span>Website</span><span>WhatsApp</span><span><?= $L('Walk-in / Kaunter', 'Walk-in / Counter') ?></span>
+            <span>Marketplace</span><span><?= $L('Live Selling', 'Live Selling') ?></span><span><?= $L('Kedai Online', 'Online Store') ?></span><span><?= $L('Media Sosial', 'Social Media') ?></span><span><?= $L('Tempahan Chat', 'Chat Orders') ?></span><span><?= $L('Walk-in / Kaunter', 'Walk-in / Counter') ?></span>
         </div>
     </div>
 </section>
@@ -269,8 +269,8 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
             <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <?php foreach ([
                     ['trend', 'bg-brand-700 text-white', 'Jualan Pelbagai Saluran', 'Multi-channel Sales',
-                        'Shopee, Lazada, TikTok Shop, WhatsApp atau kaunter — termasuk refund dan kaedah bayaran.',
-                        'Shopee, Lazada, TikTok Shop, WhatsApp or the counter — refunds and payment methods included.'],
+                        'Marketplace, live selling, kedai online, tempahan chat atau kaunter — termasuk refund dan kaedah bayaran.',
+                        'Marketplaces, live selling, your online store, chat orders or the counter — refunds and payment methods included.'],
                     ['wallet', 'bg-sage-200 text-brand-700', 'Kawal Perbelanjaan', 'Control Spending',
                         'Asingkan COGS, OPEX, marketing dan aset. Tetapkan bajet % dan nampak bila belanja terlebih.',
                         'Split COGS, OPEX, marketing and assets. Set budget % and see when you overspend.'],
@@ -353,9 +353,9 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                         </div>
                         <div class="flex gap-1 overflow-hidden">
                             <span class="px-2 py-1 rounded-full bg-brand-700 text-white font-semibold"><?= $L('Semua', 'All') ?></span>
-                            <span class="px-2 py-1 rounded-full bg-white">Shopee</span><span class="px-2 py-1 rounded-full bg-white">TikTok</span>
+                            <span class="px-2 py-1 rounded-full bg-white">Marketplace</span><span class="px-2 py-1 rounded-full bg-white">Live</span>
                         </div>
-                        <?php foreach ([['Shopee', '#10482', 'FPX', '+189.00', false], ['TikTok Shop', 'Live 9pm', 'E-Wallet', '+1,240.00', false], ['WhatsApp', $L('Tempahan Puan Siti', 'Order from Mrs Siti'), 'Cash', '+75.00', false], ['Shopee', 'Refund #10377', 'FPX', '−39.90', true]] as [$ch, $d, $pm, $amt, $refund]): ?>
+                        <?php foreach ([['Marketplace', '#10482', 'FPX', '+189.00', false], ['Live', $L('Sesi 9 malam', '9pm session'), 'E-Wallet', '+1,240.00', false], ['Chat', $L('Tempahan Puan Siti', 'Order from Mrs Siti'), 'Cash', '+75.00', false], ['Marketplace', 'Refund #10377', 'FPX', '−39.90', true]] as [$ch, $d, $pm, $amt, $refund]): ?>
                         <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm flex items-center gap-2">
                             <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $refund ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600' ?>"><?= $icon($refund ? 'M17 7L7 17M7 17h8m-8 0V9' : 'M7 17L17 7M17 7H9m8 0v8', 'w-3 h-3') ?></span>
                             <span class="flex-1 min-w-0"><b class="block truncate"><?= $ch ?></b><span class="block truncate text-gray-400"><?= $d ?> · <?= $pm ?></span></span>
@@ -381,12 +381,12 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                         <div>
                             <p class="mb-1 font-semibold text-gray-600"><?= $L('Platform', 'Platform') ?></p>
                             <div class="grid grid-cols-3 gap-1 text-center font-semibold">
-                                <span class="py-1.5 rounded-lg bg-brand-700 text-white">Shopee</span>
-                                <span class="py-1.5 rounded-lg bg-white">Lazada</span>
-                                <span class="py-1.5 rounded-lg bg-white">TikTok</span>
-                                <span class="py-1.5 rounded-lg bg-white">WhatsApp</span>
-                                <span class="py-1.5 rounded-lg bg-white">Walk-in</span>
+                                <span class="py-1.5 rounded-lg bg-brand-700 text-white">Marketplace</span>
+                                <span class="py-1.5 rounded-lg bg-white">Live</span>
                                 <span class="py-1.5 rounded-lg bg-white">Website</span>
+                                <span class="py-1.5 rounded-lg bg-white">Chat</span>
+                                <span class="py-1.5 rounded-lg bg-white">Walk-in</span>
+                                <span class="py-1.5 rounded-lg bg-white"><?= $L('Lain-lain', 'Other') ?></span>
                             </div>
                         </div>
                         <div>
@@ -417,7 +417,7 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                             <div><div class="flex justify-between"><span><?= $c ?></span><b class="ez-num"><?= $p ?></b></div><div class="h-1.5 rounded-full bg-gray-100"><div class="h-full rounded-full <?= $col ?> <?= $w ?>"></div></div></div>
                             <?php endforeach; ?>
                         </div>
-                        <?php foreach ([['COGS', $L('Stok kain supplier', 'Fabric stock'), '3,400.00', 2], ['Marketing', $L('Iklan Facebook', 'Facebook Ads'), '250.00', 1], ['OPEX', $L('Sewa kedai', 'Shop rent'), '1,800.00', 1]] as [$c, $d, $amt, $n]): ?>
+                        <?php foreach ([['COGS', $L('Stok kain supplier', 'Fabric stock'), '3,400.00', 2], ['Marketing', $L('Iklan media sosial', 'Social media ads'), '250.00', 1], ['OPEX', $L('Sewa kedai', 'Shop rent'), '1,800.00', 1]] as [$c, $d, $amt, $n]): ?>
                         <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm">
                             <div class="flex items-center justify-between"><b class="truncate"><?= $d ?></b><b class="ez-num">−<?= $amt ?></b></div>
                             <div class="mt-1 flex items-center justify-between text-gray-400">
@@ -498,9 +498,9 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                         <div class="rounded-2xl bg-white p-3 shadow-sm">
                             <p class="font-bold text-gray-900 mb-1.5"><?= $L('Transaksi Terkini', 'Recent Transactions') ?></p>
                             <?php foreach ([
-                                ['in', 'Shopee #10482', 'Shopee', '+ RM 189.00'],
-                                ['out', $L('Iklan Facebook', 'Facebook Ads'), 'Marketing', '− RM 250.00'],
-                                ['in', 'TikTok Live', 'TikTok Shop', '+ RM 1,240.00'],
+                                ['in', 'Marketplace #10482', 'Marketplace', '+ RM 189.00'],
+                                ['out', $L('Iklan media sosial', 'Social media ads'), 'Marketing', '− RM 250.00'],
+                                ['in', $L('Sesi live 9 malam', '9pm live session'), 'Live Selling', '+ RM 1,240.00'],
                             ] as [$dir, $desc, $cat, $amt]): ?>
                             <div class="flex items-center gap-2 py-1.5 border-t border-gray-100 first:border-0">
                                 <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $dir === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500' ?>"><?= $icon($dir === 'in' ? 'M7 17L17 7M17 7H9m8 0v8' : 'M17 7L7 17M7 17h8m-8 0V9', 'w-3 h-3') ?></span>
