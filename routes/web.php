@@ -90,4 +90,3 @@ $router->post('/theme/toggle',  'AuthController@toggleTheme',  []);
 // Root redirect
 // ============================================================
 $router->get('/', 'LandingController@index');
-$router->get('/landing-baru', 'LandingController@preview');

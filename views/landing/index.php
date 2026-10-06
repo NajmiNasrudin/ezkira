@@ -1,1399 +1,769 @@
 <?php
 /**
- * Ezkira Landing Page — standalone, no layout dependency.
- * Variables available: BASE_URI (string), APP_URL (string), APP_NAME (string)
+ * ezkira landing page. Standalone HTML shell, no app layout.
+ * BM is the default; [data-en] holds the English version swapped in by the language toggle.
  */
-$appUrl   = 'https://ezkira.com';
-$baseUri  = defined('BASE_URI') ? BASE_URI : '';
-$appName  = defined('APP_NAME') ? APP_NAME : 'Ezkira';
-$siteBase = 'https://ezkira.com'; // All CTA links point to live site
+$appUrl  = defined('APP_URL') ? rtrim(APP_URL, '/') : 'https://ezkira.com';
+$base    = defined('BASE_URI') ? BASE_URI : '';
+
+/** Bilingual inline text: BM shown by default, EN swapped in by JS. */
+$L = fn(string $ms, string $en): string =>
+    '<span data-en="' . htmlspecialchars($en, ENT_QUOTES, 'UTF-8') . '">' . $ms . '</span>';
+
+$icon = fn(string $d, string $cls = 'w-5 h-5'): string =>
+    '<svg class="' . $cls . '" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.9"><path stroke-linecap="round" stroke-linejoin="round" d="' . $d . '"/></svg>';
+
+$I = [
+    'home'    => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+    'trend'   => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+    'receipt' => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z',
+    'scale'   => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3',
+    'user'    => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    'plus'    => 'M12 5v14m7-7H5',
+    'camera'  => 'M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9zM15 13a3 3 0 11-6 0 3 3 0 016 0z',
+    'doc'     => 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+    'chart'   => 'M11 3.055A9.001 9.001 0 1020.945 13H11V3.055zM20.488 9H15V3.512A9.025 9.025 0 0120.488 9z',
+    'wallet'  => 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+    'shield'  => 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+    'check'   => 'M5 13l4 4L19 7',
+    'arrow'   => 'M13 7l5 5m0 0l-5 5m5-5H6',
+    'down'    => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4',
+    'bolt'    => 'M13 10V3L4 14h7v7l9-11h-7z',
+    'globe'   => 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129',
+    'lock'    => 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
+];
+$logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') : $base . '/assets/img/logo-mark.svg';
 ?>
 <!DOCTYPE html>
 <html lang="ms" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Primary SEO -->
-    <title><?= htmlspecialchars($appName) ?> — Urus Kewangan Bisnes Tanpa Pening Kepala</title>
-    <meta name="description" content="Track untung rugi, urus costing, simpan resit dan hasilkan laporan kewangan secara automatik. Platform pengurusan kewangan bisnes untuk SME, peniaga online dan pengusaha Malaysia.">
-    <meta name="keywords" content="pengurusan kewangan bisnes, SME malaysia, tracking untung rugi, laporan kewangan automatik, expense tracking, costing management, ezkira">
+    <title>ezkira — Kira Untung Bisnes Tanpa Pening Kepala</title>
+    <meta name="description" content="Rekod jualan, perbelanjaan dan resit di satu tempat. ezkira kira untung rugi, bajet dan Kunci Kira-Kira secara automatik untuk peniaga online dan PKS Malaysia.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="<?= $appUrl ?>/">
-
-    <!-- Open Graph -->
-    <meta property="og:type"        content="website">
-    <meta property="og:url"         content="<?= $appUrl ?>/">
-    <meta property="og:title"       content="<?= htmlspecialchars($appName) ?> — Urus Kewangan Bisnes Tanpa Pening Kepala">
-    <meta property="og:description" content="Track untung rugi, urus costing, simpan resit dan jana laporan kewangan automatik dalam satu platform yang mudah.">
-    <meta property="og:image"       content="<?= $appUrl ?>/assets/img/og-image.png">
-    <meta property="og:site_name"   content="<?= htmlspecialchars($appName) ?>">
-    <meta property="og:locale"      content="ms_MY">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="<?= htmlspecialchars($appName) ?> — Urus Kewangan Bisnes Tanpa Pening Kepala">
-    <meta name="twitter:description" content="Track untung rugi, urus costing dan jana laporan kewangan automatik.">
-    <meta name="twitter:image"       content="<?= $appUrl ?>/assets/img/og-image.png">
-
-    <!-- Favicon -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= $appUrl ?>/">
+    <meta property="og:title" content="ezkira — Kira Untung Bisnes Tanpa Pening Kepala">
+    <meta property="og:description" content="Rekod jualan, perbelanjaan dan resit. ezkira kira untung rugi dan laporan kewangan secara automatik.">
+    <meta property="og:image" content="<?= $appUrl ?>/assets/img/icons/icon-512.png">
+    <meta property="og:locale" content="ms_MY">
     <?php include __DIR__ . '/../layouts/partials/head-icons.php'; ?>
 
-    <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        window.tailwind_config = {
-            darkMode: 'class',
+        tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
                     colors: {
-                        brand: {
-                            50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe',
-                            300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6',
-                            600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a',
-                        },
+                        brand: { 50: '#eaf2ee', 100: '#cce0d5', 200: '#99c2ac', 300: '#5f9d7d', 400: '#3a7a58', 500: '#245e40', 600: '#1a4a2e', 700: '#163020', 800: '#0f2318', 900: '#091610' },
+                        sage:  { 50: '#f2f6f1', 100: '#e3ece2', 200: '#cfdccf', 300: '#a8c3a8', 400: '#7fa584', 500: '#5f8a66' },
+                        gold:  { 50: '#fdf8e7', 100: '#faefc4', 200: '#f4d87a', 300: '#eabc35', 400: '#d4a820', 500: '#C4A028' },
+                        gray:  { 50: '#f5f4ef', 100: '#edece5', 200: '#e2e1d8', 300: '#cecdc3', 400: '#9a9b92', 500: '#6d7068', 600: '#51554e', 700: '#353b35', 800: '#1f2621', 900: '#161c18' },
                     },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    boxShadow: {
+                        soft: '0 10px 30px -12px rgba(22,48,32,0.18)',
+                        float: '0 40px 80px -30px rgba(22,48,32,0.35)',
                     },
-                    keyframes: {
-                        float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-12px)' } },
-                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(24px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                    }
-                }
-            }
+                },
+            },
         };
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = window.tailwind_config;</script>
-
     <style>
-        /* ── Brand palette ─────────────────────────────────────────── */
-        :root {
-            --green:       #163020;   /* primary dark */
-            --green-mid:   #1e4a2e;   /* medium forest */
-            --green-light: #2d6a42;   /* lighter forest */
-            --gold:        #C9A84C;   /* accent gold */
-            --gold-light:  #E8D47A;   /* soft gold */
-            --gold-dark:   #A88030;   /* deep gold */
-            --cream:       #F7F4EE;   /* warm off-white */
-            --cream-dark:  #EDE8DC;   /* card border */
-        }
-        body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background: #fff; }
-        .hero-gradient { background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 50%, var(--green) 100%); }
-        .gradient-text { background: linear-gradient(135deg, var(--gold-light), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
-        .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
-        .faq-body.open { max-height: 300px; }
-        .faq-icon { transition: transform 0.3s ease; }
-        .faq-item.open .faq-icon { transform: rotate(45deg); }
-        .section-fade { opacity: 0; transform: translateY(32px); transition: opacity 0.6s ease, transform 0.6s ease; }
-        .section-fade.visible { opacity: 1; transform: translateY(0); }
-        .chart-bar { animation: growUp 1s ease-out forwards; transform-origin: bottom; }
-        @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-        .glow-gold { box-shadow: 0 0 40px rgba(201, 168, 76, 0.20); }
-        .nav-blur { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-        /* Gold CTA button */
-        .btn-gold { background: var(--gold); color: var(--green); font-weight: 700; transition: background 0.2s, transform 0.2s; }
-        .btn-gold:hover { background: var(--gold-light); transform: translateY(-2px); }
-        .btn-gold-shadow { box-shadow: 0 12px 28px rgba(201,168,76,0.30); }
-        /* Dark green outlined button */
-        .btn-outline-white { border: 1.5px solid rgba(255,255,255,0.25); color: white; transition: border-color 0.2s, background 0.2s; }
-        .btn-outline-white:hover { border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.06); }
-        /* Section label accent */
-        .label-gold { color: var(--gold); }
-        /* Light section bg */
-        .bg-cream { background: var(--cream); }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        body { font-feature-settings: "tnum" 0; }
+        .ez-num { font-variant-numeric: tabular-nums; }
+        .phone { border-radius: 2.4rem; border: 7px solid #111; box-shadow: 0 40px 80px -30px rgba(22,48,32,0.45); }
+        .phone-notch { width: 34%; height: 18px; border-radius: 0 0 12px 12px; background: #111; }
+        .blob { filter: blur(0); border-radius: 9999px; }
+        details summary::-webkit-details-marker { display: none; }
+        #ez-mobile-toggle:checked ~ #ez-mobile-menu { display: block; }
     </style>
 </head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
 
-<body class="bg-white text-slate-800 antialiased">
-
-<!-- ============================================================ -->
-<!-- NAVIGATION                                                    -->
-<!-- ============================================================ -->
-<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-
-            <!-- Logo -->
-            <a href="<?= $baseUri ?>/" class="flex items-center gap-2.5 shrink-0">
-                <img src="<?= asset_url('assets/img/logo.svg') ?>" alt="<?= htmlspecialchars($appName) ?>" class="h-9 w-9 rounded-xl ring-1 ring-white/20">
-                <span class="font-extrabold tracking-wide leading-none text-lg"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
-            </a>
-
-            <!-- Desktop nav links -->
-            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300" id="nav-links">
-                <a href="#features"   class="hover:text-white transition-colors" data-i18n="nav_features">Ciri-ciri</a>
-                <a href="#how-it-works" class="hover:text-white transition-colors" data-i18n="nav_howto">Cara Guna</a>
-                <a href="#showcase"   class="hover:text-white transition-colors" data-i18n="nav_dashboard">Dashboard</a>
-                <a href="#faq"        class="hover:text-white transition-colors" data-i18n="nav_faq">FAQ</a>
+<!-- ============ NAV ============ -->
+<header class="sticky top-0 z-40 bg-gray-50/85 backdrop-blur-md border-b border-gray-200/70">
+    <input type="checkbox" id="ez-mobile-toggle" class="hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <a href="<?= $base ?>/" class="shrink-0" aria-label="ezkira">
+            <img src="<?= $logoUrl ?>" alt="ezkira" class="w-10 h-10 rounded-xl">
+        </a>
+        <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-gray-600">
+            <a href="#ciri" class="hover:text-brand-700"><?= $L('Ciri-ciri', 'Features') ?></a>
+            <a href="#rupa-app" class="hover:text-brand-700"><?= $L('Rupa App', 'The App') ?></a>
+            <a href="#harga" class="hover:text-brand-700"><?= $L('Harga', 'Pricing') ?></a>
+            <a href="#soalan" class="hover:text-brand-700"><?= $L('Soalan Lazim', 'FAQ') ?></a>
+        </nav>
+        <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center rounded-full bg-white shadow-sm p-0.5 text-xs font-bold">
+                <button type="button" data-lang-btn="ms" onclick="ezSetLang('ms')" class="px-2.5 py-1 rounded-full">BM</button>
+                <button type="button" data-lang-btn="en" onclick="ezSetLang('en')" class="px-2.5 py-1 rounded-full">EN</button>
             </div>
-
-            <!-- Lang toggle (desktop only — mobile has it inline in right group) -->
-            <div class="hidden md:flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5 mr-1">
-                <button onclick="setLang('ms')" id="lang-btn-ms"
-                    class="text-xs font-black px-2.5 py-1 rounded-md transition-all cursor-pointer text-white" style="background:rgba(201,168,76,0.8);color:#163020">BM</button>
-                <button onclick="setLang('en')" id="lang-btn-en"
-                    class="text-xs font-black px-2.5 py-1 rounded-md transition-all cursor-pointer text-slate-400 hover:text-white">EN</button>
-            </div>
-            <!-- CTA buttons -->
-            <div class="hidden md:flex items-center gap-3">
-                <a href="<?= $siteBase ?>/login"
-                   class="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-4 py-2" data-i18n="nav_login">Log Masuk</a>
-                <a href="<?= $siteBase ?>/register"
-                   class="btn-gold btn-gold-shadow text-sm px-5 py-2.5 rounded-xl">
-                    Cuba Percuma
-                </a>
-            </div>
-
-            <!-- Mobile right: lang + login + register + hamburger -->
-            <div class="flex md:hidden items-center gap-2">
-                <!-- Lang toggle (mobile inline) -->
-                <div class="flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5">
-                    <button onclick="setLang('ms')" id="lang-btn-ms"
-                        class="text-xs font-black px-2 py-1 rounded-md transition-all cursor-pointer text-white" style="background:rgba(201,168,76,0.8);color:#163020">BM</button>
-                    <button onclick="setLang('en')" id="lang-btn-en"
-                        class="text-xs font-black px-2 py-1 rounded-md transition-all cursor-pointer text-slate-400">EN</button>
-                </div>
-                <!-- Login button always visible -->
-                <a href="<?= $siteBase ?>/login"
-                   class="text-xs font-semibold text-slate-300 hover:text-white transition-colors border border-white/20 hover:border-white/40 px-3 py-1.5 rounded-lg whitespace-nowrap"
-                   data-i18n="nav_login">Log Masuk</a>
-                <!-- Cuba Percuma small -->
-                <a href="<?= $siteBase ?>/register"
-                   class="btn-gold text-xs px-3 py-1.5 rounded-lg whitespace-nowrap hidden sm:inline-flex"
-                   data-i18n="nav_register">Cuba Percuma</a>
-                <!-- Hamburger (for nav links only) -->
-                <button id="hamburger" class="text-slate-300 hover:text-white p-1.5 rounded-lg" aria-label="Menu">
-                    <svg id="ham-open"   class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <svg id="ham-close" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Mobile menu (nav links only) -->
-        <div id="mobile-menu" class="hidden md:hidden border-t border-white/10" style="background:#163020">
-            <div class="flex flex-col py-3 text-sm font-medium text-slate-300">
-                <a href="#features"     class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_features">Ciri-ciri</a>
-                <a href="#how-it-works" class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_howto">Cara Guna</a>
-                <a href="#showcase"     class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_dashboard">Dashboard</a>
-                <a href="#faq"          class="px-2 py-3 hover:text-white hover:bg-white/5 rounded-lg transition-colors" onclick="closeMobile()" data-i18n="nav_faq">FAQ</a>
-                <a href="<?= $siteBase ?>/register"
-                   class="mt-2 btn-gold text-center py-3 rounded-xl text-sm sm:hidden"
-                   data-i18n="nav_register">Cuba Percuma</a>
-            </div>
+            <a href="<?= $base ?>/login" class="hidden sm:inline-flex h-10 items-center px-4 text-sm font-semibold text-gray-700 hover:text-brand-700"><?= $L('Log Masuk', 'Log in') ?></a>
+            <a href="<?= $base ?>/register" class="inline-flex h-10 items-center px-5 rounded-full bg-brand-700 hover:bg-brand-600 text-white text-sm font-semibold shadow-sm"><?= $L('Daftar Percuma', 'Sign up free') ?></a>
+            <label for="ez-mobile-toggle" class="md:hidden w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm cursor-pointer" aria-label="Menu">
+                <?= $icon('M4 6h16M4 12h16M4 18h16') ?>
+            </label>
         </div>
     </div>
-</nav>
-
-<!-- ============================================================ -->
-<!-- SECTION 1: HERO                                              -->
-<!-- ============================================================ -->
-<section class="hero-gradient min-h-screen flex items-center pt-16 overflow-hidden relative">
-
-    <!-- Background decorations -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full blur-3xl" style="background:rgba(201,168,76,0.08)"></div>
-        <div class="absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-3xl"  style="background:rgba(201,168,76,0.05)"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-3xl" style="background:rgba(46,74,46,0.15)"></div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-
-            <!-- Left: Copy -->
-            <div class="text-center lg:text-left">
-                <div class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-6" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:#E8D47A">
-                    <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background:#C9A84C"></span>
-                    <span data-i18n="hero_badge">Platform Kewangan untuk PKS Malaysia</span>
-                </div>
-
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-6">
-                    Urus Kewangan Bisnes<br>
-                    <span class="gradient-text">Tanpa Pening Kepala</span>
-                </h1>
-
-                <p class="text-slate-400 text-lg leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0">
-                    Track untung rugi, urus costing, simpan resit dan hasilkan laporan kewangan secara automatik dalam satu platform yang mudah digunakan.
-                </p>
-
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="<?= $siteBase ?>/register"
-                       class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base"
-                       data-i18n="hero_cta1">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                        Cuba Percuma — Tiada Bayaran
-                    </a>
-                    <a href="#showcase"
-                       class="btn-outline-white inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold"
-                       data-i18n="hero_cta2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Lihat Demo
-                    </a>
-                </div>
-
-                <p class="text-slate-500 text-sm mt-6">
-                    ✓ Tiada kad kredit diperlukan &nbsp;·&nbsp; ✓ Setup dalam 2 minit &nbsp;·&nbsp; ✓ Data selamat &amp; peribadi
-                </p>
-            </div>
-
-            <!-- Right: Dashboard mockup -->
-            <div class="relative hidden lg:block">
-                <div class="relative glow-gold rounded-3xl overflow-hidden" style="animation: float 6s ease-in-out infinite;">
-
-                    <!-- Main dashboard card -->
-                    <div class="bg-slate-800/80 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
-
-                        <!-- Top bar -->
-                        <div class="flex items-center justify-between mb-6">
-                            <div>
-                                <p class="text-slate-400 text-xs">Dashboard Kewangan</p>
-                                <p class="text-white font-bold text-sm">Mei 2026</p>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
-                                <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-                            </div>
-                        </div>
-
-                        <!-- Stat cards row -->
-                        <div class="grid grid-cols-3 gap-3 mb-6">
-                            <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3">
-                                <p class="text-emerald-400 text-xs mb-1">Pendapatan</p>
-                                <p class="text-white font-bold text-sm">RM 24,580</p>
-                                <p class="text-emerald-400 text-xs">↑ 18.4%</p>
-                            </div>
-                            <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3">
-                                <p class="text-red-400 text-xs mb-1">Perbelanjaan</p>
-                                <p class="text-white font-bold text-sm">RM 11,230</p>
-                                <p class="text-red-400 text-xs">↑ 5.2%</p>
-                            </div>
-                            <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
-                                <p class="text-blue-400 text-xs mb-1">Untung Bersih</p>
-                                <p class="text-white font-bold text-sm">RM 13,350</p>
-                                <p class="text-blue-400 text-xs">↑ 32.1%</p>
-                            </div>
-                        </div>
-
-                        <!-- Mini bar chart -->
-                        <div class="bg-slate-900/50 rounded-2xl p-4">
-                            <p class="text-slate-400 text-xs mb-4">Pendapatan vs Perbelanjaan (6 bulan)</p>
-                            <div class="flex items-end gap-1.5 h-20">
-                                <?php
-                                $bars = [
-                                    ['rev'=>60, 'exp'=>35], ['rev'=>72, 'exp'=>40], ['rev'=>55, 'exp'=>38],
-                                    ['rev'=>80, 'exp'=>45], ['rev'=>68, 'exp'=>42], ['rev'=>90, 'exp'=>48],
-                                ];
-                                foreach ($bars as $b):
-                                ?>
-                                <div class="flex-1 flex flex-col items-center gap-0.5">
-                                    <div class="w-full flex gap-0.5 items-end h-16">
-                                        <div class="flex-1 bg-emerald-500/70 rounded-t chart-bar" style="height:<?= $b['rev'] ?>%"></div>
-                                        <div class="flex-1 bg-red-400/60 rounded-t chart-bar"    style="height:<?= $b['exp'] ?>%"></div>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <div class="flex items-center gap-4 mt-3">
-                                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-emerald-500/70 rounded-sm"></span><span class="text-slate-400 text-xs">Pendapatan</span></div>
-                                <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-red-400/60 rounded-sm"></span><span class="text-slate-400 text-xs">Perbelanjaan</span></div>
-                            </div>
-                        </div>
-
-                        <!-- P&L preview -->
-                        <div class="mt-3 bg-slate-900/50 rounded-2xl p-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <p class="text-slate-400 text-xs font-medium">Ringkasan P&amp;L</p>
-                                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">Untung ↑</span>
-                            </div>
-                            <div class="space-y-2">
-                                <div class="flex justify-between text-xs"><span class="text-slate-400">Jualan Kasar</span><span class="text-white font-medium">RM 24,580</span></div>
-                                <div class="flex justify-between text-xs"><span class="text-slate-400">COGS</span><span class="text-red-400 font-medium">- RM 8,400</span></div>
-                                <div class="border-t border-white/10 pt-2 flex justify-between text-xs font-bold"><span class="text-slate-300">Untung Bersih</span><span class="text-emerald-400">RM 13,350</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Floating badges -->
-                <div class="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100" style="animation: float 5s ease-in-out infinite 1s;">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-800">Laporan Siap!</p>
-                            <p class="text-xs text-slate-500">P&amp;L dijana automatik</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl px-4 py-3 border border-slate-100" style="animation: float 7s ease-in-out infinite 2s;">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#F0EBD8">
-                            <svg class="w-4 h-4" style="color:#163020" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-800">Untung Naik 32%</p>
-                            <p class="text-xs text-slate-500">berbanding bulan lalu</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="ez-mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-gray-50 px-4 py-3 space-y-1 text-sm font-semibold">
+        <a href="#ciri" class="block px-3 py-2.5 rounded-xl hover:bg-white" onclick="ezCloseMenu()"><?= $L('Ciri-ciri', 'Features') ?></a>
+        <a href="#rupa-app" class="block px-3 py-2.5 rounded-xl hover:bg-white" onclick="ezCloseMenu()"><?= $L('Rupa App', 'The App') ?></a>
+        <a href="#harga" class="block px-3 py-2.5 rounded-xl hover:bg-white" onclick="ezCloseMenu()"><?= $L('Harga', 'Pricing') ?></a>
+        <a href="#soalan" class="block px-3 py-2.5 rounded-xl hover:bg-white" onclick="ezCloseMenu()"><?= $L('Soalan Lazim', 'FAQ') ?></a>
+        <a href="<?= $base ?>/login" class="block px-3 py-2.5 rounded-xl hover:bg-white"><?= $L('Log Masuk', 'Log in') ?></a>
+        <div class="flex gap-2 px-3 pt-2">
+            <button type="button" data-lang-btn="ms" onclick="ezSetLang('ms')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white">BM</button>
+            <button type="button" data-lang-btn="en" onclick="ezSetLang('en')" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white">EN</button>
         </div>
     </div>
+</header>
 
-    <!-- Wave divider -->
-    <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="w-full h-16 fill-white">
-            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z"/>
-        </svg>
-    </div>
-</section>
+<main>
+<!-- ============ HERO ============ -->
+<section class="relative overflow-hidden">
+    <div class="blob absolute -right-40 -top-24 w-[520px] h-[520px] bg-sage-200/70"></div>
+    <div class="blob absolute right-10 bottom-0 w-[340px] h-[340px] bg-gold-100/80"></div>
 
-<!-- ============================================================ -->
-<!-- SECTION 2: PROBLEM                                           -->
-<!-- ============================================================ -->
-<section id="problem" class="py-24 bg-white section-fade">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="problem_label">Adakah Ini Masalah Anda?</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="problem_h2">Masih Urus Kewangan<br><span class="gradient-text">Secara Manual?</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="problem_subtitle">Ramai pemilik bisnes masih bergelut dengan masalah yang sama. Anda tidak bersendirian.</p>
-        </div>
-
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <?php
-            $problems = [
-                ['icon'=>'🗂️', 'title'=>'Resit Berselerak',        'desc'=>'Resit fizikal dan digital bertaburan tanpa sistem penyimpanan yang teratur.'],
-                ['icon'=>'📊', 'title'=>'Spreadsheet Serabut',      'desc'=>'Formula Excel yang rumit, data tidak konsisten dan susah nak kemaskini setiap hari.'],
-                ['icon'=>'❓', 'title'=>'Tak Tahu Untung Sebenar',  'desc'=>'Duit masuk banyak tapi tak tahu sama ada bisnes sebenarnya untung atau rugi.'],
-                ['icon'=>'😰', 'title'=>'Susah Urus Cukai',         'desc'=>'Masa cukai tiba, panik cari dokumen dan kelam kabut siapkan penyata kewangan.'],
-                ['icon'=>'⏳', 'title'=>'Ambil Masa Buat Laporan',  'desc'=>'Berjam-jam habis untuk susun data dan siapkan laporan kewangan setiap bulan.'],
-                ['icon'=>'🔀', 'title'=>'Data Kewangan Tak Tersusun','desc'=>'Tiada gambaran jelas tentang perbelanjaan, pendapatan dan kedudukan kewangan semasa.'],
-            ];
-            foreach ($problems as $idx => $p):
-            ?>
-            <div class="relative bg-red-50 border border-red-100 rounded-2xl p-6 card-hover">
-                <div class="text-3xl mb-4"><?= $p['icon'] ?></div>
-                <div class="absolute top-4 right-4 text-red-400 font-bold text-lg">✕</div>
-                <h3 class="font-bold text-slate-800 text-base mb-2" data-i18n="pain_<?= $idx ?>_title"><?= htmlspecialchars($p['title']) ?></h3>
-                <p class="text-slate-500 text-sm leading-relaxed" data-i18n="pain_<?= $idx ?>_desc"><?= htmlspecialchars($p['desc']) ?></p>
-            </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Transition arrow -->
-        <div class="text-center mt-16">
-            <div class="inline-flex flex-col items-center gap-2">
-                <p class="text-slate-500 text-sm font-medium" data-i18n="problem_cta_text">Ezkira menyelesaikan semua masalah ini</p>
-                <div class="w-8 h-8 rounded-full flex items-center justify-center animate-bounce" style="background:#C9A84C">
-                    <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SECTION 3: FEATURES                                          -->
-<!-- ============================================================ -->
-<section id="features" class="py-24 bg-cream section-fade">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="feat_label">Ciri-Ciri Platform</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="feat_h2">Semua Yang Anda Perlukan<br><span class="gradient-text">Dalam Satu Platform</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="feat_subtitle">Direka khas untuk pemilik bisnes Malaysia yang mahu urus kewangan dengan lebih profesional dan efisien.</p>
-        </div>
-
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <?php
-            $features = [
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
-                    'color' => 'blue', 'title' => 'Costing Management',
-                    'desc'  => 'Kira kos produk, margin untung dan BEP dengan mudah dan tepat.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
-                    'color' => 'red', 'title' => 'Expense Tracking',
-                    'desc'  => 'Rekod semua perbelanjaan bisnes dengan kategori dan pantau budget anda.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-                    'color' => 'emerald', 'title' => 'Revenue Tracking',
-                    'desc'  => 'Rekod semua jualan dan pendapatan, set target dan pantau pencapaian.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
-                    'color' => 'purple', 'title' => 'Receipt Storage',
-                    'desc'  => 'Simpan dan urus resit digital dalam satu tempat yang selamat dan tersusun.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>',
-                    'color' => 'orange', 'title' => 'Profit & Loss Report',
-                    'desc'  => 'Penyata P&amp;L dijana secara automatik — sedia untuk akauntan atau cukai.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>',
-                    'color' => 'teal', 'title' => 'Balance Sheet',
-                    'desc'  => 'Kunci kira-kira automatik — aset, liabiliti dan ekuiti pemilik sekilas pandang.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>',
-                    'color' => 'blue', 'title' => 'Financial Dashboard',
-                    'desc'  => 'Papan pemuka visual dengan carta dan KPI kewangan terkini bisnes anda.',
-                ],
-                [
-                    'icon' => '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>',
-                    'color' => 'indigo', 'title' => 'Monthly Business Insights',
-                    'desc'  => 'Ringkasan bulanan prestasi bisnes dengan trend dan cadangan tindakan.',
-                ],
-            ];
-            $colorMap = [
-                'blue'   => 'border',  // handled via inline style
-                'red'    => 'bg-red-50 text-red-600 border-red-100',
-                'emerald'=> 'bg-emerald-50 text-emerald-700 border-emerald-100',
-                'purple' => 'bg-purple-50 text-purple-600 border-purple-100',
-                'orange' => 'bg-orange-50 text-orange-600 border-orange-100',
-                'teal'   => 'bg-teal-50 text-teal-600 border-teal-100',
-                'indigo' => 'border',  // handled via inline style
-            ];
-            $inlineStyle = ['blue' => 'background:#F0EBD8;color:#163020;border-color:#E8D47A', 'indigo' => 'background:#EDF7F0;color:#163020;border-color:#C9A84C'];
-            foreach ($features as $fidx => $f):
-                $cls   = $colorMap[$f['color']] ?? 'border';
-                $style = $inlineStyle[$f['color']] ?? '';
-            ?>
-            <div class="bg-white border border-slate-100 rounded-2xl p-6 card-hover shadow-sm">
-                <div class="w-12 h-12 <?= $cls ?> rounded-xl flex items-center justify-center mb-4" style="<?= $style ?>">
-                    <?= $f['icon'] ?>
-                </div>
-                <h3 class="font-bold text-slate-800 text-sm mb-2" data-i18n="feat_<?= $fidx ?>_title"><?= htmlspecialchars($f['title']) ?></h3>
-                <p class="text-slate-500 text-sm leading-relaxed" data-i18n="feat_<?= $fidx ?>_desc"><?= $f['desc'] ?></p>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SECTION 4: HOW IT WORKS                                      -->
-<!-- ============================================================ -->
-<section id="how-it-works" class="py-24 bg-white section-fade">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="howto_label">Cara Penggunaan</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-5" data-i18n="howto_h2">Mulakan Dalam<br><span class="gradient-text">3 Langkah Mudah</span></h2>
-            <p class="text-slate-500 text-lg" data-i18n="howto_subtitle">Setup pantas — tidak perlukan latihan khas atau pengetahuan perakaunan.</p>
-        </div>
-
-        <div class="relative">
-            <!-- Connector line (desktop) -->
-            <div class="hidden md:block absolute top-12 left-0 right-0 h-0.5" style="width:calc(100% - 8rem); left:4rem; background:linear-gradient(90deg,#E8D47A,#C9A84C,#E8D47A)"></div>
-
-            <div class="grid md:grid-cols-3 gap-10">
-                <?php
-                $steps = [
-                    ['num'=>'01', 'color'=>'blue',    'title'=>'Masukkan Jualan & Perbelanjaan', 'desc'=>'Rekod semua transaksi bisnes anda secara mudah. Kategorikan perbelanjaan dan rekod setiap jualan.', 'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>'],
-                    ['num'=>'02', 'color'=>'indigo',  'title'=>'Upload Resit', 'desc'=>'Ambil gambar resit atau upload terus. Semua resit disimpan dengan selamat dan boleh dicari bila-bila masa.', 'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>'],
-                    ['num'=>'03', 'color'=>'emerald', 'title'=>'Lihat Laporan Automatik', 'desc'=>'P&L, Balance Sheet dan semua laporan kewangan dijana secara automatik — sedia untuk akauntan atau cukai.', 'icon'=>'<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>'],
-                ];
-                // All steps use brand green/gold palette
-                $stepNumStyle = 'background:#163020;color:#C9A84C';
-                $stepBgStyle  = ['blue'=>'background:#F0EBD8;border-color:#E8D47A','indigo'=>'background:#EDF7F0;border-color:#C9A84C','emerald'=>'background:#EDF7F0;border-color:#C9A84C'];
-                $stepIconStyle= 'color:#163020';
-                foreach ($steps as $sidx => $s):
-                ?>
-                <div class="flex flex-col items-center text-center">
-                    <div class="relative mb-8">
-                        <div class="w-24 h-24 border-2 rounded-3xl flex items-center justify-center mb-0" style="<?= $stepBgStyle[$s['color']] ?>">
-                            <svg class="w-10 h-10" style="<?= $stepIconStyle ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor"><?= $s['icon'] ?></svg>
-                        </div>
-                        <span class="absolute -top-3 -right-3 w-8 h-8 text-xs font-black rounded-xl flex items-center justify-center" style="<?= $stepNumStyle ?>"><?= $s['num'] ?></span>
-                    </div>
-                    <h3 class="font-bold text-slate-800 text-base mb-3" data-i18n="step_<?= $sidx ?>_title"><?= htmlspecialchars($s['title']) ?></h3>
-                    <p class="text-slate-500 text-sm leading-relaxed" data-i18n="step_<?= $sidx ?>_desc"><?= htmlspecialchars($s['desc']) ?></p>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-
-        <div class="text-center mt-16">
-            <a href="<?= $siteBase ?>/register"
-               class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-base"
-               data-i18n="howto_cta">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                Mula Sekarang — Percuma
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SECTION 5: BENEFITS                                          -->
-<!-- ============================================================ -->
-<section id="benefits" class="py-24 section-fade" style="background: linear-gradient(135deg, #163020 0%, #1e4a2e 100%);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid lg:grid-cols-2 gap-16 items-center">
-            <div>
-                <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="benefits_label">Kenapa Ezkira</span>
-                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6" data-i18n="benefits_h2">Lebih Masa Untuk<br><span class="gradient-text">Fokus Kepada Bisnes</span></h2>
-                <p class="text-slate-400 text-lg leading-relaxed mb-10">
-                    Jangan habiskan masa berharga anda dengan kerja pentadbiran kewangan. Biar Ezkira uruskan bahagian yang membosankan, supaya anda boleh fokus mengembangkan bisnes.
-                </p>
-                <a href="<?= $siteBase ?>/register"
-                   class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-sm">
-                    Cuba Percuma Sekarang →
-                </a>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <?php
-                $benefits = [
-                    ['icon'=>'⚡', 'title'=>'Jimat Masa',             'desc'=>'Kurangkan masa pengurusan kewangan sehingga 80%.'],
-                    ['icon'=>'🤖', 'title'=>'Kurang Kerja Manual',    'desc'=>'Automasi pengiraan, laporan dan penyusunan data.'],
-                    ['icon'=>'📁', 'title'=>'Rekod Tersusun',         'desc'=>'Semua dokumen dan data kewangan di satu tempat.'],
-                    ['icon'=>'🧮', 'title'=>'Mudah Urus Akaun',      'desc'=>'Data siap untuk akauntan — jimat kos profesional.'],
-                    ['icon'=>'🧾', 'title'=>'Mudah Urus Cukai',       'desc'=>'Semua rekod tersedia untuk pengemukaan cukai tahunan.'],
-                    ['icon'=>'🎯', 'title'=>'Keputusan Lebih Tepat',  'desc'=>'Data real-time untuk buat keputusan bisnes yang bijak.'],
-                ];
-                foreach ($benefits as $bidx => $b):
-                ?>
-                <div class="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
-                    <div class="text-2xl mb-3"><?= $b['icon'] ?></div>
-                    <h3 class="font-bold text-white text-sm mb-1.5" data-i18n="ben_<?= $bidx ?>_title"><?= htmlspecialchars($b['title']) ?></h3>
-                    <p class="text-slate-400 text-xs leading-relaxed" data-i18n="ben_<?= $bidx ?>_desc"><?= htmlspecialchars($b['desc']) ?></p>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-</section>
-
-
-<!-- ============================================================ -->
-<!-- SECTION 6: DASHBOARD SHOWCASE (HTML Mockup)                  -->
-<!-- ============================================================ -->
-<section id="showcase" class="py-24 bg-cream section-fade">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="showcase_label">Platform Preview</span>
-            <h2 class="text-4xl sm:text-5xl font-black text-slate-900 mb-4" data-i18n="showcase_h2">Dashboard Yang <span class="gradient-text">Profesional &amp; Lengkap</span></h2>
-            <p class="text-slate-500 text-lg max-w-xl mx-auto" data-i18n="showcase_subtitle">Semua data kewangan bisnes anda dalam paparan yang jelas, interaktif dan mudah difahami.</p>
-        </div>
-
-        <!-- Tab buttons -->
-        <div class="flex flex-wrap gap-2 justify-center mb-6">
-            <button onclick="showTab('dash')" id="tab-dash" class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer active-tab">📊 Dashboard</button>
-            <button onclick="showTab('exp')"  id="tab-exp"  class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer inactive-tab">💰 Perbelanjaan</button>
-            <button onclick="showTab('bs')"   id="tab-bs"   class="mock-tab px-5 py-2 text-sm font-bold rounded-full border-2 transition-all cursor-pointer inactive-tab">📋 Balance Sheet</button>
-        </div>
-
-        <!-- Browser frame -->
-        <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-200">
-            <!-- Chrome bar -->
-            <div class="flex items-center gap-2 px-4 py-2.5" style="background:#1e293b">
-                <span class="w-3 h-3 rounded-full bg-red-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
-                <span class="w-3 h-3 rounded-full bg-yellow-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
-                <span class="w-3 h-3 rounded-full bg-green-400 cursor-pointer hover:opacity-80 transition-opacity"></span>
-                <div class="flex-1 mx-3">
-                    <div class="flex items-center gap-1.5 bg-slate-700 rounded px-3 py-1 max-w-xs mx-auto">
-                        <svg class="w-3 h-3 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        <span class="text-slate-300 text-xs" id="url-bar">ezkira.com/dashboard</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- App nav -->
-            <div class="flex items-center justify-between px-6 py-3" style="background:#163020">
-                <span class="flex items-center gap-2"><img src="<?= asset_url('assets/img/logo.svg') ?>" alt="Ezkira" class="h-6 w-6 rounded-md ring-1 ring-white/20"><span class="font-extrabold tracking-wide leading-none text-sm"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span></span>
-                <div class="hidden sm:flex items-center gap-5 text-xs font-semibold">
-                    <span id="nav-dashboard" class="mock-nav-item cursor-pointer pb-0.5 transition-colors border-b-2" style="color:#C9A84C;border-color:#C9A84C">Dashboard</span>
-                    <span id="nav-revenue"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Revenue</span>
-                    <span id="nav-expenses"  class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Expenses</span>
-                    <span id="nav-balance"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Balance Sheet</span>
-                    <span id="nav-profile"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">My Profile</span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-xs text-slate-400 cursor-pointer hover:text-white transition-colors">BM</span>
-                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black cursor-pointer hover:opacity-80 transition-opacity" style="background:#C9A84C;color:#163020">T</div>
-                </div>
-            </div>
-
-            <!-- ── DASHBOARD PANEL ───────────────────────── -->
-            <div id="panel-dash" class="bg-slate-50 p-4">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div class="lg:col-span-2 space-y-4">
-                        <!-- Expenses Overview -->
-                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
-                            <div class="flex items-center justify-between mb-4">
-                                <h4 class="font-bold text-slate-800 text-sm">Expenses Overview</h4>
-                                <span class="text-xs text-slate-400 border border-slate-200 rounded-md px-2 py-0.5 cursor-pointer hover:bg-slate-50 transition-colors">Monthly ▾</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">EXPENSES COMPOSITION</p>
-                                    <div class="flex justify-center mb-3">
-                                        <div class="relative w-24 h-24">
-                                            <div class="w-24 h-24 rounded-full" style="background:conic-gradient(#3b82f6 0% 10%,#a855f7 10% 11%,#f97316 11% 52%,#e5e7eb 52% 100%)"></div>
-                                            <div class="absolute inset-3 bg-white rounded-full flex flex-col items-center justify-center">
-                                                <p class="text-xs font-black text-slate-800 leading-none">RM 893</p>
-                                                <p class="text-slate-400" style="font-size:9px">Total Spent</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-1 text-xs">
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span><span class="text-slate-600 flex-1">OPEX</span><span class="font-semibold">RM 92</span></div>
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span><span class="text-slate-600 flex-1">Marketing</span><span class="font-semibold">RM 0</span></div>
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span><span class="text-slate-600 flex-1">COGS</span><span class="font-semibold">RM 801</span></div>
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0"></span><span class="text-slate-600 flex-1">Remaining</span><span class="font-semibold">RM 2,107</span></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">BUDGET HEALTH</p>
-                                    <div class="flex justify-center mb-3">
-                                        <div class="relative w-24 h-24">
-                                            <div class="w-24 h-24 rounded-full" style="background:conic-gradient(#ef4444 0% 44%,#10b981 44% 100%)"></div>
-                                            <div class="absolute inset-3 bg-white rounded-full flex flex-col items-center justify-center">
-                                                <p class="text-xs font-black text-slate-800 leading-none">43.6%</p>
-                                                <p class="text-slate-400" style="font-size:9px">Expenses used</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-1 text-xs">
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-red-400 shrink-0"></span><span class="text-slate-600 flex-1">Total Expenses</span><span class="font-semibold">43.6%</span></div>
-                                        <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span><span class="text-slate-600 flex-1">Net Profit</span><span class="font-bold text-emerald-600">RM 1,156.90</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Daily Overview -->
-                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
-                            <div class="flex items-center justify-between mb-1">
-                                <div><h4 class="font-bold text-slate-800 text-sm">Daily Overview</h4><p class="text-xs text-slate-400">May 2026</p></div>
-                                <div class="flex gap-1">
-                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-white cursor-pointer" style="background:#163020">Day</button>
-                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">Month</button>
-                                    <button class="text-xs px-2.5 py-1 rounded-md font-semibold text-slate-500 hover:bg-slate-100 transition-colors cursor-pointer">Year</button>
-                                </div>
-                            </div>
-                            <div class="flex items-end gap-px h-20 mt-4 px-1">
-<?php
-$rev = [1,1,1,60,40,2,1,5,1,4,3,2,5,1,6,3,5,1,95,65,4,3,2,4,1,2,5,2,1,3,1];
-$exp = [0,0,0,35,10,0,0,0,0,0,0,0,0,0,0,0,0,0,75,15,0,0,0,0,0,0,0,2,0,0,0];
-foreach ($rev as $di => $rv):
-    $ev = $exp[$di]??0;
-?>
-                                <div class="flex-1 flex gap-px items-end h-full group">
-                                    <div class="flex-1 rounded-t transition-all group-hover:opacity-70 cursor-pointer" style="height:<?= max(2,$rv) ?>%;background:#163020" title="Day <?= $di+1 ?>: RM <?= $rv*10 ?>"></div>
-                                    <?php if($ev>0):?><div class="w-1 rounded-t group-hover:opacity-70 cursor-pointer" style="height:<?= $ev ?>%;background:#f87171"></div><?php endif;?>
-                                </div>
-<?php endforeach; ?>
-                            </div>
-                            <div class="flex gap-4 mt-2 text-xs text-slate-500">
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm" style="background:#163020"></span>Revenue</span>
-                                <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-red-400"></span>Expenses</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Recent Transactions -->
-                    <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-4 card-hover">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="font-bold text-slate-800 text-sm">Recent Transactions</h4>
-                            <div class="flex gap-2 text-xs">
-                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>In</span>
-                                <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-400"></span>Out</span>
-                            </div>
-                        </div>
-                        <div class="divide-y divide-slate-50">
-<?php
-$txns=[
-    ['n'=>'Raw materials',     'c'=>'COGS · 27 May',             'a'=>'− RM 44.30',  'in'=>false],
-    ['n'=>'Agent',             'c'=>'Agent Setia Alam · 19 May', 'a'=>'+ RM 748.00', 'in'=>true],
-    ['n'=>'Raw material (NSK)','c'=>'COGS · 18 May',             'a'=>'− RM 360.80', 'in'=>false],
-    ['n'=>'Outlet meru',       'c'=>'Walk-in · 17 May',          'a'=>'+ RM 57.00',  'in'=>true],
-    ['n'=>'Outlet meru',       'c'=>'Walk-in · 16 May',          'a'=>'+ RM 89.00',  'in'=>true],
-    ['n'=>'Outlet meru',       'c'=>'Walk-in · 15 May',          'a'=>'+ RM 110.00', 'in'=>true],
-];
-foreach($txns as $t):
-?>
-                            <div class="flex items-center gap-2.5 py-2.5 px-2 -mx-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors group">
-                                <span class="w-2 h-2 rounded-full shrink-0 <?= $t['in']?'bg-emerald-500':'bg-red-400' ?>"></span>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-slate-800 truncate"><?= htmlspecialchars($t['n']) ?></p>
-                                    <p class="text-xs text-slate-400"><?= htmlspecialchars($t['c']) ?></p>
-                                </div>
-                                <span class="text-xs font-bold shrink-0 <?= $t['in']?'text-emerald-600':'text-red-500' ?>"><?= $t['a'] ?></span>
-                            </div>
-<?php endforeach; ?>
-                        </div>
-                        <div class="flex justify-between mt-3 pt-3 border-t border-slate-100">
-                            <span class="text-xs font-semibold cursor-pointer hover:underline" style="color:#163020">Revenue →</span>
-                            <span class="text-xs font-semibold text-red-500 cursor-pointer hover:underline">Expenses →</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── EXPENSES PANEL ────────────────────────── -->
-            <div id="panel-exp" class="hidden bg-slate-50 p-4">
-                <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-                    <div>
-                        <h3 class="text-lg font-black text-slate-900">Expenses</h3>
-                        <p class="text-xs text-slate-500">Track OPEX, Marketing &amp; COGS against your revenue targets</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button class="text-xs font-bold text-white px-4 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-opacity" style="background:#163020">+ Add Expense</button>
-                        <button class="text-xs font-semibold text-slate-600 border border-slate-200 bg-white px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">↓ Export</button>
-                        <button class="text-xs font-semibold text-slate-600 border border-slate-200 bg-white px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">⚙ Configure Budget %</button>
-                    </div>
-                </div>
-                <div class="flex items-center justify-center gap-4 mb-5">
-                    <button class="text-slate-400 hover:text-slate-700 cursor-pointer text-xl leading-none">‹</button>
-                    <div class="text-center"><p class="font-bold text-slate-800 text-sm">May 2026</p><p class="text-xs text-slate-400">Current Month</p></div>
-                    <button class="text-slate-400 hover:text-slate-700 cursor-pointer text-xl leading-none">›</button>
-                </div>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-<?php
-$bc=[
-    ['lbl'=>'25% of target','bg'=>'bg-blue-100 text-blue-700',    't'=>'OPEX',             's'=>'Rent, Utilities, Salaries','v'=>'RM 92.00', 'tg'=>'RM 750.00', 'p'=>12,'b'=>'bg-blue-500'],
-    ['lbl'=>'5% of target', 'bg'=>'bg-purple-100 text-purple-700','t'=>'Marketing Expenses','s'=>'Ads, Promotions',           'v'=>'RM 0.00',  'tg'=>'RM 150.00', 'p'=>0, 'b'=>'bg-purple-400'],
-    ['lbl'=>'40% of target','bg'=>'bg-yellow-100 text-yellow-700','t'=>'COGS',              's'=>'Raw Materials, Production',  'v'=>'RM 801.10','tg'=>'RM 1,200.00','p'=>67,'b'=>'bg-yellow-400'],
-    ['lbl'=>'70.2% Net Profit','bg'=>'bg-emerald-100 text-emerald-700','t'=>'Expected Profit','s'=>'Revenue after expenses','v'=>'RM 2,106.90','tg'=>'RM 3,000.00','p'=>70,'b'=>'bg-emerald-500','pr'=>true],
-];
-foreach($bc as $c):
-?>
-                    <div class="bg-white border border-slate-100 rounded-xl p-3 shadow-sm card-hover cursor-pointer">
-                        <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-2 <?= $c['bg'] ?>"><?= $c['lbl'] ?></span>
-                        <p class="font-bold text-slate-800 text-sm"><?= $c['t'] ?></p>
-                        <p class="text-xs text-slate-400 mb-2"><?= $c['s'] ?></p>
-                        <p class="font-black text-slate-900 <?= ($c['pr']??false)?'text-emerald-600':'' ?>"><?= $c['v'] ?></p>
-                        <p class="text-xs text-slate-400">/ <?= $c['tg'] ?></p>
-                        <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full <?= $c['b'] ?> rounded-full" style="width:<?= $c['p'] ?>%"></div></div>
-                    </div>
-<?php endforeach; ?>
-                </div>
-                <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-                        <div class="flex items-center gap-2">
-                            <span class="w-1 h-4 rounded-full" style="background:#163020"></span>
-                            <div><p class="font-bold text-slate-800 text-sm">Expenses</p><p class="text-xs text-slate-400">May 2026 · 4 records</p></div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-1.5 cursor-text">
-                                <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                <span class="text-xs text-slate-400">Cari deskripsi...</span>
-                            </div>
-                            <span class="font-bold text-slate-800 text-sm">RM 893.10</span>
-                        </div>
-                    </div>
-                    <table class="w-full text-xs">
-                        <thead><tr class="border-b border-slate-100 bg-slate-50">
-                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Date</th>
-                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Category</th>
-                            <th class="text-left px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider hidden sm:table-cell">Description</th>
-                            <th class="text-right px-4 py-2 text-slate-400 font-semibold uppercase tracking-wider">Amount</th>
-                            <th class="px-4 py-2 hidden sm:table-cell"></th>
-                        </tr></thead>
-                        <tbody>
-<?php
-$er=[
-    ['d'=>'27 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw materials',      'a'=>'RM 44.30'],
-    ['d'=>'18 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw material (NSK)',  'a'=>'RM 360.80'],
-    ['d'=>'15 May 2026','cat'=>'OPEX','cc'=>'bg-blue-100 text-blue-700',    'desc'=>'Grab express',        'a'=>'RM 92.00'],
-    ['d'=>'04 May 2026','cat'=>'COGS','cc'=>'bg-yellow-100 text-yellow-700','desc'=>'Raw materials (NSK)', 'a'=>'RM 396.00'],
-];
-foreach($er as $r):
-?>
-                        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group">
-                            <td class="px-4 py-3 text-slate-500"><?= $r['d'] ?></td>
-                            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full font-bold <?= $r['cc'] ?>"><?= $r['cat'] ?></span></td>
-                            <td class="px-4 py-3 font-medium text-slate-700 group-hover:text-slate-900 hidden sm:table-cell"><?= htmlspecialchars($r['desc']) ?></td>
-                            <td class="px-4 py-3 font-bold text-slate-800 text-right"><?= $r['a'] ?></td>
-                            <td class="px-4 py-3 text-center hidden sm:table-cell"><span class="text-slate-400 hover:text-slate-700 cursor-pointer mr-2 transition-colors">✏</span><span class="text-red-400 hover:text-red-600 cursor-pointer transition-colors">🗑</span></td>
-                        </tr>
-<?php endforeach; ?>
-                        <tr class="bg-slate-50 border-t-2 border-slate-200"><td class="px-4 py-2 font-bold text-slate-500 text-xs uppercase tracking-wider" colspan="3">TOTAL</td><td class="px-4 py-2 font-black text-slate-800 text-right" colspan="2">RM 893.10</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- ── BALANCE SHEET PANEL ───────────────────── -->
-            <div id="panel-bs" class="hidden bg-slate-50 p-4">
-                <div class="max-w-2xl mx-auto space-y-4">
-                    <div class="flex items-start justify-between">
-                        <div><h3 class="text-lg font-black text-slate-900">Balance Sheet</h3><p class="text-xs text-slate-400">Statement of Financial Position</p></div>
-                        <button class="text-xs font-bold text-white px-4 py-2 rounded-lg cursor-pointer hover:opacity-90 transition-opacity" style="background:#163020">↓ Download CSV ▾</button>
-                    </div>
-                    <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-                        <p class="text-xs text-slate-500 mb-2">As at date</p>
-                        <div class="flex gap-2">
-                            <div class="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 cursor-text bg-slate-50">31/05/2026</div>
-                            <button class="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-200 bg-white text-slate-700 cursor-pointer hover:bg-slate-50 transition-colors">Load</button>
-                        </div>
-                    </div>
-                    <!-- P&L Summary -->
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <div class="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-slate-50 transition-colors">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                                <span class="font-bold text-slate-800 text-sm">P&amp;L Summary</span>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Auto</span>
-                            </div>
-                            <span class="text-slate-400">∧</span>
-                        </div>
-                        <div class="border-t border-slate-100 px-4 py-3 space-y-1.5">
-<?php
-$pls=[
-    ['l'=>'Revenue',             'v'=>'RM 2,050.00', 'c'=>'text-emerald-600 font-bold','indent'=>false],
-    ['l'=>'Less: Cost of Sales', 'v'=>'RM 801.10 (−)','c'=>'text-red-500',             'indent'=>true],
-    ['l'=>'Gross Profit',        'v'=>'RM 1,248.90',  'c'=>'font-bold text-slate-800', 'indent'=>false,'border'=>true],
-    ['l'=>'Less: OPEX',          'v'=>'RM 92.00 (−)', 'c'=>'text-red-500',             'indent'=>true],
-    ['l'=>'Less: Marketing',     'v'=>'RM 0.00',      'c'=>'text-slate-500',           'indent'=>true],
-    ['l'=>'Net Profit / (Loss)', 'v'=>'RM 1,156.90',  'c'=>'text-emerald-600 font-black','indent'=>false,'border'=>true],
-];
-foreach($pls as $p):
-?>
-                            <div class="flex justify-between text-xs py-0.5 <?= ($p['indent']??false)?'pl-5':'' ?> <?= ($p['border']??false)?'border-t border-slate-200 pt-2 mt-1':'' ?>">
-                                <span class="text-slate-600"><?= htmlspecialchars($p['l']) ?></span>
-                                <span class="<?= $p['c'] ?>"><?= $p['v'] ?></span>
-                            </div>
-<?php endforeach; ?>
-                        </div>
-                    </div>
-                    <!-- Assets -->
-                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <div class="px-4 py-3 font-bold text-white text-xs uppercase tracking-widest" style="background:#163020">ASSETS</div>
-                        <div class="px-4 py-4 space-y-2">
-                            <p class="font-bold text-slate-700 text-xs mb-2">Non-Current Asset</p>
-                            <div class="flex justify-between text-xs items-center py-1.5 hover:bg-slate-50 rounded px-1 cursor-pointer transition-colors border-b border-slate-50">
-                                <span class="text-slate-600">Property, plant and equipment <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 ml-1">Auto</span></span>
-                                <span class="font-bold text-slate-800">RM 0.00</span>
-                            </div>
-                            <div class="flex justify-between text-xs font-bold py-1.5 border-b border-slate-200">
-                                <span class="text-slate-500">Total non-current asset</span><span class="text-slate-800">RM 0.00</span>
-                            </div>
-                            <p class="font-bold text-slate-700 text-xs mt-3 mb-2">Current Assets</p>
-<?php foreach(['Inventories','Trade receivables','Other receivables'] as $a): ?>
-                            <div class="flex justify-between text-xs items-center py-1.5 hover:bg-slate-50 rounded px-1 cursor-pointer transition-colors border-b border-slate-50">
-                                <span class="text-slate-600"><?= htmlspecialchars($a) ?> <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-600 ml-1">Auto</span></span>
-                                <span class="font-bold text-slate-800">RM 0.00</span>
-                            </div>
-<?php endforeach; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div><!-- /browser frame -->
-
-        <div class="text-center mt-8">
-            <a href="<?= $siteBase ?>/register" class="btn-gold btn-gold-shadow inline-flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm" data-i18n="showcase_cta">Cuba Sendiri — Percuma →</a>
-        </div>
-    </div>
-</section>
-
-<style>
-.active-tab   { color:#fff!important; border-color:transparent!important; background:#163020!important; }
-.inactive-tab { color:#475569; border-color:#e2e8f0; background:#fff; }
-.inactive-tab:hover { border-color:#163020; color:#163020; }
-</style>
-<script>
-function showTab(name) {
-    var urls  = {dash:'dashboard', exp:'expenses', bs:'balance-sheet'};
-    var navs  = {dash:'dashboard', exp:'expenses', bs:'balance'};
-    ['dash','exp','bs'].forEach(function(t) {
-        var p = document.getElementById('panel-'+t);
-        var b = document.getElementById('tab-'+t);
-        if (p) p.classList.toggle('hidden', t !== name);
-        if (b) { b.className = b.className.replace('active-tab','inactive-tab'); }
-    });
-    var btn = document.getElementById('tab-'+name);
-    if (btn) btn.className = btn.className.replace('inactive-tab','active-tab');
-    var bar = document.getElementById('url-bar');
-    if (bar) bar.textContent = 'ezkira.com/' + (urls[name]||name);
-    document.querySelectorAll('.mock-nav-item').forEach(function(el) {
-        el.style.color=''; el.style.borderBottomColor='transparent';
-    });
-    var nav = document.getElementById('nav-'+navs[name]);
-    if (nav) { nav.style.color='#C9A84C'; nav.style.borderBottomColor='#C9A84C'; }
-}
-</script>
-
-<!-- ============================================================ -->
-<!-- SECTION 7: SOCIAL PROOF                                      -->
-<!-- ============================================================ -->
-<section id="social-proof" class="py-24 bg-white section-fade">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        <!-- Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-            <?php
-            $stats = [
-                ['num'=>'2,500+', 'label'=>'Pemilik Bisnes', 'icon'=>'👤'],
-                ['num'=>'RM 50M+', 'label'=>'Transaksi Direkod', 'icon'=>'💰'],
-                ['num'=>'98%',     'label'=>'Kepuasan Pengguna', 'icon'=>'⭐'],
-                ['num'=>'15 min',  'label'=>'Masa Setup Purata', 'icon'=>'⚡'],
-            ];
-            foreach ($stats as $s):
-            ?>
-            <div class="text-center p-6 bg-slate-50 rounded-2xl">
-                <div class="text-3xl mb-2"><?= $s['icon'] ?></div>
-                <div class="text-3xl font-black text-slate-900 mb-1"><?= $s['num'] ?></div>
-                <div class="text-sm text-slate-500"><?= htmlspecialchars($s['label']) ?></div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Testimonials -->
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-black text-slate-900 mb-3" data-i18n="proof_h2">Apa Kata Pengguna Kami</h2>
-            <p class="text-slate-500" data-i18n="proof_subtitle">Bisnes nyata. Hasil nyata.</p>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <?php
-            $testimonials = [
-                [
-                    'name'   => 'Aisyah Rahimi',
-                    'role'   => 'Pemilik Kedai Pakaian Online',
-                    'avatar' => 'AR',
-                    'color'  => 'bg-purple-500',
-                    'quote'  => '"Dulu saya guna Excel dan selalu keliru. Dengan Ezkira, dalam 5 minit saya dah boleh tengok untung rugi kedai saya. Laporan P&L pun boleh terus hantar ke akauntan!"',
-                    'stars'  => 5,
-                ],
-                [
-                    'name'   => 'Hafiz Mustaffa',
-                    'role'   => 'Pengusaha F&B (2 cawangan)',
-                    'avatar' => 'HM',
-                    'color'  => 'bg-emerald-600',
-                    'quote'  => '"Saya mula guna Ezkira masa nak sediakan dokumen untuk loan bank. Akauntan cakap rekod kewangan saya sangat tersusun. Loan pun approved! Highly recommended."',
-                    'stars'  => 5,
-                ],
-                [
-                    'name'   => 'Siti Norzahra',
-                    'role'   => 'Freelancer & Service Provider',
-                    'avatar' => 'SN',
-                    'color'  => 'bg-emerald-500',
-                    'quote'  => '"Sebagai freelancer, saya tak ada masa nak belajar perakaunan. Ezkira memudahkan segalanya. Kini saya tahu dengan tepat berapa yang saya earn setiap bulan."',
-                    'stars'  => 5,
-                ],
-            ];
-            foreach ($testimonials as $t):
-            ?>
-            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm card-hover">
-                <div class="flex mb-4">
-                    <?php for ($i = 0; $i < $t['stars']; $i++): ?>
-                    <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <?php endfor; ?>
-                </div>
-                <p class="text-slate-600 text-sm leading-relaxed mb-6 italic"><?= $t['quote'] ?></p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 <?= $t['color'] ?> rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        <?= $t['avatar'] ?>
-                    </div>
-                    <div>
-                        <p class="font-bold text-slate-800 text-sm"><?= htmlspecialchars($t['name']) ?></p>
-                        <p class="text-slate-400 text-xs"><?= htmlspecialchars($t['role']) ?></p>
-                    </div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SECTION 8: FAQ                                               -->
-<!-- ============================================================ -->
-<section id="faq" class="py-24 bg-cream section-fade">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <span class="inline-block text-xs font-bold tracking-widest uppercase label-gold mb-4" data-i18n="faq_label">Soalan Lazim</span>
-            <h2 class="text-4xl font-black text-slate-900 mb-4" data-i18n="faq_h2">Ada Soalan?<br><span class="gradient-text">Kami Ada Jawapannya</span></h2>
-        </div>
-
-        <div class="space-y-3" id="faq-list">
-            <?php
-            $faqs = [
-                [
-                    'q' => 'Adakah data kewangan saya selamat?',
-                    'a' => 'Ya, 100% selamat. Data anda disulitkan menggunakan penyulitan peringkat bank. Kami tidak berkongsi maklumat anda dengan mana-mana pihak ketiga. Backup data dilakukan secara automatik setiap hari untuk memastikan data anda tidak hilang.',
-                ],
-                [
-                    'q' => 'Boleh saya guna Ezkira untuk persediaan cukai?',
-                    'a' => 'Ya! Ezkira menjana laporan kewangan yang lengkap termasuk P&L dan Balance Sheet yang boleh dikemukakan terus kepada akauntan atau digunakan untuk pengemukaan cukai pendapatan perniagaan (Form B/Business). Semua rekod disusun mengikut kategori yang mudah difahami oleh akauntan.',
-                ],
-                [
-                    'q' => 'Laporan apa yang boleh saya jana dengan Ezkira?',
-                    'a' => 'Ezkira menjana Laporan Untung & Rugi (P&L), Kunci Kira-Kira (Balance Sheet), Ringkasan Perbelanjaan mengikut kategori, Analitik Pendapatan, Analisis Costing dan Laporan Prestasi Bulanan. Semua laporan boleh diekspot dalam format yang mudah dikongsi.',
-                ],
-                [
-                    'q' => 'Macam mana penyimpanan resit berfungsi?',
-                    'a' => 'Anda boleh upload gambar resit terus dari telefon atau komputer. Setiap resit dikaitkan dengan transaksi perbelanjaan berkaitan dan disimpan dalam cloud dengan selamat. Anda boleh cari dan akses resit bila-bila masa menggunakan carian nama atau tarikh.',
-                ],
-                [
-                    'q' => 'Adakah terdapat tempoh percubaan percuma?',
-                    'a' => 'Ya! Anda boleh cuba Ezkira secara percuma tanpa memerlukan kad kredit. Daftar sekarang dan mula gunakan semua ciri platform. Tiada komitmen, tiada bayaran tersembunyi.',
-                ],
-                [
-                    'q' => 'Adakah Ezkira sesuai untuk PKS dan perniagaan kecil?',
-                    'a' => 'Ezkira direka khas untuk PKS, peniaga online, peniaga runcit, pemberi perkhidmatan dan pengusaha bebas (freelancer) di Malaysia. Antara muka yang mesra pengguna memudahkan pemilik bisnes yang tidak mahir perakaunan untuk menguruskan kewangan mereka dengan berkesan.',
-                ],
-                [
-                    'q' => 'Bagaimana Costing Management berfungsi?',
-                    'a' => 'Modul Costing Management membolehkan anda mengira kos sebenar produk atau perkhidmatan anda — termasuk kos bahan mentah, buruh, overhead dan kos tidak langsung. Sistem akan kira margin untung, harga jualan minimum dan Break-Even Point (BEP) secara automatik.',
-                ],
-                [
-                    'q' => 'Bolehkah saya berkongsi data dengan akauntan saya?',
-                    'a' => 'Ya. Anda boleh menjana laporan kewangan dan mengeksportnya untuk dikongsi dengan akauntan anda. Laporan Ezkira mengikuti format standard perakaunan yang mudah difahami oleh mana-mana profesional kewangan. Ini menjimatkan masa dan kos perundingan akauntan.',
-                ],
-            ];
-            foreach ($faqs as $idx => $faq):
-            ?>
-            <div class="faq-item bg-white border border-slate-200 rounded-2xl overflow-hidden" data-idx="<?= $idx ?>">
-                <button class="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
-                        onclick="toggleFaq(this)">
-                    <span class="font-semibold text-slate-800 text-sm"><?= htmlspecialchars($faq['q']) ?></span>
-                    <span class="faq-icon text-slate-400 shrink-0">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    </span>
-                </button>
-                <div class="faq-body">
-                    <p class="px-6 pb-5 text-slate-500 text-sm leading-relaxed"><?= htmlspecialchars($faq['a']) ?></p>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="text-center mt-12">
-            <p class="text-slate-500 text-sm" data-i18n="faq_contact">Masih ada soalan? <a href="https://wa.me/60122541050?text=Saya%20ada%20soalan%20tentang%20Ezkira" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank" rel="noopener noreferrer">Hubungi kami di WhatsApp →</a></p>
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================ -->
-<!-- SECTION 9: FINAL CTA                                         -->
-<!-- ============================================================ -->
-<section id="cta" class="py-24 section-fade" style="background: linear-gradient(135deg, #163020 0%, #1e4a2e 50%, #163020 100%);">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
-        <!-- Glow -->
-        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div class="w-96 h-96 rounded-full blur-3xl" style="background:rgba(201,168,76,0.12)"></div>
-        </div>
-
-        <div class="relative">
-            <div class="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full mb-6" style="background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:#E8D47A">
-                <span class="w-2 h-2 rounded-full animate-pulse-slow" style="background:#C9A84C"></span>
-                Mula Hari Ini — Percuma
-            </div>
-
-            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight">
-                Ketahui Keadaan<br>Kewangan Bisnes<br><span class="gradient-text">Anda Hari Ini</span>
-            </h2>
-
-            <p class="text-slate-400 text-xl mb-10 max-w-xl mx-auto">
-                Semua data kewangan dalam satu platform yang mudah digunakan. Mulakan percuma — tiada kad kredit diperlukan.
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-16 grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+        <div class="lg:col-span-6">
+            <span class="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white shadow-sm text-xs font-semibold text-brand-700">
+                <span class="px-2 py-0.5 rounded-full bg-brand-700 text-white text-[10px] tracking-wide"><?= $L('BAHARU', 'NEW') ?></span>
+                <?= $L('Rupa baharu ezkira, lebih ringkas &amp; laju', 'The new ezkira — simpler and faster') ?>
+            </span>
+            <h1 class="mt-5 text-[2.6rem] leading-[1.08] sm:text-6xl lg:text-[3.25rem] font-extrabold tracking-tight text-gray-900">
+                <?= $L('Kira untung bisnes,<br><span class="text-brand-400">tanpa pening kepala.</span>', 'Know your real profit,<br><span class="text-brand-400">without the headache.</span>') ?>
+            </h1>
+            <p class="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-lg">
+                <?= $L(
+                    'Rekod jualan, perbelanjaan dan resit di satu tempat. ezkira kira untung rugi, bajet dan Kunci Kira-Kira secara automatik — dibina untuk peniaga online dan PKS Malaysia.',
+                    'Record sales, expenses and receipts in one place. ezkira works out your profit, budget and balance sheet automatically — built for Malaysian online sellers and SMEs.'
+                ) ?>
             </p>
-
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="<?= $siteBase ?>/register"
-                   class="btn-gold btn-gold-shadow inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-lg">
-                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    Mulakan Percuma Sekarang
+            <div class="mt-7 flex flex-col sm:flex-row gap-3">
+                <a href="<?= $base ?>/register" class="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-brand-700 hover:bg-brand-600 text-white font-semibold shadow-soft">
+                    <?= $L('Daftar Percuma', 'Sign up free') ?> <?= $icon($I['arrow'], 'w-4 h-4') ?>
+                </a>
+                <a href="#rupa-app" class="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-white hover:bg-gray-100 text-gray-800 font-semibold shadow-sm">
+                    <?= $L('Lihat rupa app', 'See the app') ?>
                 </a>
             </div>
+            <ul class="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-600">
+                <li class="flex items-center gap-1.5"><span class="text-brand-400"><?= $icon($I['check'], 'w-4 h-4') ?></span><?= $L('Key-in percuma selamanya', 'Key-in free forever') ?></li>
+                <li class="flex items-center gap-1.5"><span class="text-brand-400"><?= $icon($I['check'], 'w-4 h-4') ?></span><?= $L('Log masuk dengan Google', 'Sign in with Google') ?></li>
+                <li class="flex items-center gap-1.5"><span class="text-brand-400"><?= $icon($I['check'], 'w-4 h-4') ?></span>BM &amp; English</li>
+            </ul>
+        </div>
 
-            <div class="flex flex-wrap items-center justify-center gap-6 mt-10 text-sm text-slate-400">
-                <span class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Tiada Kad Kredit</span>
-                <span class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Setup 2 Minit</span>
-                <span class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Data 100% Selamat</span>
-                <span class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sokongan Bahasa Melayu</span>
+        <!-- Phone mockups: mobile-first, matching the real app -->
+        <div class="lg:col-span-6 relative h-[540px] sm:h-[560px]">
+            <div class="blob absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] bg-sage-200/70"></div>
+
+            <!-- Back phone: the "+" quick-add sheet -->
+            <div class="phone hidden sm:block absolute left-1/2 top-10 w-[220px] bg-gray-50 overflow-hidden rotate-6 translate-x-[2%]">
+                <div class="flex justify-center"><div class="phone-notch"></div></div>
+                <div class="relative h-[392px] px-3 pt-2 text-[10px]">
+                    <div class="space-y-2.5 opacity-60">
+                        <div class="flex justify-between"><span class="w-7 h-7 rounded-lg bg-brand-700"></span><span class="w-7 h-7 rounded-full bg-gray-200"></span></div>
+                        <div class="h-3 w-28 rounded bg-gray-300"></div>
+                        <div class="h-28 rounded-2xl bg-brand-700"></div>
+                        <div class="h-20 rounded-2xl bg-white"></div>
+                        <div class="h-12 rounded-2xl bg-white"></div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/30"></div>
+                    <div class="absolute inset-x-2 bottom-3 rounded-2xl bg-white p-2 grid grid-cols-2 gap-2 shadow-soft">
+                        <span class="flex flex-col items-center gap-1.5 rounded-xl bg-sage-50 px-1 py-3 text-[9px] leading-tight text-center font-bold text-gray-800">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><?= $icon($I['trend'], 'w-4 h-4') ?></span>
+                            <?= $L('Tambah Jualan', 'Add Sale') ?>
+                        </span>
+                        <span class="flex flex-col items-center gap-1.5 rounded-xl bg-sage-50 px-1 py-3 text-[9px] leading-tight text-center font-bold text-gray-800">
+                            <span class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center"><?= $icon($I['receipt'], 'w-4 h-4') ?></span>
+                            <?= $L('Tambah Belanja', 'Add Expense') ?>
+                        </span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-5 items-end bg-white px-1 pb-2 pt-1 text-[8px] text-gray-400 border-t border-gray-100">
+                    <span class="flex flex-col items-center"><?= $icon($I['home'], 'w-4 h-4') ?><?= $L('Utama', 'Home') ?></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['trend'], 'w-4 h-4') ?><?= $L('Hasil', 'Revenue') ?></span>
+                    <span class="flex justify-center"><span class="-translate-y-2 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center ring-4 ring-gray-50 rotate-45"><?= $icon($I['plus'], 'w-4 h-4') ?></span></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['receipt'], 'w-4 h-4') ?><?= $L('Belanja', 'Expenses') ?></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['user'], 'w-4 h-4') ?><?= $L('Profil', 'Profile') ?></span>
+                </div>
+            </div>
+
+            <!-- Front phone: dashboard -->
+            <div class="absolute left-1/2 top-0 z-10 -translate-x-1/2 sm:-translate-x-[88%]">
+                        <div class="phone w-[250px] bg-gray-50 overflow-hidden">
+                            <div class="flex justify-center"><div class="phone-notch"></div></div>
+                            <div class="px-3 pt-2 text-[10px] space-y-2.5">
+                                <div class="flex items-center justify-between"><img src="<?= $logoUrl ?>" alt="" class="w-7 h-7 rounded-lg"><span class="w-7 h-7 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">A</span></div>
+                                <div><p class="text-sm font-extrabold"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p><p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p></div>
+                                <div class="relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3">
+                                    <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/5"></div>
+                                    <p class="text-white/75"><?= $L('Keuntungan Bersih', 'Net Profit') ?></p>
+                                    <p class="ez-num font-extrabold leading-none mt-1"><span class="text-[10px] text-white/75 align-top">RM</span><span class="text-2xl">8,420</span><span class="text-sm text-white/70">.50</span></p>
+                                    <div class="mt-2.5 grid grid-cols-2 gap-1.5">
+                                        <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><b class="ez-num">24,860.00</b></div>
+                                        <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><b class="ez-num">16,439.50</b></div>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl bg-white p-2.5 shadow-sm">
+                                    <p class="font-bold mb-2"><?= $L('Tindakan Pantas', 'Quick Actions') ?></p>
+                                    <div class="grid grid-cols-4 gap-1 text-center text-[8.5px] font-semibold text-gray-600">
+                                        <?php foreach ([['plus', $L('Jualan', 'Sale')], ['receipt', $L('Belanja', 'Expense')], ['down', 'Export'], ['scale', $L('Kira-Kira', 'Balance')]] as [$ic, $lbl]): ?>
+                                        <span><span class="mx-auto mb-1 w-8 h-8 rounded-xl bg-gray-50 border border-gray-100 text-brand-700 flex items-center justify-center"><?= $icon($I[$ic], 'w-4 h-4') ?></span><?= $lbl ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl bg-sage-50 p-2.5 flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-full bg-white text-brand-500 flex items-center justify-center"><?= $icon($I['check'], 'w-3.5 h-3.5') ?></span>
+                                    <p class="font-bold leading-tight"><?= $L('Perbelanjaan guna 66.1% daripada pendapatan', 'Expenses used 66.1% of revenue') ?></p>
+                                </div>
+                            </div>
+                            <div class="mt-3 grid grid-cols-5 items-end bg-white px-1 pb-2 pt-1 text-[8px] text-gray-400 border-t border-gray-100">
+                                <span class="flex flex-col items-center text-brand-700 font-bold"><?= $icon($I['home'], 'w-4 h-4') ?><?= $L('Utama', 'Home') ?></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['trend'], 'w-4 h-4') ?><?= $L('Hasil', 'Revenue') ?></span>
+                                <span class="flex justify-center"><span class="-translate-y-2 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center ring-4 ring-gray-50"><?= $icon($I['plus'], 'w-4 h-4') ?></span></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['receipt'], 'w-4 h-4') ?><?= $L('Belanja', 'Expenses') ?></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['user'], 'w-4 h-4') ?><?= $L('Profil', 'Profile') ?></span>
+                            </div>
+                        </div>
+            </div>
+
+            <!-- Floating cards -->
+            <div class="absolute z-20 left-0 sm:left-[2%] bottom-3 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
+                <span class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><?= $icon('M7 17L17 7M17 7H9m8 0v8', 'w-4 h-4') ?></span>
+                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Jualan baru · Shopee', 'New sale · Shopee') ?></span><b class="ez-num text-sm text-emerald-600">+ RM 189.00</b></span>
+            </div>
+            <div class="absolute z-20 right-0 top-1 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
+                <span class="w-8 h-8 rounded-full bg-sage-100 text-brand-600 flex items-center justify-center"><?= $icon($I['camera'], 'w-4 h-4') ?></span>
+                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Resit disimpan', 'Receipt saved') ?></span><b class="ez-num text-sm text-gray-900">4.1 MB → 312 KB</b></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales channels -->
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pb-14">
+        <p class="text-center text-xs font-semibold uppercase tracking-[0.18em] text-gray-400"><?= $L('Rekod jualan dari mana-mana saluran', 'Record sales from every channel') ?></p>
+        <div class="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3 text-lg sm:text-xl font-extrabold text-gray-400">
+            <span>Shopee</span><span>Lazada</span><span>TikTok Shop</span><span>Website</span><span>WhatsApp</span><span><?= $L('Walk-in / Kaunter', 'Walk-in / Counter') ?></span>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="ciri" class="py-16 sm:py-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="rounded-[2rem] bg-white shadow-sm px-5 sm:px-10 py-12 sm:py-16">
+            <div class="text-center max-w-2xl mx-auto">
+                <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('KENAPA EZKIRA', 'WHY EZKIRA') ?></p>
+                <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Semua yang bisnes anda perlu, dalam satu app', 'Everything your business needs, in one app') ?></h2>
+                <p class="mt-3 text-gray-600"><?= $L('Tak perlu lagi Excel berselerak atau buku tiga lima. Rekod sekali, ezkira kira selebihnya.', 'No more scattered spreadsheets or notebooks. Record once, ezkira does the maths.') ?></p>
+            </div>
+            <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <?php foreach ([
+                    ['trend', 'bg-brand-700 text-white', 'Jualan Pelbagai Saluran', 'Multi-channel Sales',
+                        'Shopee, Lazada, TikTok Shop, WhatsApp atau kaunter — termasuk refund dan kaedah bayaran.',
+                        'Shopee, Lazada, TikTok Shop, WhatsApp or the counter — refunds and payment methods included.'],
+                    ['wallet', 'bg-sage-200 text-brand-700', 'Kawal Perbelanjaan', 'Control Spending',
+                        'Asingkan COGS, OPEX, marketing dan aset. Tetapkan bajet % dan nampak bila belanja terlebih.',
+                        'Split COGS, OPEX, marketing and assets. Set budget % and see when you overspend.'],
+                    ['camera', 'bg-gold-100 text-gold-500', 'Resit Digital', 'Digital Receipts',
+                        'Snap resit terus dari telefon. Gambar dikecilkan automatik dan boleh dimuat turun sebagai ZIP.',
+                        'Snap receipts straight from your phone. Photos shrink automatically and download as a ZIP.'],
+                    ['doc', 'bg-brand-100 text-brand-600', 'Laporan Untung Rugi', 'Profit & Loss Reports',
+                        'P&L harian, mingguan, bulanan, tahunan atau ikut tarikh — export CSV untuk akauntan.',
+                        'Daily, weekly, monthly, yearly or custom-range P&L — export CSV for your accountant.'],
+                    ['scale', 'bg-sage-100 text-brand-600', 'Kunci Kira-Kira', 'Balance Sheet',
+                        'Aset, liabiliti dan ekuiti dikira daripada transaksi anda. Rekod modal bila perlu.',
+                        'Assets, liabilities and equity calculated from your transactions. Record capital when needed.'],
+                    ['chart', 'bg-gray-100 text-gray-700', 'Dashboard & Sasaran', 'Dashboard & Targets',
+                        'Bandingkan bulan ini dengan bulan lepas, tetapkan sasaran jualan dan pantau margin untung.',
+                        'Compare this month with last, set sales targets and watch your profit margin.'],
+                ] as [$ic, $tone, $tMs, $tEn, $dMs, $dEn]): ?>
+                <div class="rounded-3xl border border-gray-200/80 bg-gray-50/60 p-6 hover:bg-white hover:shadow-soft transition">
+                    <span class="w-12 h-12 rounded-2xl flex items-center justify-center <?= $tone ?>"><?= $icon($I[$ic], 'w-6 h-6') ?></span>
+                    <h3 class="mt-5 text-lg font-bold text-gray-900"><?= $L($tMs, $tEn) ?></h3>
+                    <p class="mt-2 text-sm text-gray-600 leading-relaxed"><?= $L($dMs, $dEn) ?></p>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="mt-8 flex flex-wrap justify-center gap-2 text-xs font-semibold text-gray-600">
+                <?php foreach ([
+                    ['globe', 'Bahasa Melayu &amp; English', 'Bahasa Melayu &amp; English'],
+                    ['bolt', 'Mod gelap', 'Dark mode'],
+                    ['lock', 'Log masuk Google', 'Google sign-in'],
+                    ['home', '&quot;Add to Home Screen&quot; macam app', '&quot;Add to Home Screen&quot; like an app'],
+                ] as [$ic, $ms, $en]): ?>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100"><?= $icon($I[$ic], 'w-3.5 h-3.5') ?><?= $L($ms, $en) ?></span>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ============================================================ -->
-<!-- FOOTER                                                        -->
-<!-- ============================================================ -->
-<footer class="text-slate-400 pt-16 pb-8" style="background:#163020">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-
-            <!-- Brand -->
-            <div class="lg:col-span-2">
-                <a href="<?= $baseUri ?>/" class="flex items-center gap-2.5 mb-4">
-                    <img src="<?= asset_url('assets/img/logo.svg') ?>" alt="<?= htmlspecialchars($appName) ?>" class="h-9 w-9 rounded-xl ring-1 ring-white/20">
-                    <span class="font-extrabold tracking-wide leading-none text-lg"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
-                </a>
-                <p class="text-slate-400 text-sm leading-relaxed max-w-xs mb-5">
-                    Platform pengurusan kewangan bisnes yang direka khas untuk usahawan dan PKS Malaysia.
-                </p>
-                <div class="flex items-center gap-3">
-                    <a href="https://wa.me/60122541050" target="_blank" rel="noopener noreferrer"
-                       class="w-9 h-9 bg-emerald-600 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    </a>
-                    <a href="mailto:bizbuddyhq@gmail.com"
-                       class="w-9 h-9 bg-slate-700 hover:bg-slate-600 rounded-lg flex items-center justify-center transition-colors">
-                        <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    </a>
-                </div>
+<!-- ============ SHOWCASE: PHONES ============ -->
+<section id="rupa-app" class="pb-16 sm:pb-24 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 grid lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-4">
+            <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('RUPA APP SEBENAR', 'THE ACTUAL APP') ?></p>
+            <h2 class="mt-3 text-5xl sm:text-6xl font-extrabold leading-[0.98] tracking-tight">
+                <?= $L('Urus bisnes<br>dari <span class="text-brand-400">poket</span><br><span style="color:#C4A028">anda.</span>', 'Run your<br>business from<br>your <span class="text-brand-400">pocket.</span>') ?>
+            </h2>
+            <div class="mt-5 w-16 h-1.5 rounded-full bg-brand-400"></div>
+            <p class="mt-5 text-gray-600 leading-relaxed"><?= $L('Direka untuk telefon dahulu. Tambah jualan dalam beberapa saat — terus di kaunter, atau semasa live.', 'Designed phone-first. Add a sale in seconds — right at the counter, or mid-live.') ?></p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <a href="<?= $base ?>/register" class="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-brand-700 hover:bg-brand-600 text-white font-semibold"><?= $L('Cuba Percuma', 'Try it free') ?> <?= $icon($I['arrow'], 'w-4 h-4') ?></a>
+                <a href="#ciri" class="inline-flex items-center justify-center h-12 px-6 rounded-full bg-white shadow-sm font-semibold text-gray-800 hover:bg-gray-100"><?= $L('Terokai ciri', 'Explore features') ?></a>
             </div>
-
-            <!-- Platform links -->
-            <div>
-                <h4 class="text-white font-semibold text-sm mb-4" data-i18n="footer_platform">Platform</h4>
-                <ul class="space-y-2.5 text-sm">
-                    <li><a href="#features"     class="hover:text-white transition-colors">Ciri-Ciri</a></li>
-                    <li><a href="#how-it-works" class="hover:text-white transition-colors" data-i18n="nav_howto">Cara Guna</a></li>
-                    <li><a href="#showcase"     class="hover:text-white transition-colors">Dashboard Demo</a></li>
-                    <li><a href="#faq"          class="hover:text-white transition-colors" data-i18n="nav_faq">FAQ</a></li>
-                </ul>
-            </div>
-
-            <!-- Akaun links -->
-            <div>
-                <h4 class="text-white font-semibold text-sm mb-4" data-i18n="footer_account">Akaun</h4>
-                <ul class="space-y-2.5 text-sm">
-                    <li><a href="<?= $siteBase ?>/register" class="hover:text-white transition-colors" data-i18n="footer_register">Daftar Percuma</a></li>
-                    <li><a href="<?= $siteBase ?>/login"    class="hover:text-white transition-colors" data-i18n="footer_login">Log Masuk</a></li>
-                    <li><a href="https://wa.me/60122541050?text=Saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20Ezkira" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" data-i18n="footer_contact">Hubungi Kami</a></li>
-                </ul>
-                <div class="mt-6 pt-4 border-t border-slate-800">
-                    <p class="text-xs mb-1">📞 <a href="tel:+60122541050" class="hover:text-white">+6012-2541050</a></p>
-                    <p class="text-xs">✉️ <a href="mailto:bizbuddyhq@gmail.com" class="hover:text-white">bizbuddyhq@gmail.com</a></p>
+            <div class="mt-8 grid grid-cols-3 gap-2 text-center">
+                <?php foreach ([
+                    ['check', 'Key-in percuma', 'Free key-in', 'Selamanya', 'Forever'],
+                    ['lock', 'Tiada caj auto', 'No auto-charge', 'Bayar bila perlu', 'Pay when needed'],
+                    ['shield', 'Data peribadi', 'Private data', 'Hanya anda lihat', 'Only you see it'],
+                ] as [$ic, $tMs, $tEn, $sMs, $sEn]): ?>
+                <div class="rounded-2xl bg-white shadow-sm p-3">
+                    <span class="mx-auto w-9 h-9 rounded-full bg-sage-100 text-brand-600 flex items-center justify-center"><?= $icon($I[$ic], 'w-4 h-4') ?></span>
+                    <p class="mt-2 text-[11px] font-bold text-gray-900 leading-tight"><?= $L($tMs, $tEn) ?></p>
+                    <p class="text-[10px] text-gray-500 leading-tight mt-0.5"><?= $L($sMs, $sEn) ?></p>
                 </div>
+                <?php endforeach; ?>
             </div>
         </div>
 
-        <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p class="text-xs text-slate-500">© <?= date('Y') ?> <?= htmlspecialchars($appName) ?>. Hak cipta terpelihara.</p>
-            <p class="text-xs text-slate-500" data-i18n="footer_built">Dibina untuk usahawan Malaysia 🇲🇾</p>
+        <div class="lg:col-span-8 relative">
+            <div class="blob absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[560px] h-[560px] bg-sage-200/60"></div>
+            <div class="relative flex justify-center items-end gap-3 sm:gap-5">
+
+                <!-- Phone 1: Revenue -->
+                <div class="phone hidden md:block w-[210px] bg-gray-50 overflow-hidden -rotate-3 translate-y-6">
+                    <div class="flex justify-center"><div class="phone-notch"></div></div>
+                    <div class="px-3 pb-3 pt-2 text-[10px] space-y-2">
+                        <div class="flex items-center justify-between"><p class="text-sm font-extrabold"><?= $L('Pendapatan', 'Revenue') ?></p><span class="w-6 h-6 rounded-full bg-brand-700 text-white flex items-center justify-center"><?= $icon($I['plus'], 'w-3 h-3') ?></span></div>
+                        <div class="rounded-2xl bg-white p-2.5 shadow-sm">
+                            <div class="flex justify-between"><span class="text-gray-500"><?= $L('Sasaran Oktober', 'October target') ?></span><b class="ez-num">83%</b></div>
+                            <p class="ez-num text-base font-extrabold mt-0.5">RM 24,860 <span class="text-[9px] font-semibold text-gray-400">/ 30,000</span></p>
+                            <div class="mt-1.5 h-1.5 rounded-full bg-gray-100"><div class="h-full w-[83%] rounded-full bg-brand-400"></div></div>
+                        </div>
+                        <div class="flex gap-1 overflow-hidden">
+                            <span class="px-2 py-1 rounded-full bg-brand-700 text-white font-semibold"><?= $L('Semua', 'All') ?></span>
+                            <span class="px-2 py-1 rounded-full bg-white">Shopee</span><span class="px-2 py-1 rounded-full bg-white">TikTok</span>
+                        </div>
+                        <?php foreach ([['Shopee', '#10482', 'FPX', '+189.00', false], ['TikTok Shop', 'Live 9pm', 'E-Wallet', '+1,240.00', false], ['WhatsApp', $L('Tempahan Puan Siti', 'Order from Mrs Siti'), 'Cash', '+75.00', false], ['Shopee', 'Refund #10377', 'FPX', '−39.90', true]] as [$ch, $d, $pm, $amt, $refund]): ?>
+                        <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $refund ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600' ?>"><?= $icon($refund ? 'M17 7L7 17M7 17h8m-8 0V9' : 'M7 17L17 7M17 7H9m8 0v8', 'w-3 h-3') ?></span>
+                            <span class="flex-1 min-w-0"><b class="block truncate"><?= $ch ?></b><span class="block truncate text-gray-400"><?= $d ?> · <?= $pm ?></span></span>
+                            <b class="ez-num <?= $refund ? 'text-red-500' : 'text-emerald-600' ?>"><?= $amt ?></b>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Phone 2: Add Sale form (centre) -->
+                <div class="phone relative z-10 w-[240px] bg-gray-50 overflow-hidden">
+                    <div class="flex justify-center"><div class="phone-notch"></div></div>
+                    <div class="px-3 pt-2 pb-3 text-[10px] space-y-2.5">
+                        <div class="flex items-center gap-2"><?= $icon('M15 19l-7-7 7-7', 'w-4 h-4') ?><p class="text-sm font-extrabold"><?= $L('Tambah Jualan', 'Add Sale') ?></p></div>
+                        <div class="grid grid-cols-2 rounded-full bg-white p-0.5 shadow-sm text-center font-semibold">
+                            <span class="py-1 rounded-full bg-brand-700 text-white"><?= $L('Jualan', 'Sale') ?></span>
+                            <span class="py-1 text-gray-500">Refund</span>
+                        </div>
+                        <div class="rounded-2xl bg-white p-3 shadow-sm text-center">
+                            <p class="text-gray-500"><?= $L('Jumlah', 'Amount') ?></p>
+                            <p class="ez-num mt-0.5 text-2xl font-extrabold">RM 189.00</p>
+                        </div>
+                        <div>
+                            <p class="mb-1 font-semibold text-gray-600"><?= $L('Platform', 'Platform') ?></p>
+                            <div class="grid grid-cols-3 gap-1 text-center font-semibold">
+                                <span class="py-1.5 rounded-lg bg-brand-700 text-white">Shopee</span>
+                                <span class="py-1.5 rounded-lg bg-white">Lazada</span>
+                                <span class="py-1.5 rounded-lg bg-white">TikTok</span>
+                                <span class="py-1.5 rounded-lg bg-white">WhatsApp</span>
+                                <span class="py-1.5 rounded-lg bg-white">Walk-in</span>
+                                <span class="py-1.5 rounded-lg bg-white">Website</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="mb-1 font-semibold text-gray-600"><?= $L('Kaedah bayaran', 'Payment method') ?></p>
+                            <div class="flex flex-wrap gap-1 font-semibold">
+                                <span class="px-2 py-1 rounded-full bg-white"><?= $L('Tunai', 'Cash') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-sage-200 text-brand-800">Online Banking</span>
+                                <span class="px-2 py-1 rounded-full bg-white"><?= $L('Kad', 'Card') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-white">E-Wallet</span>
+                            </div>
+                        </div>
+                        <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm space-y-1.5">
+                            <div class="flex justify-between"><span class="text-gray-500"><?= $L('Tarikh', 'Date') ?></span><b><?= $L('6 Okt 2026', '6 Oct 2026') ?></b></div>
+                            <div class="flex justify-between"><span class="text-gray-500"><?= $L('Keterangan', 'Description') ?></span><b>Order #10482</b></div>
+                        </div>
+                        <span class="block py-2.5 rounded-full bg-brand-700 text-white text-center text-[11px] font-bold"><?= $L('Simpan Jualan', 'Save Sale') ?></span>
+                    </div>
+                </div>
+
+                <!-- Phone 3: Expenses with receipts -->
+                <div class="phone hidden md:block w-[210px] bg-gray-50 overflow-hidden rotate-3 translate-y-6">
+                    <div class="flex justify-center"><div class="phone-notch"></div></div>
+                    <div class="px-3 pb-3 pt-2 text-[10px] space-y-2">
+                        <div class="flex items-center justify-between"><p class="text-sm font-extrabold"><?= $L('Perbelanjaan', 'Expenses') ?></p><span class="w-6 h-6 rounded-full bg-brand-700 text-white flex items-center justify-center"><?= $icon($I['plus'], 'w-3 h-3') ?></span></div>
+                        <div class="rounded-2xl bg-white p-2.5 shadow-sm space-y-1.5">
+                            <p class="font-bold"><?= $L('Bajet bulan ini', "This month's budget") ?></p>
+                            <?php foreach ([['COGS', 'bg-sage-300', 'w-[88%]', '88%'], ['OPEX', 'bg-brand-600', 'w-[64%]', '64%'], ['Marketing', 'bg-gold-400', 'w-[97%]', '97%']] as [$c, $col, $w, $p]): ?>
+                            <div><div class="flex justify-between"><span><?= $c ?></span><b class="ez-num"><?= $p ?></b></div><div class="h-1.5 rounded-full bg-gray-100"><div class="h-full rounded-full <?= $col ?> <?= $w ?>"></div></div></div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php foreach ([['COGS', $L('Stok kain supplier', 'Fabric stock'), '3,400.00', 2], ['Marketing', $L('Iklan Facebook', 'Facebook Ads'), '250.00', 1], ['OPEX', $L('Sewa kedai', 'Shop rent'), '1,800.00', 1]] as [$c, $d, $amt, $n]): ?>
+                        <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm">
+                            <div class="flex items-center justify-between"><b class="truncate"><?= $d ?></b><b class="ez-num">−<?= $amt ?></b></div>
+                            <div class="mt-1 flex items-center justify-between text-gray-400">
+                                <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-semibold"><?= $c ?></span>
+                                <span class="flex items-center gap-1"><?= $icon($I['camera'], 'w-3 h-3') ?><?= $n ?> <?= $L('resit', 'receipt' . ($n > 1 ? 's' : '')) ?></span>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                        <div class="rounded-xl border border-dashed border-sage-300 bg-sage-50 px-2.5 py-2 text-center text-brand-600 font-semibold">
+                            <?= $L('Gambar resit dikecilkan automatik', 'Receipt photos shrink automatically') ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+</section>
+
+<!-- ============ SHOWCASE: LAPTOP ============ -->
+<section class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto">
+            <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('DI LAPTOP JUGA', 'ON YOUR LAPTOP TOO') ?></p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Satu akaun, telefon dan laptop', 'One account, phone and laptop') ?></h2>
+            <p class="mt-3 text-gray-600"><?= $L('Key-in di telefon semasa berniaga, semak laporan di laptop bila senggang. Data yang sama, sentiasa terkini.', 'Key in on your phone while you sell, review reports on your laptop later. Same data, always up to date.') ?></p>
+        </div>
+        <div class="mt-10 max-w-4xl mx-auto">
+            <div class="relative rounded-[1.6rem] bg-white shadow-float ring-1 ring-black/5 overflow-hidden">
+                <div class="flex items-center gap-2 px-4 h-9 bg-gray-100 border-b border-gray-200">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+                    <span class="ml-3 px-3 py-0.5 rounded-full bg-white text-[10px] text-gray-500">ezkira.com/dashboard</span>
+                </div>
+                <div class="flex text-[10px] sm:text-xs">
+                    <aside class="hidden sm:flex w-36 shrink-0 flex-col gap-1 bg-brand-700 p-3 text-white/70">
+                        <div class="flex items-center gap-1.5 mb-3"><img src="<?= $logoUrl ?>" alt="" class="w-6 h-6 rounded-md ring-1 ring-white/20"><span class="font-extrabold text-xs"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span></div>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-sage-200 text-brand-800 font-bold"><?= $icon($I['home'], 'w-3.5 h-3.5') ?><?= $L('Papan Pemuka', 'Dashboard') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['trend'], 'w-3.5 h-3.5') ?><?= $L('Pendapatan', 'Revenue') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['receipt'], 'w-3.5 h-3.5') ?><?= $L('Perbelanjaan', 'Expenses') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['scale'], 'w-3.5 h-3.5') ?><?= $L('Kunci Kira-Kira', 'Balance Sheet') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['user'], 'w-3.5 h-3.5') ?><?= $L('Profil', 'Profile') ?></span>
+                    </aside>
+                    <div class="flex-1 min-w-0 p-3 sm:p-4 bg-gray-50 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm sm:text-base font-extrabold text-gray-900"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p>
+                                <p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p>
+                            </div>
+                            <div class="hidden sm:flex rounded-full bg-white p-0.5 shadow-sm">
+                                <span class="px-2 py-1 text-gray-500"><?= $L('Harian', 'Daily') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-brand-700 text-white font-semibold"><?= $L('Bulanan', 'Monthly') ?></span>
+                                <span class="px-2 py-1 text-gray-500"><?= $L('Tahunan', 'Annual') ?></span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-3">
+                            <div class="col-span-5 sm:col-span-3 relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3.5">
+                                <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5"></div>
+                                <p class="text-white/75"><?= $L('Keuntungan Bersih · Bulanan', 'Net Profit · Monthly') ?></p>
+                                <p class="ez-num mt-1 font-extrabold leading-none"><span class="text-xs text-white/75 align-top">RM</span><span class="text-2xl sm:text-3xl">8,420</span><span class="text-base text-white/70">.50</span></p>
+                                <span class="inline-block mt-1.5 px-1.5 py-0.5 rounded-full bg-sage-300/20 text-sage-200 font-bold">▲ 33.9% Margin</span>
+                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><p class="ez-num font-bold text-xs sm:text-sm">24,860.00</p></div>
+                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><p class="ez-num font-bold text-xs sm:text-sm">16,439.50</p></div>
+                                </div>
+                            </div>
+                            <div class="col-span-5 sm:col-span-2 rounded-2xl bg-white p-3 shadow-sm flex sm:flex-col items-center gap-3">
+                                <div class="relative w-20 h-20 shrink-0 rounded-full" style="background:conic-gradient(#1a4a2e 0 30%, #f4f4ef 30% 31%, #5f9d7d 31% 50%, #f4f4ef 50% 51%, #a8c3a8 51% 100%)">
+                                    <div class="absolute inset-[22%] rounded-full bg-white flex flex-col items-center justify-center">
+                                        <span class="ez-num text-[10px] font-extrabold">RM16.4k</span>
+                                    </div>
+                                </div>
+                                <ul class="space-y-1 w-full">
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-600"></i>OPEX</span><b class="ez-num">30%</b></li>
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-300"></i>Marketing</span><b class="ez-num">19%</b></li>
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-sage-300"></i>COGS</span><b class="ez-num">51%</b></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl bg-white p-3 shadow-sm">
+                            <p class="font-bold text-gray-900 mb-1.5"><?= $L('Transaksi Terkini', 'Recent Transactions') ?></p>
+                            <?php foreach ([
+                                ['in', 'Shopee #10482', 'Shopee', '+ RM 189.00'],
+                                ['out', $L('Iklan Facebook', 'Facebook Ads'), 'Marketing', '− RM 250.00'],
+                                ['in', 'TikTok Live', 'TikTok Shop', '+ RM 1,240.00'],
+                            ] as [$dir, $desc, $cat, $amt]): ?>
+                            <div class="flex items-center gap-2 py-1.5 border-t border-gray-100 first:border-0">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $dir === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500' ?>"><?= $icon($dir === 'in' ? 'M7 17L17 7M17 7H9m8 0v8' : 'M17 7L7 17M7 17h8m-8 0V9', 'w-3 h-3') ?></span>
+                                <span class="flex-1 min-w-0"><span class="block font-semibold text-gray-800 truncate"><?= $desc ?></span><span class="text-gray-400"><?= $cat ?></span></span>
+                                <span class="ez-num font-bold <?= $dir === 'in' ? 'text-emerald-600' : 'text-gray-900' ?>"><?= $amt ?></span>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SHOWCASE: REPORTS ============ -->
+<section class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto">
+            <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('LAPORAN AUTOMATIK', 'AUTOMATIC REPORTS') ?></p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Laporan sedia untuk akauntan anda', 'Reports ready for your accountant') ?></h2>
+            <p class="mt-3 text-gray-600"><?= $L('Tak perlu susun semula hujung tahun. Pilih tempoh, tekan export — siap.', 'No more year-end scramble. Pick a period, press export — done.') ?></p>
+        </div>
+        <div class="mt-10 grid lg:grid-cols-2 gap-5">
+            <!-- P&L -->
+            <div class="rounded-3xl bg-white shadow-sm p-5 sm:p-6">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-lg font-bold"><?= $L('Penyata Untung Rugi', 'Profit &amp; Loss') ?></p>
+                        <p class="text-xs text-gray-500"><?= $L('Oktober 2026', 'October 2026') ?></p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 h-9 px-4 rounded-full bg-brand-700 text-white text-xs font-semibold"><?= $icon($I['down'], 'w-4 h-4') ?>Export CSV</span>
+                </div>
+                <div class="mt-4 flex gap-1.5 text-[11px] font-semibold">
+                    <?php foreach ([['Harian', 'Daily'], ['Mingguan', 'Weekly'], ['Bulanan', 'Monthly'], ['Tahunan', 'Annual'], ['Ikut tarikh', 'Custom']] as $i => [$ms, $en]): ?>
+                    <span class="px-2.5 py-1 rounded-full <?= $i === 2 ? 'bg-brand-700 text-white' : 'bg-gray-100 text-gray-500' ?>"><?= $L($ms, $en) ?></span>
+                    <?php endforeach; ?>
+                </div>
+                <div class="mt-4 text-sm divide-y divide-gray-100">
+                    <?php foreach ([
+                        [$L('Jualan', 'Sales'), '25,014.80', ''],
+                        [$L('Refund', 'Refunds'), '(154.80)', 'text-red-500'],
+                        [$L('Kos barang dijual (COGS)', 'Cost of goods sold (COGS)'), '(8,384.00)', 'text-gray-600'],
+                        [$L('Belanja operasi (OPEX)', 'Operating expenses (OPEX)'), '(4,932.00)', 'text-gray-600'],
+                        [$L('Marketing', 'Marketing'), '(3,123.50)', 'text-gray-600'],
+                    ] as [$k, $v, $cls]): ?>
+                    <div class="flex justify-between py-2"><span class="text-gray-600"><?= $k ?></span><span class="ez-num font-semibold <?= $cls ?>">RM <?= $v ?></span></div>
+                    <?php endforeach; ?>
+                    <div class="flex justify-between py-2.5 font-extrabold"><span><?= $L('Untung bersih', 'Net profit') ?></span><span class="ez-num text-brand-500">RM 8,420.50</span></div>
+                </div>
+            </div>
+            <!-- Balance sheet -->
+            <div class="rounded-3xl bg-white shadow-sm p-5 sm:p-6">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-lg font-bold"><?= $L('Kunci Kira-Kira', 'Balance Sheet') ?></p>
+                        <p class="text-xs text-gray-500"><?= $L('Setakat 31 Oktober 2026', 'As at 31 October 2026') ?></p>
+                    </div>
+                    <span class="px-3 py-1.5 rounded-full bg-sage-100 text-brand-700 text-xs font-bold"><?= $L('Seimbang ✓', 'Balanced ✓') ?></span>
+                </div>
+                <div class="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-2xl bg-gray-50 p-4">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500"><?= $L('Aset', 'Assets') ?></p>
+                        <div class="mt-2 space-y-1.5">
+                            <div class="flex justify-between"><span><?= $L('Tunai &amp; bank', 'Cash &amp; bank') ?></span><span class="ez-num font-semibold">32,580</span></div>
+                            <div class="flex justify-between"><span><?= $L('Stok', 'Inventory') ?></span><span class="ez-num font-semibold">6,200</span></div>
+                            <div class="flex justify-between"><span><?= $L('Peralatan', 'Equipment') ?> <span class="ml-1 px-1 rounded bg-sage-200 text-[9px] font-bold text-brand-700">AUTO</span></span><span class="ez-num font-semibold">4,500</span></div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-gray-200 flex justify-between font-extrabold"><span><?= $L('Jumlah', 'Total') ?></span><span class="ez-num">RM 43,280</span></div>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 p-4">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500"><?= $L('Liabiliti &amp; Ekuiti', 'Liabilities &amp; Equity') ?></p>
+                        <div class="mt-2 space-y-1.5">
+                            <div class="flex justify-between"><span><?= $L('Pinjaman', 'Loan') ?></span><span class="ez-num font-semibold">8,000</span></div>
+                            <div class="flex justify-between"><span><?= $L('Modal', 'Capital') ?></span><span class="ez-num font-semibold">15,000</span></div>
+                            <div class="flex justify-between"><span><?= $L('Untung terkumpul', 'Retained earnings') ?> <span class="ml-1 px-1 rounded bg-sage-200 text-[9px] font-bold text-brand-700">AUTO</span></span><span class="ez-num font-semibold">20,280</span></div>
+                        </div>
+                        <div class="mt-3 pt-2 border-t border-gray-200 flex justify-between font-extrabold"><span><?= $L('Jumlah', 'Total') ?></span><span class="ez-num">RM 43,280</span></div>
+                    </div>
+                </div>
+                <p class="mt-3 text-xs text-gray-500"><?= $L('Medan bertanda AUTO dikira terus daripada jualan dan perbelanjaan anda.', 'Fields marked AUTO are calculated straight from your sales and expenses.') ?></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="rounded-[2rem] bg-brand-700 text-white px-5 sm:px-10 py-12 sm:py-14 relative overflow-hidden">
+            <div class="blob absolute -right-24 -top-24 w-80 h-80 bg-white/5"></div>
+            <div class="relative text-center max-w-xl mx-auto">
+                <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Mula dalam 3 langkah', 'Get started in 3 steps') ?></h2>
+                <p class="mt-3 text-white/70"><?= $L('Tiada latihan perakaunan diperlukan.', 'No accounting training needed.') ?></p>
+            </div>
+            <div class="relative mt-10 grid md:grid-cols-3 gap-4">
+                <?php foreach ([
+                    ['Daftar akaun', 'Create an account', 'Guna emel atau terus log masuk dengan Google. Siap dalam seminit.', 'Use your email or sign in with Google. Done in a minute.'],
+                    ['Rekod jualan &amp; belanja', 'Record sales &amp; spending', 'Tekan butang + untuk tambah jualan atau perbelanjaan, dan snap resit sekali.', 'Tap + to add a sale or expense, and snap the receipt too.'],
+                    ['Lihat untung &amp; export', 'See profit &amp; export', 'Dashboard kira untung serta-merta. Export P&amp;L bila akauntan minta.', 'The dashboard works out profit instantly. Export the P&amp;L when your accountant asks.'],
+                ] as $i => [$tMs, $tEn, $dMs, $dEn]): ?>
+                <div class="rounded-3xl bg-white/10 p-6">
+                    <span class="w-10 h-10 rounded-full bg-sage-300 text-brand-800 font-extrabold flex items-center justify-center"><?= $i + 1 ?></span>
+                    <h3 class="mt-4 text-lg font-bold"><?= $L($tMs, $tEn) ?></h3>
+                    <p class="mt-1.5 text-sm text-white/75 leading-relaxed"><?= $L($dMs, $dEn) ?></p>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="harga" class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto">
+            <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('HARGA', 'PRICING') ?></p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Harga mesra peniaga kecil', 'Pricing that suits small businesses') ?></h2>
+            <p class="mt-3 text-gray-600"><?= $L('Key-in sentiasa percuma. Naik taraf hanya bila anda perlu simpan banyak resit.', 'Key-in is always free. Upgrade only when you need to store lots of receipts.') ?></p>
+        </div>
+        <div class="mt-10 grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+            <div class="rounded-3xl bg-white shadow-sm p-7 flex flex-col">
+                <p class="text-lg font-bold"><?= $L('Percuma', 'Free') ?></p>
+                <p class="mt-3 text-4xl font-extrabold">RM0</p>
+                <p class="text-sm text-gray-500"><?= $L('Percuma selamanya', 'Free forever') ?></p>
+                <ul class="mt-6 space-y-3 text-sm text-gray-700 flex-1">
+                    <?php foreach ([['Jualan &amp; perbelanjaan tanpa had', 'Unlimited sales &amp; expenses'], ['Dashboard, P&amp;L dan export', 'Dashboard, P&amp;L and export'], ['Kunci Kira-Kira', 'Balance Sheet'], ['Simpan sehingga 20 resit', 'Store up to 20 receipts']] as [$ms, $en]): ?>
+                    <li class="flex gap-2.5"><span class="text-brand-400"><?= $icon($I['check']) ?></span><?= $L($ms, $en) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <a href="<?= $base ?>/register" class="mt-7 inline-flex items-center justify-center h-12 rounded-full bg-gray-100 hover:bg-gray-200 font-semibold text-gray-900"><?= $L('Daftar Percuma', 'Sign up free') ?></a>
+            </div>
+            <div class="relative rounded-3xl bg-brand-700 text-white shadow-float p-7 flex flex-col overflow-hidden">
+                <div class="blob absolute -right-16 -top-16 w-56 h-56 bg-white/5"></div>
+                <div class="relative flex items-center justify-between"><p class="text-lg font-bold">Pro</p><span class="px-2.5 py-1 rounded-full bg-gold-300 text-brand-800 text-[11px] font-bold"><?= $L('Untuk resit banyak', 'For lots of receipts') ?></span></div>
+                <p class="relative mt-3"><span class="text-4xl font-extrabold">RM5.70</span><span class="text-white/70"><?= $L('/bulan', '/month') ?></span></p>
+                <p class="relative text-sm text-white/70"><?= $L('atau RM57/tahun — jimat RM11.40', 'or RM57/year — save RM11.40') ?></p>
+                <ul class="relative mt-6 space-y-3 text-sm text-white/90 flex-1">
+                    <?php foreach ([['Semua dalam pelan Percuma', 'Everything in Free'], ['Storan resit 1 GB (lebih kurang 4,000 resit)', '1 GB receipt storage (about 4,000 receipts)'], ['Bayar sekali — tiada caj automatik', 'One-off payment — no auto-charge'], ['Kad atau FPX melalui CHIP', 'Card or FPX via CHIP']] as [$ms, $en]): ?>
+                    <li class="flex gap-2.5"><span class="text-sage-300"><?= $icon($I['check']) ?></span><?= $L($ms, $en) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <a href="<?= $base ?>/register" class="relative mt-7 inline-flex items-center justify-center h-12 rounded-full bg-sage-300 hover:bg-sage-200 font-bold text-brand-800"><?= $L('Mula dengan Percuma', 'Start free') ?></a>
+                <p class="relative mt-3 text-xs text-white/60 text-center"><?= $L('Pelan Pro bermula 1 November 2026. Sebelum itu, semua ciri percuma.', 'Pro starts on 1 November 2026. Until then, every feature is free.') ?></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="soalan" class="pb-16 sm:pb-24">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <h2 class="text-center text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Soalan lazim', 'Frequently asked questions') ?></h2>
+        <div class="mt-8 rounded-3xl bg-white shadow-sm divide-y divide-gray-100">
+            <?php foreach ([
+                ['Betul ke percuma?', 'Is it really free?',
+                 'Ya. Rekod jualan, perbelanjaan, dashboard, laporan P&amp;L dan Kunci Kira-Kira semuanya percuma. Pelan Pro (RM5.70 sebulan) hanya diperlukan untuk simpan lebih daripada 20 resit.',
+                 'Yes. Sales, expenses, the dashboard, P&amp;L reports and the balance sheet are all free. Pro (RM5.70 a month) is only needed to store more than 20 receipts.'],
+                ['Perlu tahu perakaunan ke?', 'Do I need to know accounting?',
+                 'Tak perlu. Pilih kategori bila rekod perbelanjaan, dan ezkira susun untung rugi serta Kunci Kira-Kira untuk anda.',
+                 'No. Pick a category when you record an expense, and ezkira arranges your P&amp;L and balance sheet for you.'],
+                ['Boleh guna di telefon?', 'Does it work on my phone?',
+                 'Boleh. ezkira direka untuk telefon dahulu, dan anda boleh &quot;Add to Home Screen&quot; supaya ia dibuka macam app.',
+                 'Yes. ezkira is designed phone-first, and you can &quot;Add to Home Screen&quot; so it opens like an app.'],
+                ['Data saya selamat?', 'Is my data safe?',
+                 'Setiap akaun hanya boleh lihat rekod dan resit sendiri, dan semua sambungan ke ezkira disulitkan (HTTPS).',
+                 'Each account can only see its own records and receipts, and every connection to ezkira is encrypted (HTTPS).'],
+                ['Boleh hantar laporan kepada akauntan?', 'Can I send reports to my accountant?',
+                 'Boleh. Export penyata untung rugi dan senarai perbelanjaan dalam CSV, beserta semua resit dalam satu fail ZIP.',
+                 'Yes. Export your P&amp;L and expense list as CSV, with all receipts bundled in one ZIP file.'],
+                ['Ada dalam Bahasa Inggeris?', 'Is it available in English?',
+                 'Ada. Tukar antara Bahasa Melayu dan English bila-bila masa. Mod gelap pun ada.',
+                 'Yes. Switch between Bahasa Melayu and English any time. There is a dark mode too.'],
+            ] as [$qMs, $qEn, $aMs, $aEn]): ?>
+            <details class="group px-5 sm:px-6 py-4">
+                <summary class="flex items-center justify-between gap-4 cursor-pointer list-none font-semibold text-gray-900">
+                    <?= $L($qMs, $qEn) ?>
+                    <span class="w-8 h-8 shrink-0 rounded-full bg-gray-100 flex items-center justify-center transition-transform group-open:rotate-45"><?= $icon($I['plus'], 'w-4 h-4') ?></span>
+                </summary>
+                <p class="mt-3 text-sm text-gray-600 leading-relaxed"><?= $L($aMs, $aEn) ?></p>
+            </details>
+            <?php endforeach; ?>
+        </div>
+        <p class="mt-6 text-center text-sm text-gray-600">
+            <?= $L('Ada soalan lain?', 'Have another question?') ?>
+            <a href="https://wa.me/60122541050?text=Hi%2C%20saya%20ada%20soalan%20tentang%20ezkira" target="_blank" rel="noopener" class="font-semibold text-brand-500 hover:underline"><?= $L('WhatsApp kami →', 'WhatsApp us →') ?></a>
+        </p>
+    </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="relative overflow-hidden rounded-[2rem] bg-sage-200 px-6 py-12 sm:py-16 text-center">
+            <div class="blob absolute -left-20 -bottom-24 w-72 h-72 bg-sage-300/60"></div>
+            <div class="blob absolute -right-16 -top-20 w-64 h-64 bg-gold-100/80"></div>
+            <div class="relative">
+                <img src="<?= $logoUrl ?>" alt="" class="mx-auto w-14 h-14 rounded-2xl shadow-soft">
+                <h2 class="mt-5 text-3xl sm:text-4xl font-extrabold tracking-tight text-brand-800"><?= $L('Mula kira untung bisnes anda hari ini', 'Start knowing your real profit today') ?></h2>
+                <p class="mt-3 text-brand-700/80"><?= $L('Daftar dalam seminit. Key-in percuma, selamanya.', 'Sign up in a minute. Key-in is free, forever.') ?></p>
+                <a href="<?= $base ?>/register" class="mt-7 inline-flex items-center gap-2 h-12 px-7 rounded-full bg-brand-700 hover:bg-brand-600 text-white font-semibold shadow-soft"><?= $L('Daftar Percuma', 'Sign up free') ?> <?= $icon($I['arrow'], 'w-4 h-4') ?></a>
+            </div>
+        </div>
+    </div>
+</section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-sm">
+        <div class="lg:col-span-2">
+            <a href="<?= $base ?>/" class="flex items-center gap-2.5">
+                <img src="<?= $logoUrl ?>" alt="ezkira" class="w-9 h-9 rounded-xl">
+                <span class="text-lg font-extrabold tracking-wide"><span style="color:#C4A028">ez</span><span class="text-brand-700">kira</span></span>
+            </a>
+            <p class="mt-3 text-gray-600 max-w-xs"><?= $L('Platform pengurusan kewangan untuk peniaga online dan PKS Malaysia.', 'Finance management for Malaysian online sellers and SMEs.') ?></p>
+        </div>
+        <div>
+            <p class="font-bold text-gray-900"><?= $L('Produk', 'Product') ?></p>
+            <ul class="mt-3 space-y-2 text-gray-600">
+                <li><a href="#ciri" class="hover:text-brand-700"><?= $L('Ciri-ciri', 'Features') ?></a></li>
+                <li><a href="#harga" class="hover:text-brand-700"><?= $L('Harga', 'Pricing') ?></a></li>
+                <li><a href="#soalan" class="hover:text-brand-700"><?= $L('Soalan Lazim', 'FAQ') ?></a></li>
+                <li><a href="<?= $base ?>/register" class="hover:text-brand-700"><?= $L('Daftar Percuma', 'Sign up free') ?></a></li>
+                <li><a href="<?= $base ?>/login" class="hover:text-brand-700"><?= $L('Log Masuk', 'Log in') ?></a></li>
+            </ul>
+        </div>
+        <div>
+            <p class="font-bold text-gray-900"><?= $L('Hubungi', 'Contact') ?></p>
+            <ul class="mt-3 space-y-2 text-gray-600">
+                <li><a href="https://wa.me/60122541050" target="_blank" rel="noopener" class="hover:text-brand-700">WhatsApp +6012-254 1050</a></li>
+                <li><a href="mailto:bizbuddyhq@gmail.com" class="hover:text-brand-700">bizbuddyhq@gmail.com</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pb-8 text-xs text-gray-500 flex flex-col sm:flex-row justify-between gap-2">
+        <span>&copy; <?= date('Y') ?> ezkira. <?= $L('Hak cipta terpelihara.', 'All rights reserved.') ?> by <span class="font-semibold text-brand-600">NajmiNasrudin</span></span>
+        <span><?= $L('Dibina untuk usahawan Malaysia', 'Built for Malaysian entrepreneurs') ?></span>
     </div>
 </footer>
 
-<!-- ============================================================ -->
-<!-- JAVASCRIPT                                                    -->
-<!-- ============================================================ -->
 <script>
-(function () {
-    'use strict';
+function ezCloseMenu() { document.getElementById('ez-mobile-toggle').checked = false; }
 
-    // ── Sticky nav ─────────────────────────────────────────────
-    var navbar = document.getElementById('navbar');
-    function updateNav() {
-        if (window.scrollY > 20) {
-            navbar.classList.add('nav-blur', 'shadow-lg'); navbar.style.background = 'rgba(22,48,32,0.95)';
-            navbar.classList.remove('bg-transparent');
-        } else {
-            navbar.classList.remove('nav-blur', 'shadow-lg'); navbar.style.background = '';
-            navbar.classList.add('bg-transparent');
-        }
-    }
-    updateNav();
-    window.addEventListener('scroll', updateNav, { passive: true });
-
-    // ── Mobile hamburger ───────────────────────────────────────
-    var hamburger   = document.getElementById('hamburger');
-    var mobileMenu  = document.getElementById('mobile-menu');
-    var hamOpen     = document.getElementById('ham-open');
-    var hamClose    = document.getElementById('ham-close');
-    var menuOpen    = false;
-
-    hamburger.addEventListener('click', function () {
-        menuOpen = !menuOpen;
-        mobileMenu.classList.toggle('hidden', !menuOpen);
-        hamOpen.classList.toggle('hidden', menuOpen);
-        hamClose.classList.toggle('hidden', !menuOpen);
-        // Solid nav background when menu is open
-        navbar.style.background = menuOpen ? '#163020' : (window.scrollY > 20 ? 'rgba(22,48,32,0.95)' : '');
+function ezSetLang(lang) {
+    document.querySelectorAll('[data-en]').forEach(function (el) {
+        if (el.dataset.ms === undefined) el.dataset.ms = el.innerHTML;
+        el.innerHTML = lang === 'en' ? el.dataset.en : el.dataset.ms;
     });
-
-    window.closeMobile = function () {
-        menuOpen = false;
-        mobileMenu.classList.add('hidden');
-        hamOpen.classList.remove('hidden');
-        hamClose.classList.add('hidden');
-        navbar.style.background = window.scrollY > 20 ? 'rgba(22,48,32,0.95)' : '';
-    };
-
-    // ── Smooth scroll for anchor links ─────────────────────────
-    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
-        a.addEventListener('click', function (e) {
-            var target = document.querySelector(this.getAttribute('href'));
-            if (!target) return;
-            e.preventDefault();
-            var offset = 72; // nav height
-            var top = target.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-        });
+    document.querySelectorAll('[data-lang-btn]').forEach(function (b) {
+        var on = b.getAttribute('data-lang-btn') === lang;
+        b.style.background = on ? '#163020' : '';
+        b.style.color = on ? '#fff' : '';
     });
-
-    // ── FAQ accordion ─────────────────────────────────────────
-    window.toggleFaq = function (btn) {
-        var item = btn.closest('.faq-item');
-        var body = item.querySelector('.faq-body');
-        var isOpen = item.classList.contains('open');
-
-        // Close all
-        document.querySelectorAll('.faq-item').forEach(function (el) {
-            el.classList.remove('open');
-            el.querySelector('.faq-body').classList.remove('open');
-            el.querySelector('.faq-body').style.maxHeight = '';
-            el.style.borderColor = '';
-        });
-
-        if (!isOpen) {
-            item.classList.add('open');
-            body.classList.add('open');
-            body.style.maxHeight = body.scrollHeight + 'px';
-            item.style.borderColor = '#C9A84C';
-        }
-    };
-
-    // ── IntersectionObserver: fade-in sections ─────────────────
-    var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.08 });
-
-    document.querySelectorAll('.section-fade').forEach(function (el) {
-        observer.observe(el);
-    });
-
-})();
-</script>
-
-
-<script>
-// ── i18n translations ──────────────────────────────────────────
-var LANG_EN = {
-    nav_features:'Features', nav_howto:'How It Works', nav_dashboard:'Dashboard', nav_faq:'FAQ',
-    nav_login:'Login', nav_register:'Try Free',
-    hero_badge:'Financial Platform for Malaysian SMEs',
-    hero_h1:'Manage Your Business Finances<br><span class="gradient-text">Without the Headache</span>',
-    hero_subtitle:'Track profit &amp; loss, manage costing, store receipts and automatically generate financial reports in one platform.',
-    hero_cta1:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Try Free &#8212; No Payment',
-    hero_cta2:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> View Demo',
-    hero_trust:'&#10003; No credit card required &nbsp;&middot;&nbsp; &#10003; 2-minute setup &nbsp;&middot;&nbsp; &#10003; Safe &amp; private data',
-    problem_label:'Is This Your Problem?',
-    problem_h2:'Still Managing Your Finances<br><span class="gradient-text">Manually?</span>',
-    problem_subtitle:'Many business owners still struggle with the same problems. You are not alone.',
-    problem_cta_text:'Ezkira solves all these problems',
-    pain_0_title:'Scattered Receipts',        pain_0_desc:'Physical and digital receipts scattered without an organised storage system.',
-    pain_1_title:'Messy Spreadsheets',         pain_1_desc:'Complex Excel formulas, inconsistent data and hard to update daily.',
-    pain_2_title:"Don't Know Actual Profit",   pain_2_desc:"Money comes in but you don't know if the business is actually profitable.",
-    pain_3_title:'Hard to Manage Tax',         pain_3_desc:'When tax time comes, panic searching for documents to prepare statements.',
-    pain_4_title:'Reports Take Too Long',      pain_4_desc:'Hours wasted arranging data and preparing monthly financial reports.',
-    pain_5_title:'Unorganised Financial Data', pain_5_desc:'No clear picture of expenses, income and current financial position.',
-    feat_label:'Platform Features',
-    feat_h2:'Everything You Need<br><span class="gradient-text">In One Platform</span>',
-    feat_subtitle:'Designed for Malaysian business owners who want to manage finances more professionally.',
-    feat_0_title:'Costing Management',    feat_0_desc:'Calculate product costs, profit margin and break-even point easily.',
-    feat_1_title:'Expense Tracking',      feat_1_desc:'Record all business expenses with categories and monitor your budget.',
-    feat_2_title:'Revenue Tracking',      feat_2_desc:'Record all sales and income, set targets and monitor achievements.',
-    feat_3_title:'Receipt Storage',       feat_3_desc:'Save and manage digital receipts in one safe and organised place.',
-    feat_4_title:'Profit & Loss Report',  feat_4_desc:'P&L statement automatically generated — ready for accountant or tax.',
-    feat_5_title:'Balance Sheet',         feat_5_desc:'Automatic balance sheet — assets, liabilities and equity at a glance.',
-    feat_6_title:'Financial Dashboard',   feat_6_desc:'Visual dashboard with charts and financial KPIs for your business.',
-    feat_7_title:'Monthly Business Insights', feat_7_desc:'Monthly performance summary with trends and action recommendations.',
-    howto_label:'How To Use',
-    howto_h2:'Get Started In<br><span class="gradient-text">3 Easy Steps</span>',
-    howto_subtitle:'Fast setup — no special training or accounting knowledge required.',
-    step_0_title:'Enter Sales &amp; Expenses',  step_0_desc:'Record all your business transactions easily. Categorise expenses and record every sale.',
-    step_1_title:'Upload Receipts',             step_1_desc:'Take a photo of receipts or upload directly. All receipts saved securely and searchable anytime.',
-    step_2_title:'View Automatic Reports',      step_2_desc:'P&L, Balance Sheet and all financial reports generated automatically.',
-    howto_cta:'<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Now &#8212; Free',
-    benefits_label:'Why Ezkira',
-    benefits_h2:'More Time To<br><span class="gradient-text">Focus On Your Business</span>',
-    benefits_subtitle:"Don't spend your precious time on financial administration. Let Ezkira handle the boring parts so you can focus on growing your business.",
-    benefits_cta:'Try Free Now →',
-    ben_0_title:'Save Time',                ben_0_desc:'Reduce financial management time by up to 80%.',
-    ben_1_title:'Less Manual Work',          ben_1_desc:'Automate calculations, reports and data organisation.',
-    ben_2_title:'Organised Records',         ben_2_desc:'All financial documents and data in one place.',
-    ben_3_title:'Easy Account Management',   ben_3_desc:'Data ready for accountant — save professional costs.',
-    ben_4_title:'Easy Tax Management',       ben_4_desc:'All records available for annual tax submission.',
-    ben_5_title:'Better Decisions',          ben_5_desc:'Real-time data for making smart business decisions.',
-    showcase_label:'Platform Preview',
-    showcase_h2:'Professional &amp; Complete <span class="gradient-text">Dashboard</span>',
-    showcase_subtitle:'All your business financial data in a clear, interactive and easy-to-understand view.',
-    showcase_cta:'Try It Yourself &#8212; Free →',
-    proof_h2:'What Our Users Say', proof_subtitle:'Real businesses. Real results.',
-    stat_0:'Business Owners', stat_1:'Transactions Recorded', stat_2:'User Satisfaction', stat_3:'Average Setup Time',
-    testimonial_0_name:'Aisyah Rahimi',  testimonial_0_role:'Online Fashion Shop Owner',
-    testimonial_1_name:'Hafiz Mustaffa', testimonial_1_role:'F&amp;B Entrepreneur (2 outlets)',
-    testimonial_2_name:'Siti Norzahra',  testimonial_2_role:'Freelancer &amp; Service Provider',
-    faq_label:'Frequently Asked Questions',
-    faq_h2:'Have Questions?<br><span class="gradient-text">We Have Answers</span>',
-    faq_0_q:'Is my financial data safe?',
-    faq_1_q:'Can I use Ezkira for tax preparation?',
-    faq_2_q:'What reports can I generate with Ezkira?',
-    faq_3_q:'How does receipt storage work?',
-    faq_4_q:'Is there a free trial period?',
-    faq_5_q:'Is Ezkira suitable for SMEs and small businesses?',
-    faq_6_q:'How does Costing Management work?',
-    faq_7_q:'Can I share data with my accountant?',
-    faq_contact:'Still have questions? <a href="https://wa.me/60122541050" class="font-semibold hover:underline" style="color:#C9A84C" target="_blank">Contact us on WhatsApp →</a>',
-    cta_h2:'Know Your Business<br>Financial Position<br><span class="gradient-text">Today</span>',
-    cta_subtitle:'All financial data in one easy-to-use platform. Start free &#8212; no credit card required.',
-    cta_btn:'Start Free Now',
-    footer_tagline:'Business finance management platform designed for Malaysian entrepreneurs and SMEs.',
-    footer_platform:'Platform', footer_account:'Account',
-    footer_register:'Register Free', footer_login:'Login', footer_contact:'Contact Us',
-    footer_built:'Built for Malaysian entrepreneurs 🇲🇾',
-};
-
-var _orig = {}, _lang = localStorage.getItem('ezlang') || 'ms';
-
-function setLang(lang) {
-    _lang = lang;
-    localStorage.setItem('ezlang', lang);
-    document.querySelectorAll('[data-i18n]').forEach(function(el) {
-        var k = el.getAttribute('data-i18n');
-        if (!_orig[k]) _orig[k] = el.innerHTML;
-        el.innerHTML = (lang === 'en' && LANG_EN[k] !== undefined) ? LANG_EN[k] : (_orig[k] || el.innerHTML);
-    });
-    // Update toggle button styles
-    ['ms','en'].forEach(function(l) {
-        ['','  -mob'].forEach(function(sfx) {
-            var btn = document.getElementById('lang-btn-' + l + sfx.trim());
-            if (!btn) return;
-            if (l === lang) {
-                btn.style.background = 'rgba(201,168,76,0.9)'; btn.style.color = '#163020';
-                btn.classList.remove('text-slate-400','text-slate-300');
-            } else {
-                btn.style.background = ''; btn.style.color = '';
-                btn.classList.add(l==='en' ? 'text-slate-400' : 'text-slate-300');
-            }
-        });
-    });
-    // Update html lang attribute
     document.documentElement.lang = lang === 'en' ? 'en' : 'ms';
+    try { localStorage.setItem('ezlang', lang); } catch (e) {}
 }
 
-// Init
-(function() {
-    document.querySelectorAll('[data-i18n]').forEach(function(el) { _orig[el.getAttribute('data-i18n')] = el.innerHTML; });
-    setLang(_lang);
+(function () {
+    var lang = 'ms';
+    try { lang = localStorage.getItem('ezlang') || 'ms'; } catch (e) {}
+    ezSetLang(lang === 'en' ? 'en' : 'ms');
 })();
 </script>
-
 </body>
 </html>
