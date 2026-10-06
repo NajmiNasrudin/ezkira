@@ -6,7 +6,24 @@
  * @var array  $pcts          ['opex'=>float, 'marketing'=>float, 'cogs'=>float]
  * @var array  $allExpenses   All expenses for the month (all categories), with receipts
  * @var array  $totals        ['opex'=>float, 'marketing'=>float, 'cogs'=>float, 'ppe'=>float, 'inventory'=>float, 'liability'=>float]
+ * @var array  $plan          App\Core\Plan::status() for the current user
  */
+use App\Core\Plan;
+
+if ($plan['launch_free']) {
+    $receiptUsageText = __('plan_status_launch', ['date' => local_date(Plan::billingStart()->modify('-1 day'))])
+        . ' · ' . __('plan_usage_stored', ['count' => $plan['count']]);
+} elseif ($plan['tier'] === 'free') {
+    $receiptUsageText = __('plan_usage_count', ['count' => $plan['count'], 'limit' => Plan::FREE_RECEIPT_LIMIT]);
+} else {
+    $receiptUsageText = __('plan_usage_bytes', ['used' => Plan::formatBytes($plan['bytes']), 'limit' => '1 GB']);
+}
+$receiptUsageHtml = '<p class="text-xs mt-1 ' . ($plan['tier'] === 'free' && $plan['count'] >= Plan::FREE_RECEIPT_LIMIT ? 'text-red-500' : 'text-gray-500 dark:text-gray-400') . '">'
+    . htmlspecialchars($receiptUsageText, ENT_QUOTES)
+    . ($plan['tier'] === 'free'
+        ? ' · <a href="' . BASE_URI . '/pricing" class="font-semibold text-brand-600 dark:text-sage-300 hover:underline">' . __('plan_upgrade') . '</a>'
+        : '')
+    . '</p>';
 ?>
 <!-- Flatpickr: month picker -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -562,10 +579,11 @@ $bsTot        = $ppeTot + $liabilityTot;
                                 <?= __('upload_files_hint') ?>
                             </span>
                             <input type="file" name="receipts[]" class="sr-only" multiple
-                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                                   onchange="updateAddFileLabel(this)">
+                                   accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.jpg,.jpeg,.png,.webp,.gif,.pdf"
+                                   onchange="ezShrinkImages(this).finally(updateAddFileLabel.bind(null, this))">
                         </label>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                        <?= $receiptUsageHtml ?>
                     </div>
                 </div>
 
@@ -856,10 +874,11 @@ $bsTot        = $ppeTot + $liabilityTot;
                                 <?= __('upload_files_hint') ?>
                             </span>
                             <input type="file" name="receipts[]" id="edit-file-input" class="sr-only" multiple
-                                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
-                                   onchange="updateEditFileLabel(this)">
+                                   accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.jpg,.jpeg,.png,.webp,.gif,.pdf"
+                                   onchange="ezShrinkImages(this).finally(updateEditFileLabel.bind(null, this))">
                         </label>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1"><?= __('receipt_hint') ?></p>
+                        <?= $receiptUsageHtml ?>
                     </div>
                 </div>
 

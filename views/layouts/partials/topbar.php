@@ -4,7 +4,7 @@ use App\Core\Session;
 
 $lang     = Session::get('lang', 'en');
 $isDark   = (bool) Session::get('dark_mode');
-$moreOnly = ['/balance-sheet', '/blast'];
+$moreOnly = ['/balance-sheet', '/pricing', '/blast'];
 ?>
 
 <header class="sticky top-0 z-30 bg-gray-50/85 dark:bg-gray-950/85 backdrop-blur-md">

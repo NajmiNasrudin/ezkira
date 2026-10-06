@@ -71,6 +71,8 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
     </span>
 </div>
 
+<?php include BASE_PATH . '/views/layouts/partials/plan-notice.php'; ?>
+
 <!-- Period Filter + Export -->
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
     <div class="flex flex-wrap items-center gap-2">

@@ -25,6 +25,16 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 - **Revamp is phased:** Phase 1 (shell + Dashboard) is done. Revenue, Expenses, Balance Sheet, Profile, Blast, and Auth pages still have their old inner markup — restyle them to match `views/dashboard/index.php` without changing any form/route/JS behaviour.
 - BASE_PATH must be defined before requiring `config/config.php` — production's config uses it for error log paths. Any new bootstrap/CLI script needs `define('BASE_PATH', ...)` before the require.
 
+## Plans & billing (Free / Pro via CHIP)
+
+- **Rule:** key-in, dashboard, export and Balance Sheet are free for everyone. Only *storing receipts* is limited: Free = 20 stored receipts (deleting one frees a slot), Pro = 1 GB. Old receipts always stay viewable. Pro is RM5.70/month or RM57/year, **prepaid with no auto-renew**.
+- **Launch:** `App\Core\Plan::BILLING_START` = 2026-11-01 (Malaysia time). Before that every account is treated as Pro. Paying early starts the period on 1 Nov; renewing while Pro extends from the current end.
+- **Code:** `app/Core/Plan.php` (policy, limits, prices), `models/Billing.php` (pro_until, usage, payments), `controllers/BillingController.php` (`/pricing`, `/billing/checkout`, `/billing/return`, `/billing/chip-callback`), `app/Core/Chip.php` (CHIP Collect REST client), `views/billing/pricing.php`, dashboard notice in `views/layouts/partials/plan-notice.php`.
+- **Payment safety:** never trust callback bodies — `settle()` re-fetches the purchase from CHIP with the secret key and checks id + `reference` (`EZK-<payment id>`) + status (`paid`/`cleared`/`settled`). Test-mode purchases (`is_test`) only count when `CHIP_TEST_MODE` is true. Activation is idempotent (row lock in `Billing::activatePayment`).
+- **Config (server `config/config.php`, not in git):** `CHIP_BRAND_ID`, `CHIP_SECRET_KEY`, optional `CHIP_TEST_MODE`. Without the first two, the pricing page shows "payments open soon" and checkout is disabled.
+- **Schema:** migration 009 (`users.pro_until`, `expense_receipts.size_bytes`, `payments`) is applied automatically on first use by `App\Core\Schema::ensureBilling()` (flag file `storage/logs/schema_009_billing.done`). If it fails, plan checks fail open (nobody gets blocked) and the error goes to the PHP error log.
+- **Receipts:** photos are shrunk in the browser (`ezShrinkImages` in `assets/js/app.js`) and again on the server (`app/Core/ReceiptImage.php`, needs GD; falls back to storing the original). Allowed types: JPG/PNG/WebP/GIF/PDF, max 10 MB. `.user.ini` limits were raised from 3M/4M because larger phone photos used to fail silently or trigger a 419 (PHP drops the whole POST above `post_max_size`).
+
 ## Deploy details
 
 - FTP deploy excludes: `.git`, `.github`, `.claude`, `uploads/profiles/**`, `uploads/receipts/**`, `uploads/blast/**`, `storage/logs/**`, `storage/sessions/**`, `config/config.php`, `.env*`, `node_modules`
@@ -34,7 +44,7 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 
 ## Database
 
-- `database/schema.sql` is the base schema but has historically drifted behind the migration files — when setting up a fresh DB, apply `schema.sql` **then every** `database/migration_*.sql` in numeric order. Migrations as of now: 002 (business type), 003 (Google auth / `google_id`), 004 (refunds/`entry_type`), 005 (capitals table), 006 (`payment_method`), 007 (blast tables), 008 (rename `revenue_targets.amount` → `target_amount`).
+- `database/schema.sql` is the base schema but has historically drifted behind the migration files — when setting up a fresh DB, apply `schema.sql` **then every** `database/migration_*.sql` in numeric order. Migrations as of now: 002 (business type), 003 (Google auth / `google_id`), 004 (refunds/`entry_type`), 005 (capitals table), 006 (`payment_method`), 007 (blast tables), 008 (rename `revenue_targets.amount` → `target_amount`), 009 (billing: `pro_until`, `size_bytes`, `payments` — auto-applied, see Plans & billing).
 - **Action needed on existing production DB:** migration 008 has been committed but has NOT been confirmed run on the live `ezkira.com` database yet. Until it is, `Revenue::getTarget()`/`setTarget()` will throw a SQL error (column `target_amount` doesn't exist on old installs). Run this once via phpMyAdmin:
   ```sql
   ALTER TABLE `revenue_targets`

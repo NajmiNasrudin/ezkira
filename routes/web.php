@@ -74,6 +74,12 @@ $router->post('/profile/preferences',    'ProfileController@preferences', [AuthM
 $router->post('/profile/greeting',       'ProfileController@saveGreeting',[AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/profile/greeting/test',  'ProfileController@testGreeting', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 
+// Plans & billing (CHIP)
+$router->get('/pricing',                'BillingController@pricing',        [AuthMiddleware::class]);
+$router->post('/billing/checkout',      'BillingController@checkout',       [AuthMiddleware::class]);
+$router->get('/billing/return',         'BillingController@returnFromChip', [AuthMiddleware::class]);
+$router->post('/billing/chip-callback', 'BillingController@chipCallback',   []);  // Public — CHIP server-to-server
+
 // ============================================================
 // Utility routes (no auth required — handle gracefully)
 // ============================================================

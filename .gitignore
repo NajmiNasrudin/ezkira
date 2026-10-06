@@ -6,6 +6,10 @@ config/config.php
 .env.*.local
 
 # ---- User uploads ----
+uploads/receipts/*
+!uploads/receipts/.gitkeep
+uploads/logos/*
+!uploads/logos/.gitkeep
 uploads/profiles/*
 !uploads/profiles/.gitkeep
 uploads/blast/*
@@ -14,6 +18,7 @@ uploads/blast/*
 # ---- Logs & sessions ----
 storage/logs/*.log
 storage/logs/php-error.log
+storage/logs/*.done
 !storage/logs/.gitkeep
 storage/sessions/*
 !storage/sessions/.gitkeep

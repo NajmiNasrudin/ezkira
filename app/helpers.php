@@ -13,6 +13,15 @@ function __(string $key, array $replace = []): string
     return \App\Core\Lang::get($key, $replace);
 }
 
+/** "31 Oktober 2026" / "31 October 2026" depending on the current language. */
+function local_date(\DateTimeInterface $date): string
+{
+    $months = \App\Core\Session::get('lang', 'en') === 'ms'
+        ? ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember']
+        : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return $date->format('j') . ' ' . $months[(int) $date->format('n') - 1] . ' ' . $date->format('Y');
+}
+
 /**
  * Public URL for a file under the web root, versioned by its modified time.
  * The host caches static files for 7 days, so the version forces a refetch after a change.

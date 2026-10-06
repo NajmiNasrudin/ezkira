@@ -5,6 +5,8 @@ namespace Controllers;
 use App\Core\Auth;
 use App\Core\Controller;
 use App\Core\CSRF;
+use App\Core\Plan;
+use App\Core\ReceiptImage;
 use App\Core\Session;
 use Models\Expense;
 use Models\Revenue;
@@ -57,6 +59,7 @@ class ExpenseController extends Controller
         }
 
         $data = [
+            'plan'          => Plan::status($userId),
             'year'          => $year,
             'month'         => $month,
             'targetRevenue' => $targetRevenue,
@@ -113,25 +116,7 @@ class ExpenseController extends Controller
             'receipt_name' => null,
         ]);
 
-        // Handle multiple file uploads
-        if (!empty($_FILES['receipts']['name'][0])) {
-            $files = $_FILES['receipts'];
-            $count = count($files['name']);
-            for ($i = 0; $i < $count; $i++) {
-                if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-                $single = [
-                    'name'     => $files['name'][$i],
-                    'tmp_name' => $files['tmp_name'][$i],
-                    'error'    => $files['error'][$i],
-                    'size'     => $files['size'][$i],
-                    'type'     => $files['type'][$i],
-                ];
-                $upload = $this->uploadReceipt($single);
-                if (!isset($upload['error'])) {
-                    $expenseModel->addReceipt($expenseId, $upload['path'], $upload['name']);
-                }
-            }
-        }
+        $this->storeUploadedReceipts($expenseModel, $expenseId);
 
         $y = date('Y', strtotime($date));
         $m = date('n', strtotime($date));
@@ -144,7 +129,7 @@ class ExpenseController extends Controller
         CSRF::check();
 
         $expense = (new Expense())->findById((int)$id);
-        if (!$expense) {
+        if (!$expense || (int)$expense['user_id'] !== Auth::id()) {
             Session::flash('error', 'Rekod tidak dijumpai.');
             $this->redirect('/expenses');
         }
@@ -180,25 +165,7 @@ class ExpenseController extends Controller
             'user_id'      => Auth::id(),
         ]);
 
-        // Handle new file uploads added via edit modal
-        if (!empty($_FILES['receipts']['name'][0])) {
-            $files = $_FILES['receipts'];
-            $count = count($files['name']);
-            for ($i = 0; $i < $count; $i++) {
-                if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-                $single = [
-                    'name'     => $files['name'][$i],
-                    'tmp_name' => $files['tmp_name'][$i],
-                    'error'    => $files['error'][$i],
-                    'size'     => $files['size'][$i],
-                    'type'     => $files['type'][$i],
-                ];
-                $upload = $this->uploadReceipt($single);
-                if (!isset($upload['error'])) {
-                    $expenseModel->addReceipt((int)$id, $upload['path'], $upload['name']);
-                }
-            }
-        }
+        $this->storeUploadedReceipts($expenseModel, (int)$id);
 
         Session::flash('success', 'Rekod berjaya dikemaskini.');
         $this->redirect("/expenses?year={$year}&month={$month}#" . $category);
@@ -464,39 +431,135 @@ class ExpenseController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    private function uploadReceipt(array $file): array
+
+    private const RECEIPT_MIMES = [
+        'image/jpeg'      => 'jpg',
+        'image/png'       => 'png',
+        'image/webp'      => 'webp',
+        'image/gif'       => 'gif',
+        'application/pdf' => 'pdf',
+    ];
+    private const RECEIPT_MAX_BYTES = 10 * 1024 * 1024;
+
+    /**
+     * Save files from $_FILES['receipts'] against an expense, within the user's plan.
+     * The expense itself is always kept; skipped files are reported in a flash message.
+     */
+    private function storeUploadedReceipts(Expense $expenseModel, int $expenseId): void
     {
-        if ($file['error'] !== UPLOAD_ERR_OK) {
+        if (empty($_FILES['receipts']['name'][0])) {
+            return;
+        }
+
+        $userId  = (int) Auth::id();
+        $status  = Plan::status($userId);
+        $files   = $_FILES['receipts'];
+        $saved   = 0;
+        $limitKey = null;
+        $errors  = [];
+
+        for ($i = 0, $n = count($files['name']); $i < $n; $i++) {
+            if ($files['error'][$i] === UPLOAD_ERR_NO_FILE) continue;
+
+            $prepared = $this->prepareReceipt([
+                'name'     => $files['name'][$i],
+                'tmp_name' => $files['tmp_name'][$i],
+                'error'    => $files['error'][$i],
+                'size'     => $files['size'][$i],
+            ]);
+            if (isset($prepared['error'])) {
+                $errors[] = $prepared['error'];
+                continue;
+            }
+
+            $limitKey = Plan::uploadBlocker($status, $prepared['size']);
+            if ($limitKey !== null) {
+                $this->discardPrepared($prepared);
+                continue;
+            }
+
+            $stored = $this->moveReceipt($prepared);
+            if ($stored === null) {
+                $errors[] = 'Gagal simpan fail. Sila cuba lagi.';
+                continue;
+            }
+
+            $expenseModel->addReceipt($expenseId, $stored['path'], $stored['name'], $stored['size']);
+            $status['count']++;
+            $status['bytes'] += $stored['size'];
+            $saved++;
+        }
+        Plan::forget($userId);
+
+        if ($limitKey !== null) {
+            Session::flash('info', __($limitKey, ['limit' => Plan::FREE_RECEIPT_LIMIT]));
+        } elseif ($errors) {
+            Session::flash('info', implode(' ', array_unique($errors)));
+        }
+    }
+
+    /** Validate and (for photos) compress an upload into a temp file ready to store. */
+    private function prepareReceipt(array $file): array
+    {
+        if ($file['error'] === UPLOAD_ERR_INI_SIZE || $file['error'] === UPLOAD_ERR_FORM_SIZE
+            || $file['size'] > self::RECEIPT_MAX_BYTES) {
+            return ['error' => 'Fail terlalu besar. Maksimum 10MB.'];
+        }
+        if ($file['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($file['tmp_name'])) {
             return ['error' => 'Muat naik gagal. Sila cuba lagi.'];
         }
 
-        if ($file['size'] > 10 * 1024 * 1024) {
-            return ['error' => 'Fail terlalu besar. Maksimum 10MB.'];
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($file['tmp_name']) ?: '';
+        if (!isset(self::RECEIPT_MIMES[$mime])) {
+            return ['error' => 'Jenis fail tidak dibenarkan. Guna gambar (JPG, PNG, WebP) atau PDF.'];
         }
 
-        $orig    = basename($file['name']);
-        $ext     = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif','webp','pdf','doc','docx','xls','xlsx','txt','zip'];
-
-        if (!in_array($ext, $allowed, true)) {
-            return ['error' => 'Jenis fail tidak dibenarkan.'];
+        $name       = basename($file['name']);
+        $compressed = ReceiptImage::compress($file['tmp_name'], $mime);
+        if ($compressed !== null) {
+            return [
+                'tmp'       => $compressed,
+                'temporary' => true,
+                'ext'       => 'jpg',
+                'name'      => pathinfo($name, PATHINFO_FILENAME) . '.jpg',
+                'size'      => (int) filesize($compressed),
+            ];
         }
 
+        return [
+            'tmp'       => $file['tmp_name'],
+            'temporary' => false,
+            'ext'       => self::RECEIPT_MIMES[$mime],
+            'name'      => $name,
+            'size'      => (int) $file['size'],
+        ];
+    }
+
+    private function moveReceipt(array $prepared): ?array
+    {
         $dir = BASE_PATH . '/uploads/receipts/';
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
-        $newName = bin2hex(random_bytes(16)) . '.' . $ext;
+        $newName = bin2hex(random_bytes(16)) . '.' . $prepared['ext'];
         $dest    = $dir . $newName;
-
-        if (!move_uploaded_file($file['tmp_name'], $dest)) {
-            return ['error' => 'Gagal simpan fail. Semak kebenaran folder.'];
+        $ok = $prepared['temporary']
+            ? rename($prepared['tmp'], $dest)
+            : move_uploaded_file($prepared['tmp'], $dest);
+        if (!$ok) {
+            $this->discardPrepared($prepared);
+            return null;
         }
+        @chmod($dest, 0644);
 
-        return [
-            'path' => 'uploads/receipts/' . $newName,
-            'name' => $orig,
-        ];
+        return ['path' => 'uploads/receipts/' . $newName, 'name' => $prepared['name'], 'size' => $prepared['size']];
+    }
+
+    private function discardPrepared(array $prepared): void
+    {
+        if ($prepared['temporary'] && is_file($prepared['tmp'])) {
+            @unlink($prepared['tmp']);
+        }
     }
 }

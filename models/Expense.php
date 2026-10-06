@@ -226,8 +226,15 @@ class Expense
     // Multiple Receipts
     // -------------------------------------------------------------------------
 
-    public function addReceipt(int $expenseId, string $path, string $name): void
+    public function addReceipt(int $expenseId, string $path, string $name, ?int $sizeBytes = null): void
     {
+        if ($sizeBytes !== null && \App\Core\Schema::ensureBilling()) {
+            $stmt = $this->db->prepare(
+                'INSERT INTO expense_receipts (expense_id, path, name, size_bytes) VALUES (?, ?, ?, ?)'
+            );
+            $stmt->execute([$expenseId, $path, $name, $sizeBytes]);
+            return;
+        }
         $stmt = $this->db->prepare(
             'INSERT INTO expense_receipts (expense_id, path, name) VALUES (?, ?, ?)'
         );

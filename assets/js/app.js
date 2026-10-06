@@ -67,6 +67,61 @@ function updateThemeIcon(isDark) {
 }
 
 // ============================================================
+// Receipt photos: shrink in the browser before upload
+// Keeps uploads under the host's size limits and saves storage.
+// Anything that can't be processed is sent unchanged (the server compresses too).
+// ============================================================
+function ezShrinkOne(file) {
+    var MAX_EDGE = 1600;
+    return new Promise(function (resolve) {
+        var url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+            URL.revokeObjectURL(url);
+            var scale  = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+            var canvas = document.createElement('canvas');
+            canvas.width  = Math.max(1, Math.round(img.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(function (blob) {
+                if (!blob || blob.size >= file.size) { resolve(file); return; }
+                resolve(new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.8);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
+async function ezShrinkImages(input) {
+    if (!input.files || !input.files.length || typeof DataTransfer === 'undefined') return;
+
+    var form    = input.form;
+    var buttons = form ? form.querySelectorAll('button[type="submit"]') : [];
+    buttons.forEach(function (b) { b.disabled = true; b.classList.add('opacity-60'); });
+
+    try {
+        var out = new DataTransfer();
+        var changed = false;
+        for (var i = 0; i < input.files.length; i++) {
+            var file = input.files[i];
+            var shrinkable = /^image\/(jpeg|png|webp)$/.test(file.type) && file.size > 300 * 1024;
+            var result = shrinkable ? await ezShrinkOne(file) : file;
+            if (result !== file) changed = true;
+            out.items.add(result);
+        }
+        if (changed) input.files = out.files;
+    } catch (e) {
+        console.error('Receipt shrink skipped:', e);
+    } finally {
+        buttons.forEach(function (b) { b.disabled = false; b.classList.remove('opacity-60'); });
+    }
+}
+
+// ============================================================
 // Quick-add deep links (#add-sale, #add-expense) from the mobile "+" sheet
 // ============================================================
 function openQuickAddTarget() {
