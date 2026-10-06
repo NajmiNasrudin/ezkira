@@ -16,10 +16,7 @@ $moreOnly = ['/balance-sheet', '/blast'];
                 <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
                      alt="Logo" class="h-9 w-auto max-w-[140px] object-contain rounded-lg">
             <?php else: ?>
-                <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-9 h-9 rounded-xl">
-                <span class="text-base font-extrabold tracking-wide leading-none">
-                    <span class="text-gold-500">ez</span><span class="text-brand-700 dark:text-white">kira</span>
-                </span>
+                <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl">
             <?php endif; ?>
         </a>
 
