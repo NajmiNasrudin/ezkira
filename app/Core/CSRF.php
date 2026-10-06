@@ -36,9 +36,9 @@ class CSRF
             return;
         }
 
+        // $_SERVER keys are case-normalised; getallheaders() keys are lowercase over HTTP/2
         $token = $_POST['csrf_token']
-            ?? getallheaders()['X-Csrf-Token']
-            ?? getallheaders()['X-CSRF-Token']
+            ?? $_SERVER['HTTP_X_CSRF_TOKEN']
             ?? '';
 
         if (!self::verify($token)) {

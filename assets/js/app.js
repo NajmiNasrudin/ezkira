@@ -39,11 +39,15 @@ async function toggleDarkMode() {
     }
 
     try {
-        await postJson((window.BASE_URI || '') + '/theme/toggle');
+        const res = await postJson((window.BASE_URI || '') + '/theme/toggle');
+        if (!res || !('dark_mode' in res)) throw new Error(res && res.error ? res.error : 'Theme not saved');
     } catch (e) {
         // Revert on failure
         html.classList.toggle('dark', !isDark);
         updateThemeIcon(!isDark);
+        if (typeof window.renderDashboardCharts === 'function') {
+            window.renderDashboardCharts();
+        }
         console.error('Theme toggle failed:', e);
     }
 }
