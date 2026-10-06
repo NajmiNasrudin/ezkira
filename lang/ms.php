@@ -400,4 +400,23 @@ return [
     'google_no_email'            => 'Akaun Google anda tidak menyediakan alamat emel.',
     'register_auto_login_failed' => 'Akaun berjaya dibuat tetapi gagal log masuk automatik. Sila log masuk secara manual.',
     'register_failed'            => 'Ralat teknikal semasa mendaftar. Sila cuba lagi.',
+
+    // ---- UI shell ----
+    'good_morning'       => 'Selamat pagi',
+    'good_afternoon'     => 'Selamat petang',
+    'good_evening'       => 'Selamat malam',
+    'greeting_sub'       => 'Jom pantau kewangan bisnes anda',
+    'quick_actions'      => 'Tindakan Pantas',
+    'quick_add'          => 'Tambah',
+    'tab_home'           => 'Utama',
+    'tab_revenue'        => 'Hasil',
+    'tab_expenses'       => 'Belanja',
+    'tab_profile'        => 'Profil',
+    'menu_more'          => 'Lagi',
+    'switch_language'    => 'Tukar Bahasa',
+    'export_report'      => 'Export Laporan',
+    'margin'             => 'Margin',
+    'expenses_used_of_revenue' => 'Perbelanjaan guna :pct% daripada pendapatan',
+    'over_budget_msg'    => 'Perbelanjaan melebihi pendapatan tempoh ini',
+    'healthy_budget_msg' => 'Bagus! Kewangan anda dalam keadaan sihat.',
 ];

@@ -82,7 +82,7 @@ canvas,
 textarea:focus,
 select:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 0 2px rgba(58, 122, 88, 0.35);
 }
 
 /* Active tab indicator */
@@ -94,3 +94,18 @@ select:focus {
     border-bottom-color: #818cf8;
     color: #818cf8;
 }
+
+/* ── App shell ─────────────────────────────────────────────── */
+.ez-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+.ez-quick-sheet { bottom: calc(92px + env(safe-area-inset-bottom)); }
+
+/* Floating buttons sit above the mobile bottom bar */
+.ez-float-wa   { bottom: calc(84px + env(safe-area-inset-bottom)); }
+.ez-float-help { bottom: calc(140px + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) {
+    .ez-float-wa   { bottom: 1.5rem; }
+    .ez-float-help { bottom: 6rem; }
+}
+
+/* Tabular figures for money */
+.tabular-nums, .ez-num { font-variant-numeric: tabular-nums; }

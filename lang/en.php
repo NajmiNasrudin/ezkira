@@ -400,4 +400,23 @@ return [
     'google_no_email'            => 'Your Google account did not provide an email address.',
     'register_auto_login_failed' => 'Account created but auto-login failed. Please log in manually.',
     'register_failed'            => 'A technical error occurred during registration. Please try again.',
+
+    // ---- UI shell ----
+    'good_morning'       => 'Good morning',
+    'good_afternoon'     => 'Good afternoon',
+    'good_evening'       => 'Good evening',
+    'greeting_sub'       => "Let's keep your business finances on track",
+    'quick_actions'      => 'Quick Actions',
+    'quick_add'          => 'Add',
+    'tab_home'           => 'Home',
+    'tab_revenue'        => 'Revenue',
+    'tab_expenses'       => 'Expenses',
+    'tab_profile'        => 'Profile',
+    'menu_more'          => 'More',
+    'switch_language'    => 'Switch Language',
+    'export_report'      => 'Export Report',
+    'margin'             => 'Margin',
+    'expenses_used_of_revenue' => 'Expenses used :pct% of revenue',
+    'over_budget_msg'    => 'Expenses exceed revenue this period',
+    'healthy_budget_msg' => 'Nice! Your finances are in good shape.',
 ];

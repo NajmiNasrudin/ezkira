@@ -1,7 +1,6 @@
 <?php
 use App\Core\Auth;
 use App\Core\CSRF;
-use App\Core\Session;
 
 $user        = Auth::user();
 $role        = $user['role'] ?? 'guest';
@@ -14,11 +13,14 @@ $roleLabel = match($role) {
     default  => __('role_client'),
 };
 
-$roleColor = match($role) {
-    'admin'  => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-    'team'   => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-    default  => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-};
+$navIcons = [
+    '/dashboard'     => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+    '/revenue'       => 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6',
+    '/expenses'      => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z',
+    '/balance-sheet' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3',
+    '/profile'       => 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+    '/blast'         => 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
+];
 
 $navLinks = [
     '/dashboard'    => __('dashboard'),
@@ -34,170 +36,68 @@ if ($role === 'admin') {
 }
 
 // Load custom site logo
-$siteLogo = (new \Models\Setting())->get('site_logo', '');
+$siteLogo    = (new \Models\Setting())->get('site_logo', '');
+$hasSiteLogo = !empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo);
 
-function navActive(string $path, string $current): string {
-    return str_starts_with($current, $path)
-        ? 'text-brand-600 dark:text-brand-400 font-semibold border-b-2 border-brand-600 dark:border-brand-400'
-        : 'text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 font-medium';
-}
+$isNavActive = fn(string $path): bool => str_starts_with($currentPath, $path);
 ?>
 
-<style>
-#nav-toggle { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
-#mobile-menu { display:none; }
-#nav-toggle:checked ~ #mobile-menu { display:block; }
-</style>
+<!-- Desktop Sidebar -->
+<aside class="hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 flex-col bg-brand-700 text-white">
+    <!-- Brand -->
+    <a href="<?= BASE_URI ?>/dashboard" class="flex items-center gap-3 px-6 h-20 shrink-0">
+        <?php if ($hasSiteLogo): ?>
+            <span class="flex items-center bg-white rounded-xl px-2 py-1.5">
+                <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
+                     alt="Logo" class="h-8 w-auto max-w-[160px] object-contain">
+            </span>
+        <?php else: ?>
+            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl bg-white p-1">
+            <span class="text-lg font-extrabold tracking-wide leading-none">
+                <span class="text-gold-400">ez</span><span class="text-white">kira</span>
+            </span>
+        <?php endif; ?>
+    </a>
 
-<header class="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- CSS-only mobile nav toggle -->
-        <input type="checkbox" id="nav-toggle">
-
-        <div class="flex items-center justify-between h-16">
-
-            <!-- Brand -->
-            <a href="<?= BASE_URI ?>/dashboard"
-               class="flex items-center gap-2.5 shrink-0">
-                <?php if (!empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo)): ?>
-                    <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
-                         alt="Logo" class="h-9 w-auto max-w-[160px] object-contain rounded-lg">
-                <?php else: ?>
-                    <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg"
-                         alt="ezkira" class="w-9 h-9 rounded-lg">
-                    <span class="hidden sm:block leading-tight tracking-wide">
-                        <span class="text-sm font-bold" style="color:#C4A028">ez</span><span class="text-sm font-bold dark:text-brand-300" style="color:#163020">kira</span>
-                    </span>
-                <?php endif; ?>
+    <!-- Navigation -->
+    <nav class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+        <?php foreach ($navLinks as $href => $label): $active = $isNavActive($href); ?>
+            <a href="<?= BASE_URI . $href ?>"
+               class="flex items-center gap-3 px-4 py-3 rounded-2xl text-sm transition-colors <?= $active
+                   ? 'bg-sage-200 text-brand-800 font-bold shadow-sm'
+                   : 'text-white/70 hover:text-white hover:bg-white/10 font-medium' ?>">
+                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="<?= $active ? '2.2' : '1.8' ?>">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="<?= $navIcons[$href] ?>"/>
+                </svg>
+                <?= htmlspecialchars($label, ENT_QUOTES) ?>
             </a>
+        <?php endforeach; ?>
+    </nav>
 
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center gap-6">
-                <?php foreach ($navLinks as $href => $label): ?>
-                    <a href="<?= BASE_URI . $href ?>"
-                       class="text-sm pb-0.5 transition-colors <?= navActive($href, $currentPath) ?>">
-                        <?= htmlspecialchars($label, ENT_QUOTES) ?>
-                    </a>
-                <?php endforeach; ?>
-            </nav>
-
-            <!-- Right Controls -->
-            <div class="flex items-center gap-3">
-
-                <!-- Language Switcher -->
-                <form method="POST" action="<?= BASE_URI ?>/set-lang" class="hidden sm:block">
-                    <?= CSRF::field() ?>
-                    <?php $lang = Session::get('lang', 'en'); ?>
-                    <input type="hidden" name="lang" value="<?= $lang === 'en' ? 'ms' : 'en' ?>">
-                    <button type="submit"
-                            class="text-xs font-semibold px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                            title="Switch language">
-                        <?= $lang === 'en' ? 'BM' : 'EN' ?>
-                    </button>
-                </form>
-
-                <!-- Dark Mode Toggle -->
-                <button type="button" id="theme-toggle" onclick="toggleDarkMode()"
-                        class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        aria-label="Toggle dark mode">
-                    <!-- Sun (shown in dark mode) -->
-                    <svg id="icon-sun" class="w-5 h-5 <?= Session::get('dark_mode') ? 'block' : 'hidden' ?>"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                    <!-- Moon (shown in light mode) -->
-                    <svg id="icon-moon" class="w-5 h-5 <?= Session::get('dark_mode') ? 'hidden' : 'block' ?>"
-                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                    </svg>
-                </button>
-
-                <!-- User Avatar Dropdown -->
-                <div class="relative" id="user-menu-wrapper">
-                    <button type="button" id="user-menu-btn"
-                            onclick="toggleUserMenu()"
-                            class="flex items-center gap-2 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        <?php if (!empty($user['profile_image'])): ?>
-                            <img src="<?= BASE_URI ?>/<?= htmlspecialchars($user['profile_image'], ENT_QUOTES) ?>"
-                                 alt="Avatar" class="w-8 h-8 rounded-full object-cover ring-2 ring-brand-200 dark:ring-brand-800">
-                        <?php else: ?>
-                            <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-sm font-semibold ring-2 ring-brand-200 dark:ring-brand-800">
-                                <?= strtoupper(mb_substr($user['name'] ?? 'U', 0, 1)) ?>
-                            </div>
-                        <?php endif; ?>
-                        <span class="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300 max-w-24 truncate">
-                            <?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES) ?>
-                        </span>
-                        <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-
-                    <!-- Dropdown Menu -->
-                    <div id="user-dropdown"
-                         class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
-                        <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
-                            <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                <?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES) ?>
-                            </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                <?= htmlspecialchars($user['email'] ?? '', ENT_QUOTES) ?>
-                            </p>
-                            <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-xs font-medium <?= $roleColor ?>">
-                                <?= htmlspecialchars($roleLabel, ENT_QUOTES) ?>
-                            </span>
-                        </div>
-                        <a href="<?= BASE_URI ?>/profile"
-                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            <?= __('profile') ?>
-                        </a>
-                        <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
-                            <form method="POST" action="<?= BASE_URI ?>/logout">
-                                <?= CSRF::field() ?>
-                                <button type="submit"
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                                    </svg>
-                                    <?= __('logout') ?>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+    <!-- User card -->
+    <div class="p-4 shrink-0">
+        <div class="flex items-center gap-3 p-3 rounded-2xl bg-white/10">
+            <?php if (!empty($user['profile_image'])): ?>
+                <img src="<?= BASE_URI ?>/<?= htmlspecialchars($user['profile_image'], ENT_QUOTES) ?>"
+                     alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-white/20">
+            <?php else: ?>
+                <div class="w-10 h-10 rounded-full bg-sage-300 text-brand-800 flex items-center justify-center text-sm font-bold">
+                    <?= strtoupper(mb_substr($user['name'] ?? 'U', 0, 1)) ?>
                 </div>
-
-                <!-- Hamburger (mobile) — label toggles the #nav-toggle checkbox, no JS -->
-                <label for="nav-toggle"
-                       class="md:hidden cursor-pointer p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </label>
+            <?php endif; ?>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold truncate"><?= htmlspecialchars($user['name'] ?? '', ENT_QUOTES) ?></p>
+                <p class="text-xs text-white/60 truncate"><?= htmlspecialchars($roleLabel, ENT_QUOTES) ?></p>
             </div>
-        </div>
-
-        <!-- Mobile Menu — shown via CSS when #nav-toggle checkbox is checked -->
-        <div id="mobile-menu" class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 py-3 space-y-1">
-            <?php foreach ($navLinks as $href => $label): ?>
-                <a href="<?= BASE_URI . $href ?>"
-                   class="block px-3 py-2 rounded-lg text-sm transition-colors <?= str_starts_with($currentPath, $href) ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-600 dark:text-brand-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800' ?>">
-                    <?= htmlspecialchars($label, ENT_QUOTES) ?>
-                </a>
-            <?php endforeach; ?>
-            <!-- Mobile language switcher -->
-            <form method="POST" action="<?= BASE_URI ?>/set-lang" class="px-3 pt-1">
+            <form method="POST" action="<?= BASE_URI ?>/logout">
                 <?= CSRF::field() ?>
-                <?php $lang = Session::get('lang', 'en'); ?>
-                <input type="hidden" name="lang" value="<?= $lang === 'en' ? 'ms' : 'en' ?>">
-                <button type="submit" class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand-600">
-                    <?= $lang === 'en' ? '🌐 Bahasa Melayu' : '🌐 English' ?>
+                <button type="submit" title="<?= __('logout') ?>"
+                        class="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
                 </button>
             </form>
         </div>
     </div>
-</header>
+</aside>

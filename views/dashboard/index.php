@@ -1,16 +1,16 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
 <style>
-.flatpickr-calendar { font-family: Inter, ui-sans-serif, sans-serif; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 1px solid #e5e7eb; }
-.flatpickr-day.selected, .flatpickr-day.selected:hover { background: #16a34a; border-color: #16a34a; }
-.flatpickr-day:hover { background: #f0fdf4; }
-.flatpickr-months .flatpickr-month, .flatpickr-weekdays { background: #16a34a; border-radius: 12px 12px 0 0; }
+.flatpickr-calendar { font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif; border-radius: 18px; box-shadow: 0 16px 40px -12px rgba(22,48,32,0.25); border: 1px solid #e2e1d8; }
+.flatpickr-day.selected, .flatpickr-day.selected:hover { background: #1a4a2e; border-color: #1a4a2e; }
+.flatpickr-day:hover { background: #eaf2ee; }
+.flatpickr-months .flatpickr-month, .flatpickr-weekdays { background: #163020; border-radius: 18px 18px 0 0; }
 .flatpickr-current-month .flatpickr-monthDropdown-months, .flatpickr-current-month input.cur-year { color: #fff; }
 .flatpickr-weekday { color: rgba(255,255,255,0.8) !important; }
 .flatpickr-prev-month svg, .flatpickr-next-month svg { fill: #fff !important; }
-.flatpickr-day.week-highlight { background: #f0fdf4; }
-.flatpickr-monthSelect-month { border-radius: 8px !important; }
-.flatpickr-monthSelect-month.selected { background: #16a34a !important; border-color: #16a34a !important; }
+.flatpickr-day.week-highlight { background: #eaf2ee; }
+.flatpickr-monthSelect-month { border-radius: 10px !important; }
+.flatpickr-monthSelect-month.selected { background: #1a4a2e !important; border-color: #1a4a2e !important; }
 </style>
 <?php
 $roleLabelMap = [
@@ -18,155 +18,110 @@ $roleLabelMap = [
     'team'   => __('role_team'),
     'client' => __('role_client'),
 ];
-$roleColorMap = [
-    'admin'  => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-    'team'   => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    'client' => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-];
 $role      = $user['role'] ?? 'client';
 $roleLabel = $roleLabelMap[$role] ?? 'Client';
-$roleColor = $roleColorMap[$role] ?? $roleColorMap['client'];
-
-$cards = [
-    [
-        'key'   => 'total_revenue',
-        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>',
-        'color' => 'bg-emerald-500',
-        'bg'    => 'bg-emerald-50 dark:bg-emerald-900/20',
-        'text'  => 'text-emerald-600 dark:text-emerald-400',
-        'value' => number_format($summary['total_revenue'], 2),
-        'href'  => BASE_URI . '/revenue',
-    ],
-    [
-        'key'   => 'total_expenses',
-        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17H5m0 0V9m0 8l8-8 4 4 6-6"/>',
-        'color' => 'bg-red-500',
-        'bg'    => 'bg-red-50 dark:bg-red-900/20',
-        'text'  => 'text-red-600 dark:text-red-400',
-        'value' => number_format($summary['total_expenses'], 2),
-        'href'  => BASE_URI . '/expenses',
-    ],
-    [
-        'key'   => 'net_profit',
-        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 6v1m0 6v-1m-6-4h12"/>',
-        'color' => 'bg-brand-600',
-        'bg'    => 'bg-brand-50 dark:bg-brand-900/20',
-        'text'  => 'text-brand-600 dark:text-brand-400',
-        'value' => number_format($summary['net_profit'], 2),
-        'href'  => BASE_URI . '/revenue',
-    ],
-    [
-        'key'   => 'transactions',
-        'icon'  => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>',
-        'color' => 'bg-amber-500',
-        'bg'    => 'bg-amber-50 dark:bg-amber-900/20',
-        'text'  => 'text-amber-600 dark:text-amber-400',
-        'value' => number_format($summary['transactions']),
-        'noPrefix' => true,
-        'href'  => BASE_URI . '/revenue',
-    ],
-];
 
 $platformLabels = \Models\Revenue::PLATFORMS;
 $categoryLabels = ['opex' => 'OPEX', 'marketing' => 'Marketing', 'cogs' => 'COGS'];
-?>
 
-<?php
+$hour = (int) (new DateTime('now', new DateTimeZone('Asia/Kuala_Lumpur')))->format('G');
+$greetingKey = $hour < 12 ? 'good_morning' : ($hour < 19 ? 'good_afternoon' : 'good_evening');
+$firstName   = explode(' ', trim($user['name'] ?? ''))[0];
+
+$netProfit   = (float) $summary['net_profit'];
+$netParts    = explode('.', number_format(abs($netProfit), 2));
+$revTotal    = (float) $summary['total_revenue'];
+$marginPct   = $revTotal > 0 ? ($netProfit / $revTotal) * 100 : null;
+
 $periods = [
     'daily'   => __('period_daily'),
     'weekly'  => __('period_weekly'),
     'monthly' => __('period_monthly'),
     'annual'  => __('period_annual'),
 ];
-$exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $year . '&month=' . $month . '&week=' . $week . '&date=' . $date;
+
+$quickActions = [
+    ['href' => BASE_URI . '/revenue#add-sale',    'label' => __('add_sale'),     'icon' => 'M12 4v16m8-8H4'],
+    ['href' => BASE_URI . '/expenses#add-expense', 'label' => __('add_expense'), 'icon' => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z'],
+    ['onclick' => 'openExportModal()',             'label' => 'Export',          'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
+    ['href' => BASE_URI . '/balance-sheet',        'label' => __('balance_sheet'), 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
+];
+
+$pickerClass = 'pl-10 pr-4 h-10 text-sm font-medium rounded-full border border-gray-200 dark:border-gray-700
+                bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm
+                focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
+                transition-colors cursor-pointer w-44';
+$calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-600 dark:text-sage-300 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>';
 ?>
 
+<!-- Greeting -->
+<div class="flex items-start justify-between gap-4 mb-5">
+    <div class="min-w-0">
+        <h1 class="text-2xl sm:text-[1.75rem] font-extrabold tracking-tight text-gray-900 dark:text-white truncate">
+            <?= __($greetingKey) ?>, <?= htmlspecialchars($firstName, ENT_QUOTES) ?>
+        </h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <?= __('greeting_sub') ?>
+            <span class="hidden sm:inline">· <?= date('l, j F Y') ?></span>
+        </p>
+    </div>
+    <span class="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-sage-100 text-brand-700 dark:bg-brand-900/60 dark:text-sage-300"
+          title="<?= __('your_role') ?>">
+        <?= htmlspecialchars($roleLabel, ENT_QUOTES) ?>
+    </span>
+</div>
+
 <!-- Period Filter + Export -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-    <!-- Period Tabs + Picker -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
     <div class="flex flex-wrap items-center gap-2">
-        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-0.5">
+        <div class="grid grid-cols-4 sm:flex items-center bg-white dark:bg-gray-800 rounded-full p-1 gap-0.5 shadow-sm w-full sm:w-auto">
             <?php foreach ($periods as $key => $label):
                 $active = $period === $key;
                 $href   = BASE_URI . '/dashboard?period=' . $key . '&year=' . $year . '&month=' . $month . '&week=' . $week . '&date=' . $date;
             ?>
             <a href="<?= $href ?>"
-               class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors <?= $active
-                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' ?>">
+               class="text-center px-4 py-2 text-sm rounded-full transition-colors <?= $active
+                   ? 'bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 font-semibold shadow-sm'
+                   : 'text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300 font-medium' ?>">
                 <?= $label ?>
             </a>
             <?php endforeach; ?>
         </div>
 
-        <!-- Daily: date picker (Flatpickr calendar) -->
         <?php if ($period === 'daily'): ?>
         <div class="relative">
-            <input type="text"
-                   id="picker-daily"
+            <input type="text" id="picker-daily"
                    value="<?= date('d M Y', strtotime($date)) ?>"
                    data-date="<?= htmlspecialchars($date, ENT_QUOTES) ?>"
-                   readonly
-                   placeholder="Pilih tarikh"
-                   class="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600
-                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
-                          transition-colors cursor-pointer w-40">
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+                   readonly placeholder="Pilih tarikh" class="<?= $pickerClass ?>">
+            <?= $calendarIcon ?>
         </div>
 
-        <!-- Weekly: Flatpickr calendar -->
         <?php elseif ($period === 'weekly'):
             $weekStartDate = date('Y-m-d', strtotime($year . 'W' . str_pad($week, 2, '0', STR_PAD_LEFT)));
         ?>
         <div class="relative">
-            <input type="text"
-                   id="picker-weekly"
+            <input type="text" id="picker-weekly"
                    value="Week <?= $week ?>, <?= $year ?>"
                    data-date="<?= $weekStartDate ?>"
-                   readonly
-                   placeholder="Pilih minggu"
-                   class="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600
-                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
-                          transition-colors cursor-pointer w-40">
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+                   readonly placeholder="Pilih minggu" class="<?= $pickerClass ?>">
+            <?= $calendarIcon ?>
         </div>
 
-        <!-- Monthly: Flatpickr month picker -->
         <?php elseif ($period === 'monthly'): ?>
         <div class="relative">
-            <input type="text"
-                   id="picker-monthly"
+            <input type="text" id="picker-monthly"
                    value="<?= date('F Y', mktime(0,0,0,$month,1,$year)) ?>"
                    data-date="<?= $year ?>-<?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>-01"
-                   readonly
-                   placeholder="Pilih bulan"
-                   class="pl-9 pr-3 py-1.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600
-                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                          focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
-                          transition-colors cursor-pointer w-40">
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+                   readonly placeholder="Pilih bulan" class="<?= $pickerClass ?>">
+            <?= $calendarIcon ?>
         </div>
 
-        <!-- Annual: year select -->
         <?php elseif ($period === 'annual'): ?>
         <select id="picker-annual"
-                class="px-3 py-1.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                       focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+                class="px-4 h-10 text-sm font-medium rounded-full border border-gray-200 dark:border-gray-700
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm
+                       focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent
                        transition-colors cursor-pointer">
             <?php for ($y = (int)date('Y'); $y >= 2020; $y--): ?>
             <option value="<?= $y ?>" <?= $y === $year ? 'selected' : '' ?>><?= $y ?></option>
@@ -175,100 +130,93 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
         <?php endif; ?>
     </div>
 
-    <!-- Single Export Laporan button -->
     <button type="button" onclick="openExportModal()"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm">
+            class="hidden sm:inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-semibold text-white bg-brand-700 hover:bg-brand-600 dark:bg-sage-300 dark:text-brand-800 dark:hover:bg-sage-200 rounded-full transition-colors shadow-sm">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
         </svg>
-        Export Laporan
+        <?= __('export_report') ?>
     </button>
 </div>
 
 <!-- ===== EXPORT LAPORAN MODAL ===== -->
-<div id="dash-export-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4">
-    <div class="absolute inset-0 bg-black/50" onclick="closeExportModal()"></div>
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm">
+<div id="dash-export-modal" class="hidden fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:px-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeExportModal()"></div>
+    <div class="relative bg-white dark:bg-gray-800 rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm max-h-[90vh] overflow-y-auto">
 
-        <!-- Header -->
-        <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">Export Laporan P&amp;L</h3>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Export Laporan P&amp;L</h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pilih tempoh dan tarikh</p>
             </div>
-            <button type="button" onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button type="button" onclick="closeExportModal()"
+                    class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
 
-        <div class="px-6 py-5 space-y-4">
-            <!-- Period tabs -->
+        <div class="px-6 pb-5 space-y-4">
             <div>
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Tempoh Laporan</p>
-                <div class="grid grid-cols-5 gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-xl p-0.5">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Tempoh Laporan</p>
+                <div class="grid grid-cols-5 gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-full p-1">
                     <?php foreach (['daily'=>'Harian','weekly'=>'Mingguan','monthly'=>'Bulanan','annual'=>'Tahunan','range'=>'Custom'] as $pk=>$pl): ?>
                     <button type="button" id="epbtn-<?= $pk ?>" onclick="switchExportPeriod('<?= $pk ?>')"
-                            class="py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight <?= $pk==='monthly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' ?>">
+                            class="<?= $pk==='monthly'
+                                ? 'py-1.5 text-[10px] sm:text-xs font-semibold rounded-full transition-colors leading-tight bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm'
+                                : 'py-1.5 text-[10px] sm:text-xs font-medium rounded-full transition-colors leading-tight text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300' ?>">
                         <?= $pl ?>
                     </button>
                     <?php endforeach; ?>
                 </div>
             </div>
 
-            <!-- Date pickers -->
-            <!-- Daily -->
             <div id="ep-daily" class="hidden">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tarikh</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tarikh</label>
                 <input type="date" id="ep-daily-date" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>"
-                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                       class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
-            <!-- Weekly -->
             <div id="ep-weekly" class="hidden">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pilih Minggu</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Minggu</label>
                 <input type="week" id="ep-weekly-date" value="<?= date('Y') ?>-W<?= str_pad(date('W'), 2, '0', STR_PAD_LEFT) ?>"
                        max="<?= date('Y') ?>-W<?= str_pad(date('W'), 2, '0', STR_PAD_LEFT) ?>"
-                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                       class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
-            <!-- Monthly -->
             <div id="ep-monthly">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pilih Bulan</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Bulan</label>
                 <input type="month" id="ep-month-input"
                        value="<?= $year ?>-<?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>"
                        max="<?= date('Y-m') ?>"
-                       class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                       class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
-            <!-- Annual -->
             <div id="ep-annual" class="hidden">
-                <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tahun</label>
-                <select id="ep-year-annual" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tahun</label>
+                <select id="ep-year-annual" class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                     <?php for ($y=(int)date('Y'); $y>=2020; $y--): ?>
                     <option value="<?= $y ?>" <?= $y===$year ? 'selected' : '' ?>><?= $y ?></option>
                     <?php endfor; ?>
                 </select>
             </div>
-            <!-- Custom Range -->
             <div id="ep-range" class="hidden space-y-2">
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Dari Tarikh</label>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Dari Tarikh</label>
                     <input type="date" id="ep-range-from" value="<?= date('Y-m-01') ?>" max="<?= date('Y-m-d') ?>"
-                           class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                           class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Hingga Tarikh</label>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Hingga Tarikh</label>
                     <input type="date" id="ep-range-to" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>"
-                           class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                           class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                 </div>
                 <p class="text-xs text-amber-600 dark:text-amber-400">⚠ Custom range hanya tersedia untuk export sahaja (bukan view)</p>
             </div>
         </div>
 
-        <!-- Actions -->
         <div class="px-6 pb-6 flex flex-col gap-2">
             <button type="button" onclick="doViewDashboard()"
-                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold rounded-xl transition-colors text-sm hover:bg-gray-50 dark:hover:bg-gray-600">
+                    class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold rounded-full transition-colors text-sm hover:bg-gray-200 dark:hover:bg-gray-600">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -276,7 +224,7 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
                 Lihat di Dashboard dahulu
             </button>
             <button type="button" onclick="doExportPnl()"
-                    class="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl transition-colors text-sm">
+                    class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand-700 hover:bg-brand-600 dark:bg-sage-300 dark:text-brand-800 dark:hover:bg-sage-200 text-white font-semibold rounded-full transition-colors text-sm">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -290,8 +238,8 @@ $exportUrl = BASE_URI . '/revenue/export-pnl?period=' . $period . '&year=' . $ye
 
 <script>
 var _epMode = 'monthly';
-var _epBtnA = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
-var _epBtnI = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-lg transition-colors leading-tight text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300';
+var _epBtnA = 'py-1.5 text-[10px] sm:text-xs font-semibold rounded-full transition-colors leading-tight bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm';
+var _epBtnI = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-full transition-colors leading-tight text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300';
 
 function openExportModal() {
     document.getElementById('dash-export-modal').classList.remove('hidden');
@@ -377,6 +325,7 @@ function doExportPnl() {
         flatpickr(dailyEl, {
             dateFormat: 'd M Y',
             maxDate: 'today',
+            disableMobile: true,
             defaultDate: dailyEl.getAttribute('data-date'),
             onChange: function(selectedDates) {
                 if (!selectedDates.length) return;
@@ -395,6 +344,7 @@ function doExportPnl() {
         flatpickr(weeklyEl, {
             defaultDate: weeklyEl.getAttribute('data-date'),
             weekNumbers: true,
+            disableMobile: true,
             maxDate: 'today',
             onReady: function(selectedDates) {
                 if (selectedDates.length) {
@@ -419,6 +369,7 @@ function doExportPnl() {
         flatpickr(monthlyEl, {
             plugins: [new monthSelectPlugin({ shorthand: false, dateFormat: 'F Y', altFormat: 'F Y' })],
             defaultDate: monthlyEl.getAttribute('data-date'),
+            disableMobile: true,
             onChange: function(selectedDates) {
                 if (!selectedDates.length) return;
                 var d = selectedDates[0];
@@ -439,57 +390,94 @@ function doExportPnl() {
 })();
 </script>
 
-<!-- Welcome Section -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-    <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-            <?= __('welcome', ['name' => htmlspecialchars($user['name'] ?? '', ENT_QUOTES)]) ?>
-        </h1>
-        <div class="flex items-center gap-2 mt-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400"><?= __('your_role') ?>:</span>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $roleColor ?>">
-                <?= htmlspecialchars($roleLabel, ENT_QUOTES) ?>
-            </span>
-        </div>
-    </div>
-    <div class="text-sm text-gray-400 dark:text-gray-500">
-        <?= date('l, j F Y') ?>
-    </div>
-</div>
+<!-- Hero: Net profit + quick actions -->
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5 mb-5">
 
-<!-- Summary Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-    <?php foreach ($cards as $card): ?>
-    <a href="<?= $card['href'] ?>" class="block bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-brand-300 dark:hover:border-brand-600 transition-all group">
-        <div class="flex items-start justify-between">
-            <div>
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                    <?= __($card['key']) ?>
-                </p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    <?= empty($card['noPrefix']) ? __('currency') . ' ' : '' ?><?= $card['value'] ?>
-                </p>
-            </div>
-            <div class="<?= $card['bg'] ?> p-2.5 rounded-xl group-hover:scale-110 transition-transform">
-                <svg class="w-5 h-5 <?= $card['text'] ?>" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <?= $card['icon'] ?>
-                </svg>
-            </div>
+    <!-- Net profit card -->
+    <div class="lg:col-span-3 relative overflow-hidden rounded-3xl bg-brand-700 text-white p-6 sm:p-7 shadow-soft">
+        <div class="pointer-events-none absolute -right-16 -top-16 w-56 h-56 rounded-full bg-white/5"></div>
+        <div class="pointer-events-none absolute -right-4 -bottom-24 w-56 h-56 rounded-full bg-sage-300/10"></div>
+
+        <div class="relative flex items-start justify-between gap-3">
+            <a href="<?= BASE_URI ?>/revenue" class="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white">
+                <span class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 6v1m0 6v-1m-6-4h12"/></svg>
+                </span>
+                <?= __('net_profit') ?> · <span class="capitalize"><?= $periods[$period] ?? '' ?></span>
+            </a>
+            <svg class="w-6 h-6 text-sage-300 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <rect x="2" y="11" width="3.5" height="7" rx="1.2"/>
+                <rect x="8.25" y="7" width="3.5" height="11" rx="1.2"/>
+                <rect x="14.5" y="2.5" width="3.5" height="15.5" rx="1.2"/>
+            </svg>
         </div>
-    </a>
-    <?php endforeach; ?>
+
+        <div class="relative mt-4 flex flex-wrap items-end gap-x-4 gap-y-2">
+            <p class="ez-num font-extrabold tracking-tight leading-none">
+                <span class="text-xl sm:text-2xl align-top mr-0.5 text-white/80"><?= $netProfit < 0 ? '−' : '' ?><?= __('currency') ?></span><span class="text-4xl sm:text-5xl"><?= $netParts[0] ?></span><span class="text-2xl sm:text-3xl text-white/70">.<?= $netParts[1] ?></span>
+            </p>
+            <?php if ($marginPct !== null): ?>
+            <span class="mb-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold <?= $marginPct >= 0 ? 'bg-sage-300/20 text-sage-200' : 'bg-red-400/20 text-red-200' ?>">
+                <?= $marginPct >= 0 ? '▲' : '▼' ?> <?= number_format(abs($marginPct), 1) ?>% <?= __('margin') ?>
+            </span>
+            <?php endif; ?>
+        </div>
+
+        <div class="relative mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            <a href="<?= BASE_URI ?>/revenue" class="rounded-2xl bg-white/10 hover:bg-white/15 transition-colors p-3 sm:p-4">
+                <p class="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/70 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span><?= __('total_revenue') ?>
+                </p>
+                <p class="ez-num mt-1 text-base sm:text-lg font-bold truncate"><?= number_format($summary['total_revenue'], 2) ?></p>
+            </a>
+            <a href="<?= BASE_URI ?>/expenses" class="rounded-2xl bg-white/10 hover:bg-white/15 transition-colors p-3 sm:p-4">
+                <p class="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/70 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-300"></span><?= __('total_expenses') ?>
+                </p>
+                <p class="ez-num mt-1 text-base sm:text-lg font-bold truncate"><?= number_format($summary['total_expenses'], 2) ?></p>
+            </a>
+            <a href="<?= BASE_URI ?>/revenue" class="col-span-2 sm:col-span-1 flex sm:block items-center justify-between rounded-2xl bg-white/10 hover:bg-white/15 transition-colors px-3 py-2.5 sm:p-4">
+                <p class="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/70 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gold-300"></span><?= __('transactions') ?>
+                </p>
+                <p class="ez-num sm:mt-1 text-sm sm:text-lg font-bold truncate"><?= number_format($summary['transactions']) ?></p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="lg:col-span-2 rounded-3xl bg-white dark:bg-gray-800 p-5 sm:p-6 shadow-sm flex flex-col">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4"><?= __('quick_actions') ?></h2>
+        <div class="grid grid-cols-4 gap-2 sm:gap-3 my-auto">
+            <?php foreach ($quickActions as $qa):
+                $tag   = isset($qa['href']) ? 'a' : 'button';
+                $attrs = isset($qa['href'])
+                    ? 'href="' . $qa['href'] . '"'
+                    : 'type="button" onclick="' . $qa['onclick'] . '"';
+            ?>
+            <<?= $tag ?> <?= $attrs ?> class="group flex flex-col items-center gap-2 text-center">
+                <span class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gray-50 dark:bg-gray-700/60 border border-gray-100 dark:border-gray-700 flex items-center justify-center text-brand-700 dark:text-sage-300 group-hover:bg-sage-100 dark:group-hover:bg-gray-700 transition-colors">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="<?= $qa['icon'] ?>"/>
+                    </svg>
+                </span>
+                <span class="text-[11px] sm:text-xs font-semibold text-gray-700 dark:text-gray-300 leading-tight"><?= htmlspecialchars($qa['label'], ENT_QUOTES) ?></span>
+            </<?= $tag ?>>
+            <?php endforeach; ?>
+        </div>
+    </div>
 </div>
 
 <!-- Charts + Recent Activity -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
-    <!-- Donut Charts Card -->
-    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+    <!-- Expenses overview -->
+    <div class="lg:col-span-3 bg-white dark:bg-gray-800 rounded-3xl p-5 sm:p-6 shadow-sm">
         <div class="flex items-center justify-between mb-5">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">
                 <?= __('expenses_overview') ?>
             </h2>
-            <span class="text-xs text-gray-500 dark:text-gray-400 capitalize"><?= $periods[$period] ?? '' ?></span>
+            <span class="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300 capitalize"><?= $periods[$period] ?? '' ?></span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -500,36 +488,35 @@ function doExportPnl() {
                     <?= __('expenses_composition') ?>
                 </p>
                 <canvas id="chart-breakdown" width="180" height="180" class="max-w-full"></canvas>
-                <!-- Legend -->
-                <div class="mt-4 space-y-1.5 w-full max-w-[200px]">
+                <div class="mt-5 space-y-2 w-full max-w-[230px]">
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-600 dark:bg-sage-200 shrink-0"></span>
                             <span class="text-gray-600 dark:text-gray-400">OPEX</span>
                         </span>
-                        <span class="font-medium text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['opex'], 2) ?></span>
+                        <span class="ez-num font-bold text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['opex'], 2) ?></span>
                     </div>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500 shrink-0"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-300 dark:bg-sage-400 shrink-0"></span>
                             <span class="text-gray-600 dark:text-gray-400">Marketing</span>
                         </span>
-                        <span class="font-medium text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['marketing'], 2) ?></span>
+                        <span class="ez-num font-bold text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['marketing'], 2) ?></span>
                     </div>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-sage-300 dark:bg-brand-400 shrink-0"></span>
                             <span class="text-gray-600 dark:text-gray-400">COGS</span>
                         </span>
-                        <span class="font-medium text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['cogs'], 2) ?></span>
+                        <span class="ez-num font-bold text-gray-800 dark:text-gray-200">RM <?= number_format($chartData['cogs'], 2) ?></span>
                     </div>
                     <?php if ($targetRevenue > 0 && !$chartData['overBudget']): ?>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
+                        <span class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-600 shrink-0"></span>
                             <span class="text-gray-600 dark:text-gray-400"><?= __('remaining') ?></span>
                         </span>
-                        <span class="font-medium text-gray-800 dark:text-gray-200">
+                        <span class="ez-num font-bold text-gray-800 dark:text-gray-200">
                             RM <?= number_format(max(0, $targetRevenue - $chartData['total']), 2) ?>
                         </span>
                     </div>
@@ -543,26 +530,25 @@ function doExportPnl() {
                     <?= __('budget_health') ?>
                 </p>
                 <canvas id="chart-health" width="180" height="180" class="max-w-full"></canvas>
-                <!-- Legend -->
-                <div class="mt-4 space-y-1.5 w-full max-w-[200px]">
+                <div class="mt-5 space-y-2 w-full max-w-[230px]">
                     <?php
                     $rev    = $chartData['revenue'];
                     $expPct = $rev > 0 ? min(100, ($chartData['total'] / $rev) * 100) : 0;
                     $proPct = $rev > 0 ? max(0, 100 - $expPct) : 0;
                     ?>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full <?= $chartData['overBudget'] ? 'bg-red-600' : 'bg-red-400' ?> shrink-0"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:<?= $chartData['overBudget'] ? '#dc2626' : '#e8806f' ?>"></span>
                             <span class="text-gray-600 dark:text-gray-400"><?= __('total_expenses') ?></span>
                         </span>
-                        <span class="font-medium text-gray-800 dark:text-gray-200"><?= number_format($expPct, 1) ?>%</span>
+                        <span class="ez-num font-bold text-gray-800 dark:text-gray-200"><?= number_format($expPct, 1) ?>%</span>
                     </div>
                     <div class="flex items-center justify-between text-xs">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-400 dark:bg-sage-400 shrink-0"></span>
                             <span class="text-gray-600 dark:text-gray-400"><?= __('net_profit') ?></span>
                         </span>
-                        <span class="font-medium <?= $chartData['overBudget'] ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400' ?>">
+                        <span class="ez-num font-bold <?= $chartData['overBudget'] ? 'text-red-500' : 'text-brand-500 dark:text-sage-300' ?>">
                             RM <?= number_format(abs($chartData['profit']), 2) ?>
                         </span>
                     </div>
@@ -574,88 +560,112 @@ function doExportPnl() {
                 </div>
             </div>
         </div>
+
+        <?php if ($rev > 0): ?>
+        <div class="mt-6 flex items-center gap-3 p-4 rounded-2xl <?= $chartData['overBudget'] ? 'bg-red-50 dark:bg-red-900/20' : 'bg-sage-50 dark:bg-gray-700/50' ?>">
+            <span class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center <?= $chartData['overBudget'] ? 'bg-red-100 text-red-500 dark:bg-red-900/40' : 'bg-white text-brand-500 dark:bg-gray-800 dark:text-sage-300' ?>">
+                <?php if ($chartData['overBudget']): ?>
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                <?php else: ?>
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>
+                <?php endif; ?>
+            </span>
+            <div class="min-w-0">
+                <p class="text-sm font-bold <?= $chartData['overBudget'] ? 'text-red-700 dark:text-red-300' : 'text-gray-900 dark:text-white' ?>">
+                    <?= $chartData['overBudget'] ? __('over_budget_msg') : __('expenses_used_of_revenue', ['pct' => number_format($expPct, 1)]) ?>
+                </p>
+                <?php if (!$chartData['overBudget'] && $expPct < 80): ?>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><?= __('healthy_budget_msg') ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Recent Transactions -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white"><?= __('recent_transactions') ?></h2>
-            <div class="flex gap-1.5">
-                <span class="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span><?= __('money_in') ?></span>
-                <span class="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400"><span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span><?= __('money_out') ?></span>
+    <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-3xl p-5 sm:p-6 shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white"><?= __('recent_transactions') ?></h2>
+            <div class="flex gap-2">
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span><?= __('money_in') ?></span>
+                <span class="inline-flex items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400"><span class="w-2 h-2 rounded-full inline-block" style="background:#e8806f"></span><?= __('money_out') ?></span>
             </div>
         </div>
 
         <?php if (empty($transactions)): ?>
             <div class="flex flex-col items-center justify-center flex-1 h-40 text-center">
-                <svg class="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                </svg>
+                <span class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-2">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </span>
                 <p class="text-sm text-gray-400 dark:text-gray-500"><?= __('no_activity') ?></p>
             </div>
         <?php else: ?>
-            <div class="space-y-0 overflow-y-auto max-h-72 -mx-1 px-1 divide-y divide-gray-50 dark:divide-gray-700/50">
+            <div class="overflow-y-auto max-h-[22rem] -mx-2 px-2 divide-y divide-gray-100 dark:divide-gray-700/60">
                 <?php foreach ($transactions as $txn):
                     $isRevenue = $txn['type'] === 'revenue';
                     $sign      = $isRevenue ? '+' : '−';
-                    $amtClass  = $isRevenue
-                        ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
-                        : 'text-red-500 dark:text-red-400 font-semibold';
-                    $dotClass  = $isRevenue ? 'bg-emerald-500' : 'bg-red-500';
                     $label     = $isRevenue
                         ? ($platformLabels[$txn['category']] ?? ucfirst($txn['category']))
                         : ($categoryLabels[$txn['category']] ?? ucfirst($txn['category']));
                     $desc      = !empty($txn['description']) ? $txn['description'] : '—';
-                    $date      = date('j M', strtotime($txn['txn_date']));
+                    $txnDate   = date('j M', strtotime($txn['txn_date']));
                 ?>
-                <div class="flex items-center gap-3 py-2.5">
-                    <span class="flex-shrink-0 w-2 h-2 rounded-full <?= $dotClass ?>"></span>
+                <div class="flex items-center gap-3 py-3">
+                    <span class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center <?= $isRevenue
+                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : 'bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-400' ?>">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="<?= $isRevenue ? 'M7 17L17 7M17 7H9m8 0v8' : 'M17 7L7 17M7 17h8m-8 0V9' ?>"/>
+                        </svg>
+                    </span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
                             <?= htmlspecialchars($desc, ENT_QUOTES) ?>
                         </p>
-                        <p class="text-xs text-gray-400 dark:text-gray-500">
-                            <?= $label ?> · <?= $date ?>
-                        </p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 truncate"><?= $label ?></p>
                     </div>
-                    <span class="text-sm <?= $amtClass ?> tabular-nums whitespace-nowrap">
-                        <?= $sign ?> RM <?= number_format((float)$txn['amount'], 2) ?>
-                    </span>
+                    <div class="text-right shrink-0">
+                        <p class="ez-num text-sm font-bold whitespace-nowrap <?= $isRevenue ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-gray-100' ?>">
+                            <?= $sign ?> RM <?= number_format((float)$txn['amount'], 2) ?>
+                        </p>
+                        <p class="text-[11px] text-gray-400 dark:text-gray-500"><?= $txnDate ?></p>
+                    </div>
                 </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
-        <!-- Footer links -->
-        <div class="flex justify-between mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs">
-            <a href="<?= BASE_URI ?>/revenue" class="text-emerald-600 dark:text-emerald-400 hover:underline"><?= __('revenue') ?> →</a>
-            <a href="<?= BASE_URI ?>/expenses" class="text-red-500 dark:text-red-400 hover:underline"><?= __('expenses') ?> →</a>
+        <div class="flex justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-xs font-semibold">
+            <a href="<?= BASE_URI ?>/revenue" class="text-brand-600 dark:text-sage-300 hover:underline"><?= __('revenue') ?> →</a>
+            <a href="<?= BASE_URI ?>/expenses" class="text-brand-600 dark:text-sage-300 hover:underline"><?= __('expenses') ?> →</a>
         </div>
     </div>
 </div>
 
 <!-- Comparison Chart — full width -->
-<div class="mt-6 bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+<div class="mt-5 bg-white dark:bg-gray-800 rounded-3xl p-5 sm:p-6 shadow-sm">
     <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div>
-            <h2 class="text-base font-semibold text-gray-900 dark:text-white" id="compare-title">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white" id="compare-title">
                 <?= __('compare_month_title') ?>
             </h2>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5" id="compare-subtitle">
                 <?= $compareMonth['prev_label'] ?> vs <?= $compareMonth['cur_label'] ?>
             </p>
         </div>
-        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 gap-0.5">
+        <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full p-1 gap-0.5">
             <button id="btn-day" onclick="switchCompare('day')"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700">
+                    class="px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300">
                 <?= __('compare_day') ?>
             </button>
             <button id="btn-month" onclick="switchCompare('month')"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">
+                    class="px-4 py-1.5 text-sm font-semibold rounded-full transition-colors bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm">
                 <?= __('compare_month') ?>
             </button>
             <button id="btn-year" onclick="switchCompare('year')"
-                    class="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700">
+                    class="px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300">
                 <?= __('compare_year') ?>
             </button>
         </div>
@@ -664,14 +674,16 @@ function doExportPnl() {
         <canvas id="chart-compare" style="width:100%;height:100%"></canvas>
     </div>
     <div class="flex flex-wrap items-center gap-4 mt-4 text-xs">
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-brand-500 inline-block"></span><span class="text-gray-600 dark:text-gray-300" id="leg-rev-a"></span></span>
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-brand-200 inline-block"></span><span class="text-gray-600 dark:text-gray-300" id="leg-rev-b"></span></span>
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-400 inline-block"></span><span class="text-gray-600 dark:text-gray-300" id="leg-exp-a"></span></span>
-        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-red-200 inline-block"></span><span class="text-gray-600 dark:text-gray-300" id="leg-exp-b"></span></span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#a8c3a8"></span><span class="text-gray-600 dark:text-gray-300" id="leg-rev-a"></span></span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#3a7a58"></span><span class="text-gray-600 dark:text-gray-300" id="leg-rev-b"></span></span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#f3c4b9"></span><span class="text-gray-600 dark:text-gray-300" id="leg-exp-a"></span></span>
+        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#e8806f"></span><span class="text-gray-600 dark:text-gray-300" id="leg-exp-b"></span></span>
     </div>
 </div>
 
 <script>
+var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
+
 (function () {
     var chartData = <?= json_encode($chartData) ?>;
     var targetRevenue = <?= json_encode($targetRevenue) ?>;
@@ -684,17 +696,21 @@ function doExportPnl() {
         var size = canvas.offsetWidth || 180;
         canvas.width  = size * dpr;
         canvas.height = size * dpr;
+        canvas.style.width  = size + 'px';
+        canvas.style.height = size + 'px';
         ctx.scale(dpr, dpr);
 
         var cx = size / 2, cy = size / 2;
-        var outerR = cx - 10;
-        var innerR = outerR * 0.58;
+        var outerR = cx - 6;
+        var innerR = outerR * 0.66;
         var isDark = document.documentElement.classList.contains('dark');
-        var emptyColor = isDark ? '#374151' : '#e5e7eb';
+        var emptyColor = isDark ? '#353b35' : '#edece5';
 
         ctx.clearRect(0, 0, size, size);
 
         var total = segments.reduce(function (s, seg) { return s + seg.value; }, 0);
+        var visible = segments.filter(function (seg) { return seg.value > 0; }).length;
+        var gap = visible > 1 ? 0.045 : 0;
 
         if (total <= 0) {
             ctx.beginPath();
@@ -707,10 +723,12 @@ function doExportPnl() {
             segments.forEach(function (seg) {
                 if (seg.value <= 0) return;
                 var sweep = (seg.value / total) * 2 * Math.PI;
+                var pad = sweep > gap * 2 ? gap / 2 : 0;
+                var a0 = angle + pad, a1 = angle + sweep - pad;
                 ctx.beginPath();
-                ctx.moveTo(cx + outerR * Math.cos(angle), cy + outerR * Math.sin(angle));
-                ctx.arc(cx, cy, outerR, angle, angle + sweep);
-                ctx.arc(cx, cy, innerR, angle + sweep, angle, true);
+                ctx.moveTo(cx + outerR * Math.cos(a0), cy + outerR * Math.sin(a0));
+                ctx.arc(cx, cy, outerR, a0, a1);
+                ctx.arc(cx, cy, innerR, a1, a0, true);
                 ctx.closePath();
                 ctx.fillStyle = seg.color;
                 ctx.fill();
@@ -718,19 +736,19 @@ function doExportPnl() {
             });
         }
 
-        var textColor  = isDark ? '#f9fafb' : '#111827';
-        var subColor   = isDark ? '#9ca3af' : '#6b7280';
+        var textColor  = isDark ? '#f5f4ef' : '#161c18';
+        var subColor   = isDark ? '#9a9b92' : '#6d7068';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         if (centerLine1) {
             ctx.fillStyle = textColor;
-            ctx.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
-            ctx.fillText(centerLine1, cx, centerLine2 ? cy - 8 : cy);
+            ctx.font = '800 15px ' + EZ_CHART_FONT;
+            ctx.fillText(centerLine1, cx, centerLine2 ? cy - 9 : cy);
         }
         if (centerLine2) {
             ctx.fillStyle = subColor;
-            ctx.font = '10px Inter, ui-sans-serif, sans-serif';
-            ctx.fillText(centerLine2, cx, cy + 9);
+            ctx.font = '500 10.5px ' + EZ_CHART_FONT;
+            ctx.fillText(centerLine2, cx, cy + 10);
         }
     }
 
@@ -738,12 +756,12 @@ function doExportPnl() {
         var total = chartData.total;
         var remaining = targetRevenue > 0 ? Math.max(0, targetRevenue - total) : 0;
         var isDark = document.documentElement.classList.contains('dark');
-        var remainColor = isDark ? '#374151' : '#e5e7eb';
+        var remainColor = isDark ? '#353b35' : '#e2e1d8';
 
         var breakdown = [
-            { value: chartData.opex,      color: '#3b82f6' },
-            { value: chartData.marketing, color: '#a855f7' },
-            { value: chartData.cogs,      color: '#f59e0b' },
+            { value: chartData.opex,      color: isDark ? '#cfdccf' : '#1a4a2e' },
+            { value: chartData.marketing, color: isDark ? '#7fa584' : '#5f9d7d' },
+            { value: chartData.cogs,      color: isDark ? '#3a7a58' : '#a8c3a8' },
         ];
         if (remaining > 0) breakdown.push({ value: remaining, color: remainColor });
         var totalLabel = total > 0 ? 'RM ' + total.toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'No data';
@@ -751,19 +769,26 @@ function doExportPnl() {
 
         var rev = chartData.revenue || 0;
         var expPct    = rev > 0 ? Math.min(100, (total / rev) * 100) : 0;
-        var profitPct = Math.max(0, 100 - expPct);
+        var profitPct = rev > 0 ? Math.max(0, 100 - expPct) : 0;
         var overBudget = chartData.overBudget;
         var health = [
-            { value: expPct,    color: overBudget ? '#ef4444' : '#f87171' },
-            { value: profitPct, color: '#10b981' },
+            { value: expPct,    color: overBudget ? '#dc2626' : '#e8806f' },
+            { value: profitPct, color: isDark ? '#7fa584' : '#3a7a58' },
         ];
         var healthLabel = rev > 0 ? expPct.toFixed(1) + '%' : 'No data';
         var healthSub   = rev > 0 ? 'Expenses used' : 'Add revenue first';
         drawDonut('chart-health', health, healthLabel, healthSub);
     }
 
-    window.renderDashboardCharts = function() { renderCharts(); renderCompare(); };
-    document.addEventListener('DOMContentLoaded', function() { renderCharts(); renderCompare(); });
+    function renderAll() {
+        renderCharts();
+        if (window.renderCompareChart) window.renderCompareChart();
+    }
+    window.renderDashboardCharts = renderAll;
+    document.addEventListener('DOMContentLoaded', renderAll);
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(renderAll);
+    }
 })();
 
 // ── Comparison Chart ─────────────────────────────────────────────────────────
@@ -774,8 +799,10 @@ function doExportPnl() {
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var mode = 'month';
 
-    var btnActive   = 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm';
-    var btnInactive = 'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700';
+    var C_REV = '#3a7a58', C_REV_PREV = '#a8c3a8', C_EXP = '#e8806f', C_EXP_PREV = '#f3c4b9';
+
+    var btnActive   = 'px-4 py-1.5 text-sm font-semibold rounded-full transition-colors bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm';
+    var btnInactive = 'px-4 py-1.5 text-sm font-medium rounded-full transition-colors text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300';
 
     window.switchCompare = function(m) {
         mode = m;
@@ -815,8 +842,8 @@ function doExportPnl() {
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 compareDay.labels,
                 [
-                    { data: compareDay.rev, color: '#458458' },
-                    { data: compareDay.exp, color: '#f87171' },
+                    { data: compareDay.rev, color: C_REV },
+                    { data: compareDay.exp, color: C_EXP },
                 ],
                 isDark);
         } else if (mode === 'month') {
@@ -830,8 +857,8 @@ function doExportPnl() {
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 [compareMonth.prev_label, compareMonth.cur_label],
                 [
-                    { data: [compareMonth.prev_rev, compareMonth.cur_rev], color: '#458458' },
-                    { data: [compareMonth.prev_exp, compareMonth.cur_exp], color: '#f87171' },
+                    { data: [compareMonth.prev_rev, compareMonth.cur_rev], color: C_REV },
+                    { data: [compareMonth.prev_exp, compareMonth.cur_exp], color: C_EXP },
                 ],
                 isDark);
         } else {
@@ -845,18 +872,18 @@ function doExportPnl() {
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 months,
                 [
-                    { data: compareYear.rev_last, color: '#7fc49e' },
-                    { data: compareYear.rev_this, color: '#458458' },
-                    { data: compareYear.exp_last, color: '#fca5a5' },
-                    { data: compareYear.exp_this, color: '#f87171' },
+                    { data: compareYear.rev_last, color: C_REV_PREV },
+                    { data: compareYear.rev_this, color: C_REV },
+                    { data: compareYear.exp_last, color: C_EXP_PREV },
+                    { data: compareYear.exp_this, color: C_EXP },
                 ],
                 isDark);
         }
     }
 
     function drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB, labels, datasets, isDark) {
-        var gridColor  = isDark ? '#374151' : '#e5e7eb';
-        var textColor  = isDark ? '#9ca3af' : '#6b7280';
+        var gridColor  = isDark ? '#353b35' : '#e2e1d8';
+        var textColor  = isDark ? '#9a9b92' : '#6d7068';
         var n = labels.length;
         var ds = datasets.length;
 
@@ -866,30 +893,33 @@ function doExportPnl() {
         maxVal = maxVal * 1.15;
 
         var gridSteps = 4;
-        ctx.font = '10px Inter, ui-sans-serif, sans-serif';
+        ctx.font = '500 10px ' + EZ_CHART_FONT;
         ctx.fillStyle = textColor;
         ctx.textAlign = 'right';
+        ctx.setLineDash([3, 4]);
         for (var i = 0; i <= gridSteps; i++) {
             var val = (maxVal / gridSteps) * i;
             var y   = padT + chartH - (val / maxVal) * chartH;
             ctx.strokeStyle = gridColor;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 1;
             ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + chartW, y); ctx.stroke();
-            ctx.fillText(fmtK(val), padL - 4, y + 3);
+            ctx.fillText(fmtK(val), padL - 6, y + 3);
         }
+        ctx.setLineDash([]);
 
         var groupW = chartW / n;
         var barGap = 3;
-        var barW   = Math.max(4, (groupW - barGap * (ds + 1)) / ds);
+        var barW   = Math.max(4, Math.min(56, (groupW - barGap * (ds + 1)) / ds));
+        var groupInner = ds * barW + (ds - 1) * barGap;
 
         labels.forEach(function(lbl, gi) {
-            var groupX = padL + gi * groupW + barGap;
+            var groupX = padL + gi * groupW + (groupW - groupInner) / 2;
             datasets.forEach(function(d, di) {
                 var val  = d.data[gi] || 0;
                 var bh   = (val / maxVal) * chartH;
                 var bx   = groupX + di * (barW + barGap);
                 var by   = padT + chartH - bh;
-                var r    = Math.min(3, barW / 2);
+                var r    = Math.min(8, barW / 2, bh);
                 ctx.fillStyle = d.color;
                 ctx.beginPath();
                 ctx.moveTo(bx + r, by);
@@ -904,7 +934,7 @@ function doExportPnl() {
             });
             ctx.fillStyle = textColor;
             ctx.textAlign = 'center';
-            ctx.fillText(lbl, padL + gi * groupW + groupW / 2, padT + chartH + 16);
+            ctx.fillText(lbl, padL + gi * groupW + groupW / 2, padT + chartH + 18);
         });
     }
 
@@ -914,7 +944,7 @@ function doExportPnl() {
         return v > 0 ? 'RM ' + v.toFixed(0) : '0';
     }
 
-    document.addEventListener('DOMContentLoaded', renderCompare);
+    window.renderCompareChart = renderCompare;
     window.addEventListener('resize', renderCompare);
 })();
 </script>

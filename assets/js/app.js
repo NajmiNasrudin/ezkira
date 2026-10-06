@@ -63,17 +63,31 @@ function updateThemeIcon(isDark) {
 }
 
 // ============================================================
-// Mobile Navigation
+// Quick-add deep links (#add-sale, #add-expense) from the mobile "+" sheet
 // ============================================================
-function toggleMobileMenu() {
-    var toggle = document.getElementById('nav-toggle');
-    if (toggle) toggle.checked = !toggle.checked;
-}
+function openQuickAddTarget() {
+    var hash = window.location.hash;
+    if (hash !== '#add-sale' && hash !== '#add-expense') return;
 
-function closeMobileMenu() {
-    var toggle = document.getElementById('nav-toggle');
-    if (toggle) toggle.checked = false;
+    var quickToggle = document.getElementById('quick-add-toggle');
+    if (quickToggle) quickToggle.checked = false;
+
+    if (hash === '#add-sale') {
+        var saleForm = document.getElementById('sale-form');
+        if (saleForm && saleForm.classList.contains('hidden') && typeof toggleSaleForm === 'function') {
+            toggleSaleForm();
+        }
+        if (saleForm) saleForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        var expenseModal = document.getElementById('add-expense-modal');
+        if (expenseModal) expenseModal.classList.remove('hidden');
+    }
+
+    // Drop the hash so tapping the same shortcut again re-triggers it
+    history.replaceState(null, '', window.location.pathname + window.location.search);
 }
+document.addEventListener('DOMContentLoaded', openQuickAddTarget);
+window.addEventListener('hashchange', openQuickAddTarget);
 
 // ============================================================
 // User Dropdown
@@ -85,21 +99,12 @@ function toggleUserMenu() {
     }
 }
 
-// Close menus when clicking outside
+// Close user dropdown when clicking outside
 document.addEventListener('click', function (e) {
-    // Close user dropdown
     var wrapper  = document.getElementById('user-menu-wrapper');
     var dropdown = document.getElementById('user-dropdown');
     if (wrapper && dropdown && !wrapper.contains(e.target)) {
         dropdown.classList.add('hidden');
-    }
-    // Close mobile menu if click is outside hamburger + menu
-    var hamburger  = document.getElementById('hamburger');
-    var mobileMenu = document.getElementById('mobile-menu');
-    if (hamburger && mobileMenu
-            && !hamburger.contains(e.target)
-            && !mobileMenu.contains(e.target)) {
-        closeMobileMenu();
     }
 });
 

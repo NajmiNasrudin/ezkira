@@ -19,7 +19,9 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 - `models/` → PDO queries, one class per table-ish concept
 - `views/` → plain PHP templates, `views/layouts/main.php` is the shared shell, `views/layouts/partials/` has nav/footer/help-drawer
 - `config/config.php` → **NOT in git** (`.gitignore`'d). Must be created manually on each environment (local XAMPP vs production). `config/database.php` reads from it and is in git.
-- `assets/js/app.js` → single global JS file loaded on every page (dark mode toggle, mobile nav, user dropdown, flash auto-dismiss)
+- `assets/js/app.js` → single global JS file loaded on every page (dark mode toggle, user dropdown, flash auto-dismiss, `#add-sale` / `#add-expense` quick-add deep links)
+- **App shell (UI revamp, Oct 2026):** `views/layouts/main.php` = desktop sidebar (`partials/nav.php`, `lg:` and up) + sticky topbar (`partials/topbar.php`, holds dark toggle + user/"More" dropdown) + mobile bottom tab bar (`partials/bottom-nav.php`, centre "+" quick-add sheet). `main.php`'s Tailwind config overrides the `gray` palette with warm green-tinted neutrals and adds `sage`, so any page using `gray-*`/`bg-white` cards inherits the cream theme automatically. Design: dark forest green + sage + cream, gold only for logo/small highlights, font Plus Jakarta Sans, big rounded cards, pill tabs.
+- **Revamp is phased:** Phase 1 (shell + Dashboard) is done. Revenue, Expenses, Balance Sheet, Profile, Blast, and Auth pages still have their old inner markup — restyle them to match `views/dashboard/index.php` without changing any form/route/JS behaviour.
 - BASE_PATH must be defined before requiring `config/config.php` — production's config uses it for error log paths. Any new bootstrap/CLI script needs `define('BASE_PATH', ...)` before the require.
 
 ## Deploy details
@@ -51,7 +53,8 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 - `Revenue::periodWhere()` used `WEEK(sale_date, 1)` while `recentTransactions()` used `WEEK(sale_date, 3)` (ISO week, matching PHP's `date('W')`) — standardized on mode 3.
 - Open redirect in `AuthController::switchLang()` via unvalidated `HTTP_REFERER` — now validated against `APP_URL`'s host before redirecting.
 - `Session::destroy()` cookie clear was missing `samesite=Lax`, inconsistent with how the cookie was originally set.
-- Mobile hamburger nav (`views/layouts/partials/nav.php`) — went through several iterations (onclick JS → inline JS → CSS `peer-checked`) before landing on a **pure CSS checkbox+label toggle with a literal `<style>` block**, specifically to avoid any dependency on Tailwind CDN's JIT class generation being reliable for variant classes, and to avoid any JS execution/event-propagation issues on mobile browsers. Don't revert this to a JS-driven toggle without a strong reason.
+- Mobile nav — the old hamburger went through several iterations (onclick JS → inline JS → CSS `peer-checked`) before landing on a **pure CSS checkbox+label toggle with a literal `<style>` block**, to avoid depending on Tailwind CDN JIT for variant classes and on JS event handling on mobile. The hamburger is now replaced by the bottom tab bar, but its "+" quick-add sheet keeps the same pattern (`#quick-add-toggle` in `partials/bottom-nav.php`). The checkbox is `position:fixed` on purpose — when it was `absolute`, focusing it made the page jump to the bottom. Don't switch it to a JS toggle without a strong reason.
+- Dashboard charts: donut canvases now get an explicit CSS size (they used to render 2x on retina phones), the compare chart is exposed as `window.renderCompareChart` (it used to throw `renderCompare is not defined`, so dark-mode toggling never redrew it), and the flatpickr pickers use `disableMobile: true` (the native mobile fallback showed an empty `dd/mm/yyyy` and crashed the monthSelect plugin).
 
 ## Working conventions
 
