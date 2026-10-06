@@ -144,12 +144,12 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
     <div class="blob absolute right-10 bottom-0 w-[340px] h-[340px] bg-gold-100/80"></div>
 
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-16 grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-        <div class="lg:col-span-5">
+        <div class="lg:col-span-6">
             <span class="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white shadow-sm text-xs font-semibold text-brand-700">
                 <span class="px-2 py-0.5 rounded-full bg-brand-700 text-white text-[10px] tracking-wide"><?= $L('BAHARU', 'NEW') ?></span>
                 <?= $L('Rupa baharu ezkira, lebih ringkas &amp; laju', 'The new ezkira — simpler and faster') ?>
             </span>
-            <h1 class="mt-5 text-[2.6rem] leading-[1.08] sm:text-6xl lg:text-[3.4rem] font-extrabold tracking-tight text-gray-900">
+            <h1 class="mt-5 text-[2.6rem] leading-[1.08] sm:text-6xl lg:text-[3.25rem] font-extrabold tracking-tight text-gray-900">
                 <?= $L('Kira untung bisnes,<br><span class="text-brand-400">tanpa pening kepala.</span>', 'Know your real profit,<br><span class="text-brand-400">without the headache.</span>') ?>
             </h1>
             <p class="mt-5 text-base sm:text-lg text-gray-600 leading-relaxed max-w-lg">
@@ -173,74 +173,89 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
             </ul>
         </div>
 
-        <!-- Desktop app mockup: the real dashboard layout -->
-        <div class="lg:col-span-7">
-            <div class="relative rounded-[1.6rem] bg-white shadow-float ring-1 ring-black/5 overflow-hidden">
-                <div class="flex items-center gap-2 px-4 h-9 bg-gray-100 border-b border-gray-200">
-                    <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
-                    <span class="ml-3 px-3 py-0.5 rounded-full bg-white text-[10px] text-gray-500">ezkira.com/dashboard</span>
-                </div>
-                <div class="flex text-[10px] sm:text-[11px]">
-                    <aside class="hidden sm:flex w-36 shrink-0 flex-col gap-1 bg-brand-700 p-3 text-white/70">
-                        <div class="flex items-center gap-1.5 mb-3"><img src="<?= $logoUrl ?>" alt="" class="w-6 h-6 rounded-md ring-1 ring-white/20"><span class="font-extrabold text-xs"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span></div>
-                        <span class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-sage-200 text-brand-800 font-bold"><?= $icon($I['home'], 'w-3.5 h-3.5') ?><?= $L('Papan Pemuka', 'Dashboard') ?></span>
-                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['trend'], 'w-3.5 h-3.5') ?><?= $L('Pendapatan', 'Revenue') ?></span>
-                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['receipt'], 'w-3.5 h-3.5') ?><?= $L('Perbelanjaan', 'Expenses') ?></span>
-                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['scale'], 'w-3.5 h-3.5') ?><?= $L('Kunci Kira-Kira', 'Balance Sheet') ?></span>
-                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['user'], 'w-3.5 h-3.5') ?><?= $L('Profil', 'Profile') ?></span>
-                    </aside>
-                    <div class="flex-1 min-w-0 p-3 sm:p-4 bg-gray-50 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm sm:text-base font-extrabold text-gray-900"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p>
-                                <p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p>
-                            </div>
-                            <div class="hidden sm:flex rounded-full bg-white p-0.5 shadow-sm">
-                                <span class="px-2 py-1 text-gray-500"><?= $L('Harian', 'Daily') ?></span>
-                                <span class="px-2 py-1 rounded-full bg-brand-700 text-white font-semibold"><?= $L('Bulanan', 'Monthly') ?></span>
-                                <span class="px-2 py-1 text-gray-500"><?= $L('Tahunan', 'Annual') ?></span>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-5 gap-3">
-                            <div class="col-span-5 sm:col-span-3 relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3.5">
-                                <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5"></div>
-                                <p class="text-white/75"><?= $L('Keuntungan Bersih · Bulanan', 'Net Profit · Monthly') ?></p>
-                                <p class="ez-num mt-1 font-extrabold leading-none"><span class="text-xs text-white/75 align-top">RM</span><span class="text-2xl sm:text-3xl">8,420</span><span class="text-base text-white/70">.50</span></p>
-                                <span class="inline-block mt-1.5 px-1.5 py-0.5 rounded-full bg-sage-300/20 text-sage-200 font-bold">▲ 33.9% Margin</span>
-                                <div class="mt-3 grid grid-cols-2 gap-2">
-                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><p class="ez-num font-bold text-xs sm:text-sm">24,860.00</p></div>
-                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><p class="ez-num font-bold text-xs sm:text-sm">16,439.50</p></div>
-                                </div>
-                            </div>
-                            <div class="col-span-5 sm:col-span-2 rounded-2xl bg-white p-3 shadow-sm flex sm:flex-col items-center gap-3">
-                                <div class="relative w-20 h-20 shrink-0 rounded-full" style="background:conic-gradient(#1a4a2e 0 30%, #f4f4ef 30% 31%, #5f9d7d 31% 50%, #f4f4ef 50% 51%, #a8c3a8 51% 100%)">
-                                    <div class="absolute inset-[22%] rounded-full bg-white flex flex-col items-center justify-center">
-                                        <span class="ez-num text-[10px] font-extrabold">RM16.4k</span>
-                                    </div>
-                                </div>
-                                <ul class="space-y-1 w-full">
-                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-600"></i>OPEX</span><b class="ez-num">30%</b></li>
-                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-300"></i>Marketing</span><b class="ez-num">19%</b></li>
-                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-sage-300"></i>COGS</span><b class="ez-num">51%</b></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="rounded-2xl bg-white p-3 shadow-sm">
-                            <p class="font-bold text-gray-900 mb-1.5"><?= $L('Transaksi Terkini', 'Recent Transactions') ?></p>
-                            <?php foreach ([
-                                ['in', 'Shopee #10482', 'Shopee', '+ RM 189.00'],
-                                ['out', $L('Iklan Facebook', 'Facebook Ads'), 'Marketing', '− RM 250.00'],
-                                ['in', 'TikTok Live', 'TikTok Shop', '+ RM 1,240.00'],
-                            ] as [$dir, $desc, $cat, $amt]): ?>
-                            <div class="flex items-center gap-2 py-1.5 border-t border-gray-100 first:border-0">
-                                <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $dir === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500' ?>"><?= $icon($dir === 'in' ? 'M7 17L17 7M17 7H9m8 0v8' : 'M17 7L7 17M7 17h8m-8 0V9', 'w-3 h-3') ?></span>
-                                <span class="flex-1 min-w-0"><span class="block font-semibold text-gray-800 truncate"><?= $desc ?></span><span class="text-gray-400"><?= $cat ?></span></span>
-                                <span class="ez-num font-bold <?= $dir === 'in' ? 'text-emerald-600' : 'text-gray-900' ?>"><?= $amt ?></span>
-                            </div>
-                            <?php endforeach; ?>
-                        </div>
+        <!-- Phone mockups: mobile-first, matching the real app -->
+        <div class="lg:col-span-6 relative h-[540px] sm:h-[560px]">
+            <div class="blob absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] bg-sage-200/70"></div>
+
+            <!-- Back phone: the "+" quick-add sheet -->
+            <div class="phone hidden sm:block absolute left-1/2 top-10 w-[220px] bg-gray-50 overflow-hidden rotate-6 translate-x-[2%]">
+                <div class="flex justify-center"><div class="phone-notch"></div></div>
+                <div class="relative h-[392px] px-3 pt-2 text-[10px]">
+                    <div class="space-y-2.5 opacity-60">
+                        <div class="flex justify-between"><span class="w-7 h-7 rounded-lg bg-brand-700"></span><span class="w-7 h-7 rounded-full bg-gray-200"></span></div>
+                        <div class="h-3 w-28 rounded bg-gray-300"></div>
+                        <div class="h-28 rounded-2xl bg-brand-700"></div>
+                        <div class="h-20 rounded-2xl bg-white"></div>
+                        <div class="h-12 rounded-2xl bg-white"></div>
+                    </div>
+                    <div class="absolute inset-0 bg-black/30"></div>
+                    <div class="absolute inset-x-2 bottom-3 rounded-2xl bg-white p-2 grid grid-cols-2 gap-2 shadow-soft">
+                        <span class="flex flex-col items-center gap-1.5 rounded-xl bg-sage-50 px-1 py-3 text-[9px] leading-tight text-center font-bold text-gray-800">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center"><?= $icon($I['trend'], 'w-4 h-4') ?></span>
+                            <?= $L('Tambah Jualan', 'Add Sale') ?>
+                        </span>
+                        <span class="flex flex-col items-center gap-1.5 rounded-xl bg-sage-50 px-1 py-3 text-[9px] leading-tight text-center font-bold text-gray-800">
+                            <span class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center"><?= $icon($I['receipt'], 'w-4 h-4') ?></span>
+                            <?= $L('Tambah Belanja', 'Add Expense') ?>
+                        </span>
                     </div>
                 </div>
+                <div class="grid grid-cols-5 items-end bg-white px-1 pb-2 pt-1 text-[8px] text-gray-400 border-t border-gray-100">
+                    <span class="flex flex-col items-center"><?= $icon($I['home'], 'w-4 h-4') ?><?= $L('Utama', 'Home') ?></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['trend'], 'w-4 h-4') ?><?= $L('Hasil', 'Revenue') ?></span>
+                    <span class="flex justify-center"><span class="-translate-y-2 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center ring-4 ring-gray-50 rotate-45"><?= $icon($I['plus'], 'w-4 h-4') ?></span></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['receipt'], 'w-4 h-4') ?><?= $L('Belanja', 'Expenses') ?></span>
+                    <span class="flex flex-col items-center"><?= $icon($I['user'], 'w-4 h-4') ?><?= $L('Profil', 'Profile') ?></span>
+                </div>
+            </div>
+
+            <!-- Front phone: dashboard -->
+            <div class="absolute left-1/2 top-0 z-10 -translate-x-1/2 sm:-translate-x-[88%]">
+                        <div class="phone w-[250px] bg-gray-50 overflow-hidden">
+                            <div class="flex justify-center"><div class="phone-notch"></div></div>
+                            <div class="px-3 pt-2 text-[10px] space-y-2.5">
+                                <div class="flex items-center justify-between"><img src="<?= $logoUrl ?>" alt="" class="w-7 h-7 rounded-lg"><span class="w-7 h-7 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">A</span></div>
+                                <div><p class="text-sm font-extrabold"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p><p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p></div>
+                                <div class="relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3">
+                                    <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/5"></div>
+                                    <p class="text-white/75"><?= $L('Keuntungan Bersih', 'Net Profit') ?></p>
+                                    <p class="ez-num font-extrabold leading-none mt-1"><span class="text-[10px] text-white/75 align-top">RM</span><span class="text-2xl">8,420</span><span class="text-sm text-white/70">.50</span></p>
+                                    <div class="mt-2.5 grid grid-cols-2 gap-1.5">
+                                        <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><b class="ez-num">24,860.00</b></div>
+                                        <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><b class="ez-num">16,439.50</b></div>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl bg-white p-2.5 shadow-sm">
+                                    <p class="font-bold mb-2"><?= $L('Tindakan Pantas', 'Quick Actions') ?></p>
+                                    <div class="grid grid-cols-4 gap-1 text-center text-[8.5px] font-semibold text-gray-600">
+                                        <?php foreach ([['plus', $L('Jualan', 'Sale')], ['receipt', $L('Belanja', 'Expense')], ['down', 'Export'], ['scale', $L('Kira-Kira', 'Balance')]] as [$ic, $lbl]): ?>
+                                        <span><span class="mx-auto mb-1 w-8 h-8 rounded-xl bg-gray-50 border border-gray-100 text-brand-700 flex items-center justify-center"><?= $icon($I[$ic], 'w-4 h-4') ?></span><?= $lbl ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl bg-sage-50 p-2.5 flex items-center gap-2">
+                                    <span class="w-7 h-7 rounded-full bg-white text-brand-500 flex items-center justify-center"><?= $icon($I['check'], 'w-3.5 h-3.5') ?></span>
+                                    <p class="font-bold leading-tight"><?= $L('Perbelanjaan guna 66.1% daripada pendapatan', 'Expenses used 66.1% of revenue') ?></p>
+                                </div>
+                            </div>
+                            <div class="mt-3 grid grid-cols-5 items-end bg-white px-1 pb-2 pt-1 text-[8px] text-gray-400 border-t border-gray-100">
+                                <span class="flex flex-col items-center text-brand-700 font-bold"><?= $icon($I['home'], 'w-4 h-4') ?><?= $L('Utama', 'Home') ?></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['trend'], 'w-4 h-4') ?><?= $L('Hasil', 'Revenue') ?></span>
+                                <span class="flex justify-center"><span class="-translate-y-2 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center ring-4 ring-gray-50"><?= $icon($I['plus'], 'w-4 h-4') ?></span></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['receipt'], 'w-4 h-4') ?><?= $L('Belanja', 'Expenses') ?></span>
+                                <span class="flex flex-col items-center"><?= $icon($I['user'], 'w-4 h-4') ?><?= $L('Profil', 'Profile') ?></span>
+                            </div>
+                        </div>
+            </div>
+
+            <!-- Floating cards -->
+            <div class="absolute z-20 left-0 sm:left-[2%] bottom-3 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
+                <span class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><?= $icon('M7 17L17 7M17 7H9m8 0v8', 'w-4 h-4') ?></span>
+                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Jualan baru · Shopee', 'New sale · Shopee') ?></span><b class="ez-num text-sm text-emerald-600">+ RM 189.00</b></span>
+            </div>
+            <div class="absolute z-20 right-0 top-1 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 shadow-soft">
+                <span class="w-8 h-8 rounded-full bg-sage-100 text-brand-600 flex items-center justify-center"><?= $icon($I['camera'], 'w-4 h-4') ?></span>
+                <span class="leading-tight"><span class="block text-[11px] text-gray-500"><?= $L('Resit disimpan', 'Receipt saved') ?></span><b class="ez-num text-sm text-gray-900">4.1 MB → 312 KB</b></span>
             </div>
         </div>
     </div>
@@ -362,40 +377,44 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                     </div>
                 </div>
 
-                <!-- Phone 2: Dashboard (centre) -->
+                <!-- Phone 2: Add Sale form (centre) -->
                 <div class="phone relative z-10 w-[240px] bg-gray-50 overflow-hidden">
                     <div class="flex justify-center"><div class="phone-notch"></div></div>
-                    <div class="px-3 pt-2 text-[10px] space-y-2.5">
-                        <div class="flex items-center justify-between"><img src="<?= $logoUrl ?>" alt="" class="w-7 h-7 rounded-lg"><span class="w-7 h-7 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center">A</span></div>
-                        <div><p class="text-sm font-extrabold"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p><p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p></div>
-                        <div class="relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3">
-                            <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-white/5"></div>
-                            <p class="text-white/75"><?= $L('Keuntungan Bersih', 'Net Profit') ?></p>
-                            <p class="ez-num font-extrabold leading-none mt-1"><span class="text-[10px] text-white/75 align-top">RM</span><span class="text-2xl">8,420</span><span class="text-sm text-white/70">.50</span></p>
-                            <div class="mt-2.5 grid grid-cols-2 gap-1.5">
-                                <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><b class="ez-num">24,860.00</b></div>
-                                <div class="rounded-lg bg-white/10 p-1.5"><p class="text-[9px] text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><b class="ez-num">16,439.50</b></div>
+                    <div class="px-3 pt-2 pb-3 text-[10px] space-y-2.5">
+                        <div class="flex items-center gap-2"><?= $icon('M15 19l-7-7 7-7', 'w-4 h-4') ?><p class="text-sm font-extrabold"><?= $L('Tambah Jualan', 'Add Sale') ?></p></div>
+                        <div class="grid grid-cols-2 rounded-full bg-white p-0.5 shadow-sm text-center font-semibold">
+                            <span class="py-1 rounded-full bg-brand-700 text-white"><?= $L('Jualan', 'Sale') ?></span>
+                            <span class="py-1 text-gray-500">Refund</span>
+                        </div>
+                        <div class="rounded-2xl bg-white p-3 shadow-sm text-center">
+                            <p class="text-gray-500"><?= $L('Jumlah', 'Amount') ?></p>
+                            <p class="ez-num mt-0.5 text-2xl font-extrabold">RM 189.00</p>
+                        </div>
+                        <div>
+                            <p class="mb-1 font-semibold text-gray-600"><?= $L('Platform', 'Platform') ?></p>
+                            <div class="grid grid-cols-3 gap-1 text-center font-semibold">
+                                <span class="py-1.5 rounded-lg bg-brand-700 text-white">Shopee</span>
+                                <span class="py-1.5 rounded-lg bg-white">Lazada</span>
+                                <span class="py-1.5 rounded-lg bg-white">TikTok</span>
+                                <span class="py-1.5 rounded-lg bg-white">WhatsApp</span>
+                                <span class="py-1.5 rounded-lg bg-white">Walk-in</span>
+                                <span class="py-1.5 rounded-lg bg-white">Website</span>
                             </div>
                         </div>
-                        <div class="rounded-2xl bg-white p-2.5 shadow-sm">
-                            <p class="font-bold mb-2"><?= $L('Tindakan Pantas', 'Quick Actions') ?></p>
-                            <div class="grid grid-cols-4 gap-1 text-center text-[8.5px] font-semibold text-gray-600">
-                                <?php foreach ([['plus', $L('Jualan', 'Sale')], ['receipt', $L('Belanja', 'Expense')], ['down', 'Export'], ['scale', $L('Kira-Kira', 'Balance')]] as [$ic, $lbl]): ?>
-                                <span><span class="mx-auto mb-1 w-8 h-8 rounded-xl bg-gray-50 border border-gray-100 text-brand-700 flex items-center justify-center"><?= $icon($I[$ic], 'w-4 h-4') ?></span><?= $lbl ?></span>
-                                <?php endforeach; ?>
+                        <div>
+                            <p class="mb-1 font-semibold text-gray-600"><?= $L('Kaedah bayaran', 'Payment method') ?></p>
+                            <div class="flex flex-wrap gap-1 font-semibold">
+                                <span class="px-2 py-1 rounded-full bg-white"><?= $L('Tunai', 'Cash') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-sage-200 text-brand-800">Online Banking</span>
+                                <span class="px-2 py-1 rounded-full bg-white"><?= $L('Kad', 'Card') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-white">E-Wallet</span>
                             </div>
                         </div>
-                        <div class="rounded-2xl bg-sage-50 p-2.5 flex items-center gap-2">
-                            <span class="w-7 h-7 rounded-full bg-white text-brand-500 flex items-center justify-center"><?= $icon($I['check'], 'w-3.5 h-3.5') ?></span>
-                            <p class="font-bold leading-tight"><?= $L('Perbelanjaan guna 66.1% daripada pendapatan', 'Expenses used 66.1% of revenue') ?></p>
+                        <div class="rounded-xl bg-white px-2.5 py-2 shadow-sm space-y-1.5">
+                            <div class="flex justify-between"><span class="text-gray-500"><?= $L('Tarikh', 'Date') ?></span><b><?= $L('6 Okt 2026', '6 Oct 2026') ?></b></div>
+                            <div class="flex justify-between"><span class="text-gray-500"><?= $L('Keterangan', 'Description') ?></span><b>Order #10482</b></div>
                         </div>
-                    </div>
-                    <div class="mt-3 grid grid-cols-5 items-end bg-white px-1 pb-2 pt-1 text-[8px] text-gray-400 border-t border-gray-100">
-                        <span class="flex flex-col items-center text-brand-700 font-bold"><?= $icon($I['home'], 'w-4 h-4') ?><?= $L('Utama', 'Home') ?></span>
-                        <span class="flex flex-col items-center"><?= $icon($I['trend'], 'w-4 h-4') ?><?= $L('Hasil', 'Revenue') ?></span>
-                        <span class="flex justify-center"><span class="-translate-y-2 w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center ring-4 ring-gray-50"><?= $icon($I['plus'], 'w-4 h-4') ?></span></span>
-                        <span class="flex flex-col items-center"><?= $icon($I['receipt'], 'w-4 h-4') ?><?= $L('Belanja', 'Expenses') ?></span>
-                        <span class="flex flex-col items-center"><?= $icon($I['user'], 'w-4 h-4') ?><?= $L('Profil', 'Profile') ?></span>
+                        <span class="block py-2.5 rounded-full bg-brand-700 text-white text-center text-[11px] font-bold"><?= $L('Simpan Jualan', 'Save Sale') ?></span>
                     </div>
                 </div>
 
@@ -421,6 +440,86 @@ $logoUrl = function_exists('asset_url') ? asset_url('assets/img/logo-mark.svg') 
                         <?php endforeach; ?>
                         <div class="rounded-xl border border-dashed border-sage-300 bg-sage-50 px-2.5 py-2 text-center text-brand-600 font-semibold">
                             <?= $L('Gambar resit dikecilkan automatik', 'Receipt photos shrink automatically') ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ SHOWCASE: LAPTOP ============ -->
+<section class="pb-16 sm:pb-24">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center max-w-2xl mx-auto">
+            <p class="text-xs font-bold tracking-[0.18em] text-brand-400"><?= $L('DI LAPTOP JUGA', 'ON YOUR LAPTOP TOO') ?></p>
+            <h2 class="mt-3 text-3xl sm:text-4xl font-extrabold tracking-tight"><?= $L('Satu akaun, telefon dan laptop', 'One account, phone and laptop') ?></h2>
+            <p class="mt-3 text-gray-600"><?= $L('Key-in di telefon semasa berniaga, semak laporan di laptop bila senggang. Data yang sama, sentiasa terkini.', 'Key in on your phone while you sell, review reports on your laptop later. Same data, always up to date.') ?></p>
+        </div>
+        <div class="mt-10 max-w-4xl mx-auto">
+            <div class="relative rounded-[1.6rem] bg-white shadow-float ring-1 ring-black/5 overflow-hidden">
+                <div class="flex items-center gap-2 px-4 h-9 bg-gray-100 border-b border-gray-200">
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#ff5f57]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#febc2e]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#28c840]"></span>
+                    <span class="ml-3 px-3 py-0.5 rounded-full bg-white text-[10px] text-gray-500">ezkira.com/dashboard</span>
+                </div>
+                <div class="flex text-[10px] sm:text-xs">
+                    <aside class="hidden sm:flex w-36 shrink-0 flex-col gap-1 bg-brand-700 p-3 text-white/70">
+                        <div class="flex items-center gap-1.5 mb-3"><img src="<?= $logoUrl ?>" alt="" class="w-6 h-6 rounded-md ring-1 ring-white/20"><span class="font-extrabold text-xs"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span></div>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-sage-200 text-brand-800 font-bold"><?= $icon($I['home'], 'w-3.5 h-3.5') ?><?= $L('Papan Pemuka', 'Dashboard') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['trend'], 'w-3.5 h-3.5') ?><?= $L('Pendapatan', 'Revenue') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['receipt'], 'w-3.5 h-3.5') ?><?= $L('Perbelanjaan', 'Expenses') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['scale'], 'w-3.5 h-3.5') ?><?= $L('Kunci Kira-Kira', 'Balance Sheet') ?></span>
+                        <span class="flex items-center gap-1.5 px-2 py-1.5"><?= $icon($I['user'], 'w-3.5 h-3.5') ?><?= $L('Profil', 'Profile') ?></span>
+                    </aside>
+                    <div class="flex-1 min-w-0 p-3 sm:p-4 bg-gray-50 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm sm:text-base font-extrabold text-gray-900"><?= $L('Selamat pagi, Aina', 'Good morning, Aina') ?></p>
+                                <p class="text-gray-500"><?= $L('Jom pantau kewangan bisnes anda', "Let's keep your finances on track") ?></p>
+                            </div>
+                            <div class="hidden sm:flex rounded-full bg-white p-0.5 shadow-sm">
+                                <span class="px-2 py-1 text-gray-500"><?= $L('Harian', 'Daily') ?></span>
+                                <span class="px-2 py-1 rounded-full bg-brand-700 text-white font-semibold"><?= $L('Bulanan', 'Monthly') ?></span>
+                                <span class="px-2 py-1 text-gray-500"><?= $L('Tahunan', 'Annual') ?></span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-5 gap-3">
+                            <div class="col-span-5 sm:col-span-3 relative overflow-hidden rounded-2xl bg-brand-700 text-white p-3.5">
+                                <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5"></div>
+                                <p class="text-white/75"><?= $L('Keuntungan Bersih · Bulanan', 'Net Profit · Monthly') ?></p>
+                                <p class="ez-num mt-1 font-extrabold leading-none"><span class="text-xs text-white/75 align-top">RM</span><span class="text-2xl sm:text-3xl">8,420</span><span class="text-base text-white/70">.50</span></p>
+                                <span class="inline-block mt-1.5 px-1.5 py-0.5 rounded-full bg-sage-300/20 text-sage-200 font-bold">▲ 33.9% Margin</span>
+                                <div class="mt-3 grid grid-cols-2 gap-2">
+                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Pendapatan', 'Revenue') ?></p><p class="ez-num font-bold text-xs sm:text-sm">24,860.00</p></div>
+                                    <div class="rounded-xl bg-white/10 p-2"><p class="text-white/70"><?= $L('Perbelanjaan', 'Expenses') ?></p><p class="ez-num font-bold text-xs sm:text-sm">16,439.50</p></div>
+                                </div>
+                            </div>
+                            <div class="col-span-5 sm:col-span-2 rounded-2xl bg-white p-3 shadow-sm flex sm:flex-col items-center gap-3">
+                                <div class="relative w-20 h-20 shrink-0 rounded-full" style="background:conic-gradient(#1a4a2e 0 30%, #f4f4ef 30% 31%, #5f9d7d 31% 50%, #f4f4ef 50% 51%, #a8c3a8 51% 100%)">
+                                    <div class="absolute inset-[22%] rounded-full bg-white flex flex-col items-center justify-center">
+                                        <span class="ez-num text-[10px] font-extrabold">RM16.4k</span>
+                                    </div>
+                                </div>
+                                <ul class="space-y-1 w-full">
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-600"></i>OPEX</span><b class="ez-num">30%</b></li>
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-brand-300"></i>Marketing</span><b class="ez-num">19%</b></li>
+                                    <li class="flex justify-between"><span class="flex items-center gap-1"><i class="w-1.5 h-1.5 rounded-full bg-sage-300"></i>COGS</span><b class="ez-num">51%</b></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="rounded-2xl bg-white p-3 shadow-sm">
+                            <p class="font-bold text-gray-900 mb-1.5"><?= $L('Transaksi Terkini', 'Recent Transactions') ?></p>
+                            <?php foreach ([
+                                ['in', 'Shopee #10482', 'Shopee', '+ RM 189.00'],
+                                ['out', $L('Iklan Facebook', 'Facebook Ads'), 'Marketing', '− RM 250.00'],
+                                ['in', 'TikTok Live', 'TikTok Shop', '+ RM 1,240.00'],
+                            ] as [$dir, $desc, $cat, $amt]): ?>
+                            <div class="flex items-center gap-2 py-1.5 border-t border-gray-100 first:border-0">
+                                <span class="w-6 h-6 rounded-full flex items-center justify-center <?= $dir === 'in' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500' ?>"><?= $icon($dir === 'in' ? 'M7 17L17 7M17 7H9m8 0v8' : 'M17 7L7 17M7 17h8m-8 0V9', 'w-3 h-3') ?></span>
+                                <span class="flex-1 min-w-0"><span class="block font-semibold text-gray-800 truncate"><?= $desc ?></span><span class="text-gray-400"><?= $cat ?></span></span>
+                                <span class="ez-num font-bold <?= $dir === 'in' ? 'text-emerald-600' : 'text-gray-900' ?>"><?= $amt ?></span>
+                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
