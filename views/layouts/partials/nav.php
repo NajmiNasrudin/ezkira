@@ -52,7 +52,7 @@ $isNavActive = fn(string $path): bool => str_starts_with($currentPath, $path);
                      alt="Logo" class="h-8 w-auto max-w-[160px] object-contain">
             </span>
         <?php else: ?>
-            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl bg-white p-1">
+            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl ring-1 ring-white/20">
             <span class="text-lg font-extrabold tracking-wide leading-none">
                 <span class="text-gold-400">ez</span><span class="text-white">kira</span>
             </span>

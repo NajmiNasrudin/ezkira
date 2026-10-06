@@ -37,7 +37,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
     <meta name="twitter:image"       content="<?= $appUrl ?>/assets/img/og-image.png">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="<?= $baseUri ?>/assets/img/logo-mark.svg">
+    <?php include __DIR__ . '/../layouts/partials/head-icons.php'; ?>
 
     <!-- Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -127,7 +127,8 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <!-- Logo -->
             <a href="<?= $baseUri ?>/" class="flex items-center gap-2.5 shrink-0">
-                <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="<?= htmlspecialchars($appName) ?>" class="h-8 w-auto">
+                <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="<?= htmlspecialchars($appName) ?>" class="h-9 w-9 rounded-xl ring-1 ring-white/20">
+                <span class="font-extrabold tracking-wide leading-none text-lg"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
             </a>
 
             <!-- Desktop nav links -->
@@ -615,7 +616,7 @@ $siteBase = 'https://ezkira.com'; // All CTA links point to live site
 
             <!-- App nav -->
             <div class="flex items-center justify-between px-6 py-3" style="background:#163020">
-                <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="Ezkira" class="h-6 w-auto brightness-200">
+                <span class="flex items-center gap-2"><img src="<?= $baseUri ?>/assets/img/logo.svg" alt="Ezkira" class="h-6 w-6 rounded-md ring-1 ring-white/20"><span class="font-extrabold tracking-wide leading-none text-sm"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span></span>
                 <div class="hidden sm:flex items-center gap-5 text-xs font-semibold">
                     <span id="nav-dashboard" class="mock-nav-item cursor-pointer pb-0.5 transition-colors border-b-2" style="color:#C9A84C;border-color:#C9A84C">Dashboard</span>
                     <span id="nav-revenue"   class="mock-nav-item cursor-pointer text-slate-300 hover:text-white pb-0.5 border-b-2 border-transparent transition-colors">Revenue</span>
@@ -1133,7 +1134,8 @@ function showTab(name) {
             <!-- Brand -->
             <div class="lg:col-span-2">
                 <a href="<?= $baseUri ?>/" class="flex items-center gap-2.5 mb-4">
-                    <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="<?= htmlspecialchars($appName) ?>" class="h-8 w-auto brightness-200">
+                    <img src="<?= $baseUri ?>/assets/img/logo.svg" alt="<?= htmlspecialchars($appName) ?>" class="h-9 w-9 rounded-xl ring-1 ring-white/20">
+                    <span class="font-extrabold tracking-wide leading-none text-lg"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
                 </a>
                 <p class="text-slate-400 text-sm leading-relaxed max-w-xs mb-5">
                     Platform pengurusan kewangan bisnes yang direka khas untuk usahawan dan PKS Malaysia.

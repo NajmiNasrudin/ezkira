@@ -7,6 +7,8 @@
     <meta name="csrf-token" content="<?= \App\Core\CSRF::generate() ?>">
     <title><?= htmlspecialchars($pageTitle ?? APP_NAME, ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(APP_NAME, ENT_QUOTES) ?></title>
 
+    <?php include __DIR__ . '/partials/head-icons.php'; ?>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -61,8 +63,11 @@
                     <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
                          alt="Logo" class="h-24 w-auto max-w-[200px] object-contain rounded-2xl shadow-lg">
                 <?php else: ?>
-                    <img src="<?= BASE_URI ?>/assets/img/logo.svg"
-                         alt="ezkira" class="w-24 h-24 rounded-2xl shadow-lg">
+                    <div class="flex flex-col items-center gap-3">
+                        <img src="<?= BASE_URI ?>/assets/img/logo.svg"
+                             alt="ezkira" class="w-20 h-20 rounded-3xl shadow-lg ring-1 ring-white/20">
+                        <span class="font-extrabold tracking-wide leading-none text-3xl"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
+                    </div>
                 <?php endif; ?>
             </div>
             <p class="text-brand-200 dark:text-gray-400 text-sm mt-1">Finance Monitoring for SMEs</p>
