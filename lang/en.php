@@ -453,5 +453,5 @@ return [
     'dash_welcome_sub'           => 'Start by recording your first sale or expense. Your dashboard fills in automatically.',
     'dash_empty_title'           => 'No records for this period',
     'dash_empty_sub'             => 'Pick another period above, or add a new record.',
-    'page_help'                  => 'Page Help Guide',
+    'whatsapp_support'           => 'Contact Us (WhatsApp)',
 ];

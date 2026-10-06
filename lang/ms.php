@@ -453,5 +453,5 @@ return [
     'dash_welcome_sub'           => 'Mula dengan rekod jualan atau perbelanjaan pertama anda. Dashboard akan terisi secara automatik.',
     'dash_empty_title'           => 'Tiada rekod untuk tempoh ini',
     'dash_empty_sub'             => 'Pilih tempoh lain di atas, atau tambah rekod baru.',
-    'page_help'                  => 'Panduan Halaman Ini',
+    'whatsapp_support'           => 'Hubungi Kami (WhatsApp)',
 ];

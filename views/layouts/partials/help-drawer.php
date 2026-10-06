@@ -235,7 +235,7 @@ $drawerTitle = ($isMy ? 'Panduan — ' : 'Guide — ') . $pageLabel;
 <button type="button" id="help-btn"
         onclick="toggleHelpDrawer()"
         title="<?= $isMy ? 'Panduan Halaman Ini' : 'Page Help Guide' ?>"
-        class="ez-float-help fixed right-6 z-30 hidden lg:flex items-center justify-center w-12 h-12 rounded-full shadow-soft
+        class="ez-float-help fixed right-4 lg:right-6 z-30 flex items-center justify-center w-11 h-11 lg:w-12 lg:h-12 rounded-full shadow-soft
                bg-brand-700 hover:bg-brand-600 dark:bg-sage-300 dark:text-brand-800 text-white transition-all duration-200 hover:scale-105
                focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2">
     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

@@ -99,12 +99,10 @@ select:focus {
 .ez-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
 .ez-quick-sheet { bottom: calc(92px + env(safe-area-inset-bottom)); }
 
-/* Floating buttons sit above the mobile bottom bar */
-.ez-float-wa   { bottom: calc(84px + env(safe-area-inset-bottom)); }
-.ez-float-help { bottom: calc(140px + env(safe-area-inset-bottom)); }
+/* Floating help button sits above the mobile bottom bar */
+.ez-float-help { bottom: calc(84px + env(safe-area-inset-bottom)); }
 @media (min-width: 1024px) {
-    .ez-float-wa   { bottom: 1.5rem; }
-    .ez-float-help { bottom: 6rem; }
+    .ez-float-help { bottom: 1.5rem; }
 }
 
 /* Tabular figures for money */
