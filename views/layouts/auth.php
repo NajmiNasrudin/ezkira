@@ -57,18 +57,10 @@
     <div class="w-full max-w-md">
         <!-- Logo / Brand -->
         <div class="text-center mb-8">
-            <?php $siteLogo = (new \Models\Setting())->get('site_logo', ''); ?>
-            <div class="inline-flex items-center justify-center mb-4">
-                <?php if (!empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo)): ?>
-                    <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
-                         alt="Logo" class="h-24 w-auto max-w-[200px] object-contain rounded-2xl shadow-lg">
-                <?php else: ?>
-                    <div class="flex flex-col items-center gap-3">
-                        <img src="<?= BASE_URI ?>/assets/img/logo.svg"
-                             alt="ezkira" class="w-20 h-20 rounded-3xl shadow-lg ring-1 ring-white/20">
-                        <span class="font-extrabold tracking-wide leading-none text-3xl"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
-                    </div>
-                <?php endif; ?>
+            <div class="inline-flex flex-col items-center justify-center gap-3 mb-4">
+                <img src="<?= BASE_URI ?>/assets/img/logo.svg"
+                     alt="ezkira" class="w-20 h-20 rounded-3xl shadow-lg ring-1 ring-white/20">
+                <span class="font-extrabold tracking-wide leading-none text-3xl"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
             </div>
             <p class="text-brand-200 dark:text-gray-400 text-sm mt-1">Finance Monitoring for SMEs</p>
         </div>

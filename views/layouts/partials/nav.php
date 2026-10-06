@@ -35,10 +35,6 @@ if ($role === 'admin') {
     $navLinks['/blast'] = 'WhatsApp';
 }
 
-// Load custom site logo
-$siteLogo    = (new \Models\Setting())->get('site_logo', '');
-$hasSiteLogo = !empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo);
-
 $isNavActive = fn(string $path): bool => str_starts_with($currentPath, $path);
 ?>
 
@@ -46,17 +42,10 @@ $isNavActive = fn(string $path): bool => str_starts_with($currentPath, $path);
 <aside class="hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 flex-col bg-brand-700 text-white">
     <!-- Brand -->
     <a href="<?= BASE_URI ?>/dashboard" class="flex items-center gap-3 px-6 h-20 shrink-0">
-        <?php if ($hasSiteLogo): ?>
-            <span class="flex items-center bg-white rounded-xl px-2 py-1.5">
-                <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
-                     alt="Logo" class="h-8 w-auto max-w-[160px] object-contain">
-            </span>
-        <?php else: ?>
-            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl ring-1 ring-white/20">
-            <span class="text-lg font-extrabold tracking-wide leading-none">
-                <span class="text-gold-400">ez</span><span class="text-white">kira</span>
-            </span>
-        <?php endif; ?>
+        <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl ring-1 ring-white/20">
+        <span class="text-lg font-extrabold tracking-wide leading-none">
+            <span class="text-gold-400">ez</span><span class="text-white">kira</span>
+        </span>
     </a>
 
     <!-- Navigation -->

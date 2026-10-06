@@ -2,6 +2,9 @@
 use App\Core\{CSRF, Session};
 
 $activeTab = Session::getFlash('tab') ?? 'info';
+if (!in_array($activeTab, ['info', 'avatar', 'password', 'preferences', 'wa_greeting'], true)) {
+    $activeTab = 'info';
+}
 $errors    = Session::getFlash('errors') ?? [];
 // Re-read flash if not already consumed by flash.php (flash.php runs before this)
 // errors were consumed in flash.php — but the tab flash was not (it's a separate key)
@@ -43,11 +46,6 @@ $tabClass = fn(string $tab) => $activeTab === $tab
                 <?= __('preferences') ?>
             </button>
             <?php if (($user['role'] ?? '') === 'admin'): ?>
-            <button type="button" onclick="switchTab('branding')"
-                    id="tab-branding"
-                    class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('branding') ?>">
-                <?= __('branding') ?>
-            </button>
             <button type="button" onclick="switchTab('wa_greeting')"
                     id="tab-wa_greeting"
                     class="pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap <?= $tabClass('wa_greeting') ?>">
@@ -312,73 +310,6 @@ $tabClass = fn(string $tab) => $activeTab === $tab
             </form>
         </div>
     </div>
-    <!-- Tab: Branding (admin only) -->
-    <?php if (($user['role'] ?? '') === 'admin'):
-        $siteLogo = (new \Models\Setting())->get('site_logo', '');
-    ?>
-    <div id="panel-branding" class="tab-panel <?= $activeTab !== 'branding' ? 'hidden' : '' ?>">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-6">
-
-            <!-- Current logo preview -->
-            <div>
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"><?= __('site_logo_current') ?></h3>
-                <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-200 dark:border-gray-600">
-                    <?php if (!empty($siteLogo) && file_exists(BASE_PATH . '/' . $siteLogo)): ?>
-                        <img src="<?= BASE_URI ?>/<?= htmlspecialchars($siteLogo, ENT_QUOTES) ?>"
-                             alt="Logo" class="h-10 w-auto max-w-[200px] object-contain">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-800 dark:text-white"><?= basename($siteLogo) ?></p>
-                            <p class="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Custom logo active</p>
-                        </div>
-                        <form method="POST" action="<?= BASE_URI ?>/profile/logo/remove">
-                            <?= CSRF::field() ?>
-                            <button type="submit"
-                                    onclick="return confirm('<?= __('site_logo_remove') ?>?')"
-                                    class="text-xs text-red-500 hover:text-red-700 font-medium px-3 py-1.5 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                <?= __('site_logo_remove') ?>
-                            </button>
-                        </form>
-                    <?php else: ?>
-                        <div class="flex items-center gap-3">
-                            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="Default" class="w-9 h-9 rounded-lg">
-                            <span class="text-xs font-bold" style="color:#C4A028">ez</span><span class="text-xs font-bold" style="color:#163020">kira</span>
-                        </div>
-                        <p class="text-xs text-gray-400 dark:text-gray-500"><?= __('site_logo_default') ?></p>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Upload new logo -->
-            <form method="POST" action="<?= BASE_URI ?>/profile/logo" enctype="multipart/form-data">
-                <?= CSRF::field() ?>
-                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"><?= __('site_logo_upload') ?></h3>
-
-                <div id="logo-drop-zone"
-                     onclick="document.getElementById('logo-file').click()"
-                     class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 cursor-pointer hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/10 transition-colors">
-                    <img id="logo-preview" src="" alt="" class="hidden h-12 w-auto max-w-[200px] object-contain mb-1">
-                    <div id="logo-placeholder" class="flex flex-col items-center gap-1 text-gray-400">
-                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <p class="text-sm font-medium"><?= __('blast_image_placeholder') ?></p>
-                    </div>
-                    <p id="logo-filename" class="text-xs text-gray-400 hidden"></p>
-                </div>
-                <input type="file" id="logo-file" name="site_logo" accept="image/jpeg,image/png,image/webp,image/svg+xml" class="sr-only" onchange="previewLogo(this)">
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-2"><?= __('site_logo_hint') ?></p>
-
-                <div class="flex justify-end mt-4">
-                    <button type="submit"
-                            class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-xl transition-colors">
-                        <?= __('site_logo_upload') ?>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- Tab: WA Auto Greeting (admin only) -->
     <?php if (($user['role'] ?? '') === 'admin'):
         $setting        = new \Models\Setting();
@@ -507,23 +438,6 @@ $tabClass = fn(string $tab) => $activeTab === $tab
 <script>
 // Initialise with server-determined tab
 switchTab('<?= htmlspecialchars($activeTab, ENT_QUOTES) ?>');
-
-function previewLogo(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var preview = document.getElementById('logo-preview');
-        var placeholder = document.getElementById('logo-placeholder');
-        var filename = document.getElementById('logo-filename');
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-        filename.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
-        filename.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
-}
 
 function toggleProfileOtherField(value) {
     const field = document.getElementById('profile-other-field');

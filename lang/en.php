@@ -274,15 +274,6 @@ return [
     'wa_greeting_sent_count'   => 'Greeted',
 
     // ---- Branding ----
-    'branding'              => 'Branding',
-    'site_logo'             => 'Site Logo',
-    'site_logo_hint'        => 'Displayed in the navigation bar. JPG, PNG, WebP or SVG. Max 2MB. Recommended height: 40px.',
-    'site_logo_current'     => 'Current Logo',
-    'site_logo_upload'      => 'Upload New Logo',
-    'site_logo_remove'      => 'Remove Logo',
-    'site_logo_updated'     => 'Logo updated successfully.',
-    'site_logo_removed'     => 'Logo removed. Default logo restored.',
-    'site_logo_default'     => 'Default logo is active',
 
     // ---- Balance Sheet ----
     'balance_sheet'                => 'Balance Sheet',

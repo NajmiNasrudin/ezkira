@@ -71,8 +71,6 @@ $router->post('/profile/update',         'ProfileController@update',      [AuthM
 $router->post('/profile/password',       'ProfileController@password',    [AuthMiddleware::class]);
 $router->post('/profile/avatar',         'ProfileController@avatar',      [AuthMiddleware::class]);
 $router->post('/profile/preferences',    'ProfileController@preferences', [AuthMiddleware::class]);
-$router->post('/profile/logo',           'ProfileController@uploadLogo',  [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
-$router->post('/profile/logo/remove',    'ProfileController@removeLogo',  [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/profile/greeting',       'ProfileController@saveGreeting',[AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/profile/greeting/test',  'ProfileController@testGreeting', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 
