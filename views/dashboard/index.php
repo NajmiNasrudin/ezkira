@@ -43,7 +43,7 @@ $periods = [
 $quickActions = [
     ['href' => BASE_URI . '/revenue#add-sale',    'label' => __('add_sale'),     'icon' => 'M12 4v16m8-8H4'],
     ['href' => BASE_URI . '/expenses#add-expense', 'label' => __('add_expense'), 'icon' => 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z'],
-    ['onclick' => 'openExportModal()',             'label' => 'Export',          'icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
+    ['onclick' => 'openExportModal()',             'label' => 'Export','icon' => 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4'],
     ['href' => BASE_URI . '/balance-sheet',        'label' => __('balance_sheet'), 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
 ];
 
@@ -93,7 +93,7 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
             <input type="text" id="picker-daily"
                    value="<?= date('d M Y', strtotime($date)) ?>"
                    data-date="<?= htmlspecialchars($date, ENT_QUOTES) ?>"
-                   readonly placeholder="Pilih tarikh" class="<?= $pickerClass ?>">
+                   readonly placeholder="<?= htmlspecialchars(__('dash_pick_date'), ENT_QUOTES) ?>" class="<?= $pickerClass ?>">
             <?= $calendarIcon ?>
         </div>
 
@@ -102,9 +102,9 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
         ?>
         <div class="relative">
             <input type="text" id="picker-weekly"
-                   value="Week <?= $week ?>, <?= $year ?>"
+                   value="<?= htmlspecialchars(__('dash_week'), ENT_QUOTES) ?> <?= $week ?>, <?= $year ?>"
                    data-date="<?= $weekStartDate ?>"
-                   readonly placeholder="Pilih minggu" class="<?= $pickerClass ?>">
+                   readonly placeholder="<?= htmlspecialchars(__('dash_pick_week'), ENT_QUOTES) ?>" class="<?= $pickerClass ?>">
             <?= $calendarIcon ?>
         </div>
 
@@ -113,7 +113,7 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
             <input type="text" id="picker-monthly"
                    value="<?= date('F Y', mktime(0,0,0,$month,1,$year)) ?>"
                    data-date="<?= $year ?>-<?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>-01"
-                   readonly placeholder="Pilih bulan" class="<?= $pickerClass ?>">
+                   readonly placeholder="<?= htmlspecialchars(__('dash_pick_month'), ENT_QUOTES) ?>" class="<?= $pickerClass ?>">
             <?= $calendarIcon ?>
         </div>
 
@@ -147,8 +147,8 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
 
         <div class="flex items-center justify-between px-6 pt-6 pb-4">
             <div>
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Export Laporan P&amp;L</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pilih tempoh dan tarikh</p>
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white"><?= htmlspecialchars(__('dash_export_title'), ENT_QUOTES) ?></h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"><?= htmlspecialchars(__('dash_export_sub'), ENT_QUOTES) ?></p>
             </div>
             <button type="button" onclick="closeExportModal()"
                     class="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-300">
@@ -160,9 +160,9 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
 
         <div class="px-6 pb-5 space-y-4">
             <div>
-                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Tempoh Laporan</p>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2"><?= htmlspecialchars(__('dash_export_period'), ENT_QUOTES) ?></p>
                 <div class="grid grid-cols-5 gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-full p-1">
-                    <?php foreach (['daily'=>'Harian','weekly'=>'Mingguan','monthly'=>'Bulanan','annual'=>'Tahunan','range'=>'Custom'] as $pk=>$pl): ?>
+                    <?php foreach (['daily'=>__('period_daily'),'weekly'=>__('period_weekly'),'monthly'=>__('period_monthly'),'annual'=>__('period_annual'),'range'=>__('dash_period_custom')] as $pk=>$pl): ?>
                     <button type="button" id="epbtn-<?= $pk ?>" onclick="switchExportPeriod('<?= $pk ?>')"
                             class="<?= $pk==='monthly'
                                 ? 'py-1.5 text-[10px] sm:text-xs font-semibold rounded-full transition-colors leading-tight bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm'
@@ -174,25 +174,25 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
             </div>
 
             <div id="ep-daily" class="hidden">
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tarikh</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_pick_date'), ENT_QUOTES) ?></label>
                 <input type="date" id="ep-daily-date" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>"
                        class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
             <div id="ep-weekly" class="hidden">
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Minggu</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_pick_week'), ENT_QUOTES) ?></label>
                 <input type="week" id="ep-weekly-date" value="<?= date('Y') ?>-W<?= str_pad(date('W'), 2, '0', STR_PAD_LEFT) ?>"
                        max="<?= date('Y') ?>-W<?= str_pad(date('W'), 2, '0', STR_PAD_LEFT) ?>"
                        class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
             <div id="ep-monthly">
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Bulan</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_pick_month'), ENT_QUOTES) ?></label>
                 <input type="month" id="ep-month-input"
                        value="<?= $year ?>-<?= str_pad($month, 2, '0', STR_PAD_LEFT) ?>"
                        max="<?= date('Y-m') ?>"
                        class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
             </div>
             <div id="ep-annual" class="hidden">
-                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Pilih Tahun</label>
+                <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_pick_year'), ENT_QUOTES) ?></label>
                 <select id="ep-year-annual" class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                     <?php for ($y=(int)date('Y'); $y>=2020; $y--): ?>
                     <option value="<?= $y ?>" <?= $y===$year ? 'selected' : '' ?>><?= $y ?></option>
@@ -201,16 +201,16 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
             </div>
             <div id="ep-range" class="hidden space-y-2">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Dari Tarikh</label>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_date_from'), ENT_QUOTES) ?></label>
                     <input type="date" id="ep-range-from" value="<?= date('Y-m-01') ?>" max="<?= date('Y-m-d') ?>"
                            class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Hingga Tarikh</label>
+                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5"><?= htmlspecialchars(__('dash_date_to'), ENT_QUOTES) ?></label>
                     <input type="date" id="ep-range-to" value="<?= date('Y-m-d') ?>" max="<?= date('Y-m-d') ?>"
                            class="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-400">
                 </div>
-                <p class="text-xs text-amber-600 dark:text-amber-400">⚠ Custom range hanya tersedia untuk export sahaja (bukan view)</p>
+                <p class="text-xs text-amber-600 dark:text-amber-400">⚠ <?= htmlspecialchars(__('dash_range_note'), ENT_QUOTES) ?></p>
             </div>
         </div>
 
@@ -221,7 +221,7 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
-                Lihat di Dashboard dahulu
+                <?= htmlspecialchars(__('dash_view_first'), ENT_QUOTES) ?>
             </button>
             <button type="button" onclick="doExportPnl()"
                     class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand-700 hover:bg-brand-600 dark:bg-sage-300 dark:text-brand-800 dark:hover:bg-sage-200 text-white font-semibold rounded-full transition-colors text-sm">
@@ -229,7 +229,7 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                 </svg>
-                Export CSV
+                <?= htmlspecialchars(__('dash_export_csv'), ENT_QUOTES) ?>
             </button>
         </div>
     </div>
@@ -237,6 +237,22 @@ $calendarIcon = '<svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 
 <!-- ===== END EXPORT LAPORAN MODAL ===== -->
 
 <script>
+var EZ_T = <?= json_encode([
+    'week'            => __('dash_week'),
+    'alertDate'       => __('dash_alert_date'),
+    'alertWeek'       => __('dash_alert_week'),
+    'alertMonth'      => __('dash_alert_month'),
+    'alertRangeView'  => __('dash_alert_range_view'),
+    'alertBothDates'  => __('dash_alert_both_dates'),
+    'alertDateOrder'  => __('dash_alert_date_order'),
+    'noData'          => __('dash_chart_no_data'),
+    'totalSpent'      => __('dash_chart_total_spent'),
+    'expensesUsed'    => __('dash_chart_expenses_used'),
+    'addRevenueFirst' => __('dash_chart_add_revenue'),
+    'nothingCompare'  => __('dash_chart_nothing_compare'),
+    'revenue'         => __('dash_legend_revenue'),
+    'expenses'        => __('dash_legend_expenses'),
+], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 var _epMode = 'monthly';
 var _epBtnA = 'py-1.5 text-[10px] sm:text-xs font-semibold rounded-full transition-colors leading-tight bg-brand-700 text-white dark:bg-sage-300 dark:text-brand-800 shadow-sm';
 var _epBtnI = 'py-1.5 text-[10px] sm:text-xs font-medium rounded-full transition-colors leading-tight text-gray-500 dark:text-gray-400 hover:text-brand-700 dark:hover:text-sage-300';
@@ -259,13 +275,13 @@ function _buildExportUrl(forView) {
     var base = '<?= BASE_URI ?>';
     if (_epMode === 'daily') {
         var d = document.getElementById('ep-daily-date').value;
-        if (!d) { alert('Sila pilih tarikh.'); return null; }
+        if (!d) { alert(EZ_T.alertDate); return null; }
         if (forView) return base + '/dashboard?period=daily&date=' + d;
         return base + '/revenue/export-pnl?period=daily&date=' + d + '&year=' + d.substring(0,4) + '&month=' + parseInt(d.substring(5,7)) + '&week=1';
     }
     if (_epMode === 'weekly') {
         var w = document.getElementById('ep-weekly-date').value; // "YYYY-Www"
-        if (!w) { alert('Sila pilih minggu.'); return null; }
+        if (!w) { alert(EZ_T.alertWeek); return null; }
         var yr = w.substring(0,4);
         var wk = parseInt(w.substring(6));
         if (forView) return base + '/dashboard?period=weekly&year=' + yr + '&week=' + wk;
@@ -273,7 +289,7 @@ function _buildExportUrl(forView) {
     }
     if (_epMode === 'monthly') {
         var mv = document.getElementById('ep-month-input').value; // "YYYY-MM"
-        if (!mv) { alert('Sila pilih bulan.'); return null; }
+        if (!mv) { alert(EZ_T.alertMonth); return null; }
         var y = mv.substring(0, 4);
         var m = parseInt(mv.substring(5, 7));
         if (forView) return base + '/dashboard?period=monthly&year=' + y + '&month=' + m;
@@ -285,11 +301,11 @@ function _buildExportUrl(forView) {
         return base + '/revenue/export-pnl?period=annual&year=' + ya;
     }
     if (_epMode === 'range') {
-        if (forView) { alert('Custom range hanya untuk export sahaja.'); return null; }
+        if (forView) { alert(EZ_T.alertRangeView); return null; }
         var from = document.getElementById('ep-range-from').value;
         var to   = document.getElementById('ep-range-to').value;
-        if (!from || !to) { alert('Sila isi kedua-dua tarikh.'); return null; }
-        if (from > to) { alert('Tarikh mula mesti sebelum tarikh tamat.'); return null; }
+        if (!from || !to) { alert(EZ_T.alertBothDates); return null; }
+        if (from > to) { alert(EZ_T.alertDateOrder); return null; }
         return base + '/revenue/export-pnl?period=monthly&year=' + from.substring(0,4) + '&month=' + parseInt(from.substring(5,7)) + '&date_from=' + from + '&date_to=' + to;
     }
     return null;
@@ -349,7 +365,7 @@ function doExportPnl() {
             onReady: function(selectedDates) {
                 if (selectedDates.length) {
                     var d = selectedDates[0];
-                    weeklyEl.value = 'Week ' + getISOWeek(d) + ', ' + d.getFullYear();
+                    weeklyEl.value = EZ_T.week + ' ' + getISOWeek(d) + ', ' + d.getFullYear();
                 }
             },
             onChange: function(selectedDates) {
@@ -357,7 +373,7 @@ function doExportPnl() {
                 var d = selectedDates[0];
                 var yr = d.getFullYear();
                 var wk = getISOWeek(d);
-                weeklyEl.value = 'Week ' + wk + ', ' + yr;
+                weeklyEl.value = EZ_T.week + ' ' + wk + ', ' + yr;
                 window.location.href = base + '?period=weekly&year=' + yr + '&week=' + wk;
             }
         });
@@ -438,7 +454,7 @@ function doExportPnl() {
             </a>
             <a href="<?= BASE_URI ?>/revenue" class="col-span-2 sm:col-span-1 flex sm:block items-center justify-between rounded-2xl bg-white/10 hover:bg-white/15 transition-colors px-3 py-2.5 sm:p-4">
                 <p class="flex items-center gap-1.5 text-[11px] sm:text-xs text-white/70 font-medium">
-                    <span class="w-1.5 h-1.5 rounded-full bg-gold-300"></span><?= __('transactions') ?>
+                    <span class="w-1.5 h-1.5 rounded-full bg-gold-300"></span><?= __('dash_sales_all_time') ?>
                 </p>
                 <p class="ez-num sm:mt-1 text-sm sm:text-lg font-bold truncate"><?= number_format($summary['transactions']) ?></p>
             </a>
@@ -467,6 +483,37 @@ function doExportPnl() {
         </div>
     </div>
 </div>
+
+<?php
+$isNewUser     = (int) $summary['transactions'] === 0 && (float) $summary['total_expenses'] <= 0 && empty($transactions);
+$isEmptyPeriod = !$isNewUser && (float) $summary['total_revenue'] <= 0 && (float) $summary['total_expenses'] <= 0;
+?>
+<?php if ($isNewUser || $isEmptyPeriod): ?>
+<div class="mb-5 rounded-3xl bg-sage-100 dark:bg-gray-800 border border-sage-200 dark:border-gray-700 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+    <span class="w-12 h-12 shrink-0 rounded-2xl bg-white dark:bg-gray-700 text-brand-600 dark:text-sage-300 flex items-center justify-center">
+        <?php if ($isNewUser): ?>
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8z"/></svg>
+        <?php else: ?>
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <?php endif; ?>
+    </span>
+    <div class="flex-1 min-w-0">
+        <p class="text-base font-bold text-gray-900 dark:text-white"><?= __($isNewUser ? 'dash_welcome_title' : 'dash_empty_title') ?></p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5"><?= __($isNewUser ? 'dash_welcome_sub' : 'dash_empty_sub') ?></p>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+        <a href="<?= BASE_URI ?>/revenue#add-sale"
+           class="inline-flex items-center justify-center gap-1.5 h-10 px-4 whitespace-nowrap rounded-full bg-brand-700 hover:bg-brand-600 dark:bg-sage-300 dark:text-brand-800 text-white text-sm font-semibold transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            <?= __('add_sale') ?>
+        </a>
+        <a href="<?= BASE_URI ?>/expenses#add-expense"
+           class="inline-flex items-center justify-center h-10 px-4 whitespace-nowrap rounded-full bg-white dark:bg-gray-700 text-brand-700 dark:text-gray-100 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+            <?= __('add_expense') ?>
+        </a>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Charts + Recent Activity -->
 <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
@@ -764,8 +811,8 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
             { value: chartData.cogs,      color: isDark ? '#3a7a58' : '#a8c3a8' },
         ];
         if (remaining > 0) breakdown.push({ value: remaining, color: remainColor });
-        var totalLabel = total > 0 ? 'RM ' + total.toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}) : 'No data';
-        drawDonut('chart-breakdown', breakdown, totalLabel, 'Total Spent');
+        var totalLabel = total > 0 ? 'RM ' + total.toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}) : EZ_T.noData;
+        drawDonut('chart-breakdown', breakdown, totalLabel, EZ_T.totalSpent);
 
         var rev = chartData.revenue || 0;
         var expPct    = rev > 0 ? Math.min(100, (total / rev) * 100) : 0;
@@ -775,8 +822,8 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
             { value: expPct,    color: overBudget ? '#dc2626' : '#e8806f' },
             { value: profitPct, color: isDark ? '#7fa584' : '#3a7a58' },
         ];
-        var healthLabel = rev > 0 ? expPct.toFixed(1) + '%' : 'No data';
-        var healthSub   = rev > 0 ? 'Expenses used' : 'Add revenue first';
+        var healthLabel = rev > 0 ? expPct.toFixed(1) + '%' : EZ_T.noData;
+        var healthSub   = rev > 0 ? EZ_T.expensesUsed : EZ_T.addRevenueFirst;
         drawDonut('chart-health', health, healthLabel, healthSub);
     }
 
@@ -834,9 +881,9 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
         if (mode === 'day') {
             document.getElementById('compare-title').textContent = '<?= __('compare_day_title') ?>';
             document.getElementById('compare-subtitle').textContent = compareDay.month_label;
-            document.getElementById('leg-rev-a').textContent = 'Revenue';
+            document.getElementById('leg-rev-a').textContent = EZ_T.revenue;
             document.getElementById('leg-rev-b').textContent = '';
-            document.getElementById('leg-exp-a').textContent = 'Expenses';
+            document.getElementById('leg-exp-a').textContent = EZ_T.expenses;
             document.getElementById('leg-exp-b').textContent = '';
 
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
@@ -849,10 +896,10 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
         } else if (mode === 'month') {
             document.getElementById('compare-title').textContent = '<?= __('compare_month_title') ?>';
             document.getElementById('compare-subtitle').textContent = compareMonth.prev_label + ' vs ' + compareMonth.cur_label;
-            document.getElementById('leg-rev-a').textContent = compareMonth.prev_label + ' Revenue';
-            document.getElementById('leg-rev-b').textContent = compareMonth.cur_label  + ' Revenue';
-            document.getElementById('leg-exp-a').textContent = compareMonth.prev_label + ' Expenses';
-            document.getElementById('leg-exp-b').textContent = compareMonth.cur_label  + ' Expenses';
+            document.getElementById('leg-rev-a').textContent = compareMonth.prev_label + ' ' + EZ_T.revenue;
+            document.getElementById('leg-rev-b').textContent = compareMonth.cur_label  + ' ' + EZ_T.revenue;
+            document.getElementById('leg-exp-a').textContent = compareMonth.prev_label + ' ' + EZ_T.expenses;
+            document.getElementById('leg-exp-b').textContent = compareMonth.cur_label  + ' ' + EZ_T.expenses;
 
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 [compareMonth.prev_label, compareMonth.cur_label],
@@ -864,10 +911,10 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
         } else {
             document.getElementById('compare-title').textContent = '<?= __('compare_year_title') ?>';
             document.getElementById('compare-subtitle').textContent = compareYear.last_year + ' vs ' + compareYear.this_year;
-            document.getElementById('leg-rev-a').textContent = compareYear.last_year + ' Revenue';
-            document.getElementById('leg-rev-b').textContent = compareYear.this_year + ' Revenue';
-            document.getElementById('leg-exp-a').textContent = compareYear.last_year + ' Expenses';
-            document.getElementById('leg-exp-b').textContent = compareYear.this_year + ' Expenses';
+            document.getElementById('leg-rev-a').textContent = compareYear.last_year + ' ' + EZ_T.revenue;
+            document.getElementById('leg-rev-b').textContent = compareYear.this_year + ' ' + EZ_T.revenue;
+            document.getElementById('leg-exp-a').textContent = compareYear.last_year + ' ' + EZ_T.expenses;
+            document.getElementById('leg-exp-b').textContent = compareYear.this_year + ' ' + EZ_T.expenses;
 
             drawGrouped(ctx, W, H, chartW, chartH, padL, padR, padT, padB,
                 months,
@@ -887,12 +934,26 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
         var n = labels.length;
         var ds = datasets.length;
 
-        var maxVal = 0;
-        datasets.forEach(function(d) { d.data.forEach(function(v){ if(v > maxVal) maxVal = v; }); });
-        if (maxVal === 0) maxVal = 1;
-        maxVal = maxVal * 1.15;
+        var dataMax = 0;
+        datasets.forEach(function(d) { d.data.forEach(function(v){ if(v > dataMax) dataMax = v; }); });
+
+        if (dataMax <= 0) {
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.font = '600 13px ' + EZ_CHART_FONT;
+            ctx.fillText(EZ_T.nothingCompare, W / 2, padT + chartH / 2);
+            return;
+        }
 
         var gridSteps = 4;
+        // Round the axis step to 1/2/2.5/5 x 10^n so tick labels are distinct and readable
+        var rawStep = (dataMax * 1.1) / gridSteps;
+        var mag     = Math.pow(10, Math.floor(Math.log10(rawStep)));
+        var norm    = rawStep / mag;
+        var step    = (norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10) * mag;
+        step = Math.max(step, 1);
+        var maxVal = step * gridSteps;
+
         ctx.font = '500 10px ' + EZ_CHART_FONT;
         ctx.fillStyle = textColor;
         ctx.textAlign = 'right';
@@ -939,9 +1000,9 @@ var EZ_CHART_FONT = '"Plus Jakarta Sans", Inter, ui-sans-serif, sans-serif';
     }
 
     function fmtK(v) {
-        if (v >= 1000000) return 'RM ' + (v/1000000).toFixed(1) + 'M';
-        if (v >= 1000)    return 'RM ' + (v/1000).toFixed(1) + 'k';
-        return v > 0 ? 'RM ' + v.toFixed(0) : '0';
+        if (v >= 1000000) return 'RM ' + parseFloat((v/1000000).toFixed(2)) + 'M';
+        if (v >= 1000)    return 'RM ' + parseFloat((v/1000).toFixed(2)) + 'k';
+        return v > 0 ? 'RM ' + parseFloat(v.toFixed(2)) : '0';
     }
 
     window.renderCompareChart = renderCompare;
