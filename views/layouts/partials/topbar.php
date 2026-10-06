@@ -12,7 +12,7 @@ $moreOnly = ['/balance-sheet', '/blast'];
 
         <!-- Mobile brand -->
         <a href="<?= BASE_URI ?>/dashboard" class="lg:hidden flex items-center gap-2.5 shrink-0">
-            <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl">
+            <img src="<?= asset_url('assets/img/logo-mark.svg') ?>" alt="ezkira" class="w-10 h-10 rounded-xl">
         </a>
 
         <!-- Desktop page title -->

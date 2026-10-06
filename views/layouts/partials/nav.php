@@ -42,7 +42,7 @@ $isNavActive = fn(string $path): bool => str_starts_with($currentPath, $path);
 <aside class="hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 flex-col bg-brand-700 text-white">
     <!-- Brand -->
     <a href="<?= BASE_URI ?>/dashboard" class="flex items-center gap-3 px-6 h-20 shrink-0">
-        <img src="<?= BASE_URI ?>/assets/img/logo-mark.svg" alt="ezkira" class="w-10 h-10 rounded-xl ring-1 ring-white/20">
+        <img src="<?= asset_url('assets/img/logo-mark.svg') ?>" alt="ezkira" class="w-10 h-10 rounded-xl ring-1 ring-white/20">
         <span class="text-lg font-extrabold tracking-wide leading-none">
             <span class="text-gold-400">ez</span><span class="text-white">kira</span>
         </span>

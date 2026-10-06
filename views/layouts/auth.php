@@ -58,7 +58,7 @@
         <!-- Logo / Brand -->
         <div class="text-center mb-8">
             <div class="inline-flex flex-col items-center justify-center gap-3 mb-4">
-                <img src="<?= BASE_URI ?>/assets/img/logo.svg"
+                <img src="<?= asset_url('assets/img/logo.svg') ?>"
                      alt="ezkira" class="w-20 h-20 rounded-3xl shadow-lg ring-1 ring-white/20">
                 <span class="font-extrabold tracking-wide leading-none text-3xl"><span style="color:#D4A820">ez</span><span class="text-white">kira</span></span>
             </div>

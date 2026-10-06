@@ -14,6 +14,18 @@ function __(string $key, array $replace = []): string
 }
 
 /**
+ * Public URL for a file under the web root, versioned by its modified time.
+ * The host caches static files for 7 days, so the version forces a refetch after a change.
+ */
+function asset_url(string $path): string
+{
+    $path = ltrim($path, '/');
+    $file = BASE_PATH . '/' . $path;
+    $base = defined('BASE_URI') ? BASE_URI : '';
+    return $base . '/' . $path . (is_file($file) ? '?v=' . filemtime($file) : '');
+}
+
+/**
  * Send a single WhatsApp greeting via Fonnte.
  * Called after new user registration. Fails silently.
  * If $userId > 0 and message delivers, marks users.wa_greeting_sent = 1.
