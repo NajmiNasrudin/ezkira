@@ -35,6 +35,11 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 - **Schema:** migration 009 (`users.pro_until`, `expense_receipts.size_bytes`, `payments`) is applied automatically on first use by `App\Core\Schema::ensureBilling()` (flag file `storage/logs/schema_009_billing.done`). If it fails, plan checks fail open (nobody gets blocked) and the error goes to the PHP error log.
 - **Receipts:** photos are shrunk in the browser (`ezShrinkImages` in `assets/js/app.js`) and again on the server (`app/Core/ReceiptImage.php`, needs GD; falls back to storing the original). Allowed types: JPG/PNG/WebP/GIF/PDF, max 10 MB. `.user.ini` limits were raised from 3M/4M because larger phone photos used to fail silently or trigger a 419 (PHP drops the whole POST above `post_max_size`).
 
+## Admin dashboard
+
+- `/dashboard-admin` (admin role only, `RoleMiddleware`) — owner's numbers: sign-ups, Pro vs Free, active users, Pro revenue, app usage, recent/top users, Free users at the receipt limit, recent payments. Code: `controllers/AdminController.php`, `models/AdminStats.php` (read-only queries), `views/admin/index.php`.
+- Only `role = 'client'` accounts count as customers. "Active" = any `activity_logs` row or a sale/expense created in the window. Test-mode payments are excluded from revenue.
+
 ## Deploy details
 
 - FTP deploy excludes: `.git`, `.github`, `.claude`, `uploads/profiles/**`, `uploads/receipts/**`, `uploads/blast/**`, `storage/logs/**`, `storage/sessions/**`, `config/config.php`, `.env*`, `node_modules`

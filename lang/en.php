@@ -508,4 +508,6 @@ return [
     'billing_paid_success'       => 'Thank you! Payment received and your Pro plan is active.',
     'billing_payment_failed'     => 'The payment did not go through. You were not charged. Please try again.',
     'billing_payment_pending'    => 'Your payment is being confirmed. Pro status will update within a few minutes.',
+
+    'admin_dashboard'            => 'Admin Dashboard',
 ];

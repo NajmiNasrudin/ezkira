@@ -508,4 +508,6 @@ return [
     'billing_paid_success'       => 'Terima kasih! Pembayaran berjaya dan pelan Pro anda sudah aktif.',
     'billing_payment_failed'     => 'Pembayaran tidak berjaya. Tiada caj dibuat. Sila cuba lagi.',
     'billing_payment_pending'    => 'Pembayaran sedang disahkan. Status Pro akan dikemas kini dalam beberapa minit.',
+
+    'admin_dashboard'            => 'Dashboard Admin',
 ];
