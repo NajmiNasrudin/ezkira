@@ -176,8 +176,11 @@ $maxMonth = max(1, ...array_values($perMonth));
         <div class="mt-3 space-y-2.5">
             <?php
             // Show the 12 biggest types; free-text one-offs are grouped as "Others" ('+')
-            $shownTypes = array_slice($businessTypes, 0, 12);
-            $restCount  = array_sum(array_map(fn($r) => (int) $r['n'], array_slice($businessTypes, 12)));
+            // The form's own "other" choice joins that group too, so there is one Others row
+            $otherCount = array_sum(array_map(fn($r) => (int) $r['n'], array_filter($businessTypes, fn($r) => $r['type'] === 'other')));
+            $typeRows   = array_values(array_filter($businessTypes, fn($r) => $r['type'] !== 'other'));
+            $shownTypes = array_slice($typeRows, 0, 12);
+            $restCount  = $otherCount + array_sum(array_map(fn($r) => (int) $r['n'], array_slice($typeRows, 12)));
             if ($restCount > 0) {
                 $shownTypes[] = ['type' => '+', 'n' => $restCount];
             }
