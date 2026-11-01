@@ -6,9 +6,9 @@ $rm  = fn(float $v) => 'RM' . number_format($v, 2);
 $pct = fn(int $part, int $whole) => $whole > 0 ? round($part / $whole * 100) . '%' : '0%';
 $fmtDate = fn(?string $d) => $d && $d > '1971' ? date('d M Y', strtotime($d)) : '-';
 $fmtAgo  = function (?string $d): string {
-    if (!$d || $d < '1971') return 'Belum pernah';
+    if (!$d || $d < '1971') return __('adm_never');
     $days = (int) floor((time() - strtotime($d)) / 86400);
-    return $days <= 0 ? 'Hari ini' : ($days === 1 ? 'Semalam' : $days . ' hari lepas');
+    return $days <= 0 ? __('adm_today') : ($days === 1 ? __('adm_yesterday') : __('adm_days_ago', ['n' => $days]));
 };
 $nowKl   = Plan::now()->format('Y-m-d H:i:s');
 $isPro   = fn(array $u) => !empty($u['pro_until']) && $u['pro_until'] > $nowKl;
@@ -21,10 +21,10 @@ $th    = 'px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide 
 $td    = 'px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap';
 
 $kpis = [
-    ['Jumlah daftar',      $users['total'],      "+{$users['today']} hari ini · +{$users['last7']} minggu ni"],
-    ['Pro (berbayar)',     $users['pro'],        $pct($users['pro'], $users['total']) . ' daripada semua user'],
-    ['Free',               $users['free'],       $users['pro_expired'] . ' Pro dah tamat tempoh'],
-    ['Aktif 30 hari',      $active['month'],     $active['week'] . ' aktif 7 hari · ' . $active['day'] . ' hari ini'],
+    [__('adm_total_signups'), $users['total'],  __('adm_signups_note', ['today' => $users['today'], 'week' => $users['last7']])],
+    [__('adm_pro'),           $users['pro'],    __('adm_pro_note', ['pct' => $pct($users['pro'], $users['total'])])],
+    [__('adm_free'),          $users['free'],   __('adm_free_note', ['n' => $users['pro_expired']])],
+    [__('adm_active30'),      $active['month'], __('adm_active_note', ['week' => $active['week'], 'day' => $active['day']])],
 ];
 
 $maxDay   = max(1, ...array_values($perDay));
@@ -34,13 +34,13 @@ $maxMonth = max(1, ...array_values($perMonth));
 <!-- Header -->
 <div class="flex flex-wrap items-end justify-between gap-3 mb-5">
     <div>
-        <h1 class="text-2xl sm:text-[1.75rem] font-extrabold tracking-tight text-gray-900 dark:text-white">Dashboard Admin</h1>
+        <h1 class="text-2xl sm:text-[1.75rem] font-extrabold tracking-tight text-gray-900 dark:text-white"><?= __('admin_dashboard') ?></h1>
         <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Data semua pelanggan ezkira. Akaun admin/team (<?= $users['staff'] ?>) tidak dikira.
+            <?= __('adm_subtitle', ['n' => $users['staff']]) ?>
         </p>
     </div>
     <span class="px-3 py-1.5 rounded-full bg-white dark:bg-gray-800 shadow-sm text-xs font-semibold text-gray-600 dark:text-gray-300">
-        Dikemas kini <?= $e(Plan::now()->format('d M Y, g:i A')) ?>
+        <?= __('adm_updated', ['time' => Plan::now()->format('d M Y, g:i A')]) ?>
     </span>
 </div>
 
@@ -58,35 +58,35 @@ $maxMonth = max(1, ...array_values($perMonth));
 <!-- Revenue + activity -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Hasil langganan Pro</p>
+        <p class="<?= $label ?>"><?= __('adm_pro_revenue') ?></p>
         <p class="<?= $big ?>"><?= $rm($revenue['total']) ?></p>
-        <p class="<?= $sub ?>">Bulan ni: <span class="font-bold text-gray-800 dark:text-gray-200"><?= $rm($revenue['this_month']) ?></span></p>
+        <p class="<?= $sub ?>"><?= __('adm_this_month') ?> <span class="font-bold text-gray-800 dark:text-gray-200"><?= $rm($revenue['this_month']) ?></span></p>
         <div class="grid grid-cols-3 gap-2 mt-4 text-center">
             <div class="rounded-2xl bg-gray-50 dark:bg-gray-700/50 p-3">
                 <p class="ez-num text-lg font-bold text-gray-900 dark:text-white"><?= $revenue['paid_count'] ?></p>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Bayaran</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400"><?= __('adm_payments') ?></p>
             </div>
             <div class="rounded-2xl bg-gray-50 dark:bg-gray-700/50 p-3">
                 <p class="ez-num text-lg font-bold text-gray-900 dark:text-white"><?= $revenue['monthly'] ?></p>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Bulanan</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400"><?= __('adm_monthly') ?></p>
             </div>
             <div class="rounded-2xl bg-gray-50 dark:bg-gray-700/50 p-3">
                 <p class="ez-num text-lg font-bold text-gray-900 dark:text-white"><?= $revenue['yearly'] ?></p>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400">Tahunan</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400"><?= __('adm_yearly') ?></p>
             </div>
         </div>
-        <p class="<?= $sub ?> mt-3">30 hari lepas: <?= $revenue['pending'] ?> checkout tak dibayar · <?= $revenue['failed'] ?> gagal</p>
+        <p class="<?= $sub ?> mt-3"><?= __('adm_checkout_note', ['pending' => $revenue['pending'], 'failed' => $revenue['failed']]) ?></p>
     </div>
 
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Aktiviti user</p>
+        <p class="<?= $label ?>"><?= __('adm_user_activity') ?></p>
         <?php
         $actRows = [
-            ['Aktif hari ini',   $active['day']],
-            ['Aktif 7 hari',     $active['week']],
-            ['Aktif 30 hari',    $active['month']],
-            ['Pernah key-in data', $active['with_records']],
-            ['Tak pernah key-in',  $users['total'] - $active['with_records']],
+            [__('adm_active_today'), $active['day']],
+            [__('adm_active7'),      $active['week']],
+            [__('adm_active30'),     $active['month']],
+            [__('adm_has_records'),  $active['with_records']],
+            [__('adm_no_records'),   $users['total'] - $active['with_records']],
         ];
         ?>
         <div class="mt-3 space-y-3">
@@ -102,17 +102,17 @@ $maxMonth = max(1, ...array_values($perMonth));
                 </div>
             <?php endforeach; ?>
         </div>
-        <p class="<?= $sub ?> mt-3">Aktif = log masuk, simpan apa-apa, atau key-in jualan/belanja.</p>
+        <p class="<?= $sub ?> mt-3"><?= __('adm_active_def') ?></p>
     </div>
 
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Penggunaan app</p>
+        <p class="<?= $label ?>"><?= __('adm_app_usage') ?></p>
         <div class="grid grid-cols-2 gap-3 mt-3">
             <?php foreach ([
-                ['Rekod jualan', number_format($usage['revenues'])],
-                ['Rekod belanja', number_format($usage['expenses'])],
-                ['Resit disimpan', number_format($usage['receipts'])],
-                ['Storan resit', Plan::formatBytes($usage['receipt_bytes'])],
+                [__('adm_sales_records'),   number_format($usage['revenues'])],
+                [__('adm_expense_records'), number_format($usage['expenses'])],
+                [__('adm_receipts_stored'), number_format($usage['receipts'])],
+                [__('adm_receipt_storage'), Plan::formatBytes($usage['receipt_bytes'])],
             ] as [$name, $val]): ?>
                 <div class="rounded-2xl bg-gray-50 dark:bg-gray-700/50 p-3">
                     <p class="ez-num text-lg font-bold text-gray-900 dark:text-white"><?= $val ?></p>
@@ -120,9 +120,9 @@ $maxMonth = max(1, ...array_values($perMonth));
                 </div>
             <?php endforeach; ?>
         </div>
-        <p class="<?= $sub ?> mt-3">Jumlah jualan direkod user: <?= $rm($usage['revenue_amount']) ?></p>
-        <p class="<?= $sub ?>">Jumlah belanja direkod user: <?= $rm($usage['expense_amount']) ?></p>
-        <p class="<?= $sub ?>">Daftar guna Google: <?= $users['google'] ?> (<?= $pct($users['google'], $users['total']) ?>)</p>
+        <p class="<?= $sub ?> mt-3"><?= __('adm_total_sales', ['amt' => $rm($usage['revenue_amount'])]) ?></p>
+        <p class="<?= $sub ?>"><?= __('adm_total_expenses', ['amt' => $rm($usage['expense_amount'])]) ?></p>
+        <p class="<?= $sub ?>"><?= __('adm_google_signups', ['n' => $users['google'], 'pct' => $pct($users['google'], $users['total'])]) ?></p>
     </div>
 </div>
 
@@ -130,8 +130,8 @@ $maxMonth = max(1, ...array_values($perMonth));
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
     <div class="<?= $card ?>">
         <div class="flex items-center justify-between">
-            <p class="<?= $label ?>">Daftar baru · 30 hari</p>
-            <span class="text-xs font-semibold text-gray-500"><?= $users['last30'] ?> orang</span>
+            <p class="<?= $label ?>"><?= __('adm_signups_30') ?></p>
+            <span class="text-xs font-semibold text-gray-500"><?= __('adm_people', ['n' => $users['last30']]) ?></span>
         </div>
         <div class="flex items-end gap-[3px] h-36 mt-4">
             <?php foreach ($perDay as $day => $n): ?>
@@ -143,14 +143,14 @@ $maxMonth = max(1, ...array_values($perMonth));
         </div>
         <div class="flex justify-between text-[11px] text-gray-400 mt-2">
             <span><?= $e(date('d M', strtotime(array_key_first($perDay)))) ?></span>
-            <span>Hari ini</span>
+            <span><?= __('adm_today') ?></span>
         </div>
     </div>
 
     <div class="<?= $card ?>">
         <div class="flex items-center justify-between">
-            <p class="<?= $label ?>">Daftar baru · 12 bulan</p>
-            <span class="text-xs font-semibold text-gray-500">Bulan ni: <?= $users['this_month'] ?></span>
+            <p class="<?= $label ?>"><?= __('adm_signups_12') ?></p>
+            <span class="text-xs font-semibold text-gray-500"><?= __('adm_this_month_n', ['n' => $users['this_month']]) ?></span>
         </div>
         <div class="flex items-end gap-1.5 h-36 mt-4">
             <?php foreach ($perMonth as $month => $n): ?>
@@ -172,12 +172,20 @@ $maxMonth = max(1, ...array_values($perMonth));
 <!-- Breakdown -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
     <div class="<?= $card ?> lg:col-span-2">
-        <p class="<?= $label ?>">Jenis bisnes</p>
+        <p class="<?= $label ?>"><?= __('adm_business_types') ?></p>
         <div class="mt-3 space-y-2.5">
-            <?php $maxType = max(1, ...array_map(fn($r) => (int) $r['n'], $businessTypes ?: [['n' => 1]])); ?>
-            <?php foreach ($businessTypes as $row): ?>
+            <?php
+            // Show the 12 biggest types; free-text one-offs are grouped as "Others" ('+')
+            $shownTypes = array_slice($businessTypes, 0, 12);
+            $restCount  = array_sum(array_map(fn($r) => (int) $r['n'], array_slice($businessTypes, 12)));
+            if ($restCount > 0) {
+                $shownTypes[] = ['type' => '+', 'n' => $restCount];
+            }
+            $maxType = max(1, ...array_map(fn($r) => (int) $r['n'], $shownTypes ?: [['n' => 1]]));
+            ?>
+            <?php foreach ($shownTypes as $row): ?>
                 <div class="flex items-center gap-3 text-sm">
-                    <span class="w-36 shrink-0 truncate text-gray-600 dark:text-gray-300"><?= $row['type'] === '-' ? 'Tak dinyatakan' : $e(ucwords(str_replace('_', ' ', $row['type']))) ?></span>
+                    <span class="w-36 shrink-0 truncate text-gray-600 dark:text-gray-300"><?= $row['type'] === '-' ? __('adm_not_stated') : ($row['type'] === '+' ? __('adm_others') : $e(ucwords(str_replace('_', ' ', $row['type'])))) ?></span>
                     <div class="flex-1 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                         <div class="h-full rounded-full bg-brand-600 dark:bg-sage-300" style="width: <?= $row['n'] / $maxType * 100 ?>%"></div>
                     </div>
@@ -187,7 +195,7 @@ $maxMonth = max(1, ...array_values($perMonth));
         </div>
     </div>
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Bahasa dipilih</p>
+        <p class="<?= $label ?>"><?= __('adm_language') ?></p>
         <div class="mt-3 space-y-2">
             <?php foreach ($languages as $row): ?>
                 <div class="flex justify-between text-sm">
@@ -205,8 +213,8 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
     <div class="overflow-x-auto -mx-2 mt-3">
         <table class="min-w-full">
             <thead><tr>
-                <th class="<?= $th ?>">User</th><th class="<?= $th ?>">Pelan</th><th class="<?= $th ?>">Daftar</th>
-                <th class="<?= $th ?>">Aktif terakhir</th><th class="<?= $th ?>">Jualan / Belanja</th><th class="<?= $th ?>">WhatsApp</th>
+                <th class="<?= $th ?>"><?= __('adm_col_user') ?></th><th class="<?= $th ?>"><?= __('adm_col_plan') ?></th><th class="<?= $th ?>"><?= __('adm_col_joined') ?></th>
+                <th class="<?= $th ?>"><?= __('adm_col_last_active') ?></th><th class="<?= $th ?>"><?= __('adm_col_records') ?></th><th class="<?= $th ?>">WhatsApp</th>
             </tr></thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <?php if (!$rows): ?>
@@ -221,7 +229,7 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
                     <td class="<?= $td ?>">
                         <?php if ($isPro($u)): ?>
                             <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-brand-700 text-white">Pro</span>
-                            <span class="block text-[11px] text-gray-400 mt-0.5">hingga <?= $fmtDate($u['pro_until']) ?></span>
+                            <span class="block text-[11px] text-gray-400 mt-0.5"><?= __('adm_until', ['date' => $fmtDate($u['pro_until'])]) ?></span>
                         <?php else: ?>
                             <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">Free</span>
                         <?php endif; ?>
@@ -244,24 +252,24 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
 
 <!-- Recent sign-ups -->
 <div class="<?= $card ?> mb-5">
-    <p class="<?= $label ?>">20 pendaftaran terbaru</p>
-    <?php $userTable($recentUsers, 'Belum ada pendaftaran.'); ?>
+    <p class="<?= $label ?>"><?= __('adm_recent_signups') ?></p>
+    <?php $userTable($recentUsers, __('adm_no_signups')); ?>
 </div>
 
 <!-- Most active users -->
 <div class="<?= $card ?> mb-5">
-    <p class="<?= $label ?>">10 user paling banyak key-in</p>
-    <?php $userTable($topUsers, 'Belum ada user yang key-in data.'); ?>
+    <p class="<?= $label ?>"><?= __('adm_top_users') ?></p>
+    <?php $userTable($topUsers, __('adm_no_active_users')); ?>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
     <!-- Upsell candidates -->
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Free user yang dah penuh kuota resit (<?= Plan::FREE_RECEIPT_LIMIT ?>+)</p>
-        <p class="<?= $sub ?>">Calon terbaik untuk ditawarkan Pro.</p>
+        <p class="<?= $label ?>"><?= __('adm_upsell_title', ['n' => Plan::FREE_RECEIPT_LIMIT]) ?></p>
+        <p class="<?= $sub ?>"><?= __('adm_upsell_note') ?></p>
         <div class="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
             <?php if (!$upsell): ?>
-                <p class="text-sm text-gray-400 py-3">Tiada buat masa ni.</p>
+                <p class="text-sm text-gray-400 py-3"><?= __('adm_none_now') ?></p>
             <?php endif; ?>
             <?php foreach ($upsell as $u): $wa = preg_replace('/\D/', '', (string) $u['whatsapp_number']); ?>
                 <div class="flex items-center justify-between gap-3 py-2.5">
@@ -270,7 +278,7 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
                         <p class="text-xs text-gray-500 truncate"><?= $e($u['email']) ?></p>
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
-                        <span class="ez-num text-sm font-bold text-gray-900 dark:text-white"><?= (int) $u['n_receipts'] ?> resit</span>
+                        <span class="ez-num text-sm font-bold text-gray-900 dark:text-white"><?= __('adm_receipts_n', ['n' => (int) $u['n_receipts']]) ?></span>
                         <?php if ($wa): ?>
                             <a href="https://wa.me/<?= $e($wa) ?>" target="_blank" rel="noopener"
                                class="px-3 py-1 rounded-full bg-[#25D366] text-white text-xs font-bold">WhatsApp</a>
@@ -283,22 +291,22 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
 
     <!-- Payments -->
     <div class="<?= $card ?>">
-        <p class="<?= $label ?>">Bayaran terkini</p>
+        <p class="<?= $label ?>"><?= __('adm_recent_payments') ?></p>
         <div class="mt-3 divide-y divide-gray-100 dark:divide-gray-700">
             <?php if (!$recentPayments): ?>
-                <p class="text-sm text-gray-400 py-3">Belum ada bayaran.</p>
+                <p class="text-sm text-gray-400 py-3"><?= __('adm_no_payments') ?></p>
             <?php endif; ?>
             <?php foreach ($recentPayments as $p):
                 $badge = match ($p['status']) {
-                    'paid'   => ['Berjaya', 'bg-brand-700 text-white'],
-                    'failed' => ['Gagal', 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'],
-                    default  => ['Belum bayar', 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'],
+                    'paid'   => [__('adm_paid'), 'bg-brand-700 text-white'],
+                    'failed' => [__('adm_failed'), 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'],
+                    default  => [__('adm_unpaid'), 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'],
                 }; ?>
                 <div class="flex items-center justify-between gap-3 py-2.5">
                     <div class="min-w-0">
                         <p class="text-sm font-semibold text-gray-900 dark:text-white truncate"><?= $e($p['name'] ?? 'User #' . $p['user_id']) ?></p>
                         <p class="text-xs text-gray-500 truncate">
-                            <?= $p['plan_interval'] === 'yearly' ? 'Tahunan' : 'Bulanan' ?> · <?= $fmtDate($p['paid_at'] ?: $p['created_at']) ?><?= $p['is_test'] ? ' · TEST' : '' ?>
+                            <?= $p['plan_interval'] === 'yearly' ? __('adm_yearly') : __('adm_monthly') ?> · <?= $fmtDate($p['paid_at'] ?: $p['created_at']) ?><?= $p['is_test'] ? ' · TEST' : '' ?>
                         </p>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
