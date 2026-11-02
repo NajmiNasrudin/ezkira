@@ -16,14 +16,14 @@ $fmtAgo  = function (?string $d): string {
 // Personal Pro invite sent from the upsell list (always in Malay — the customers' language)
 $pricingUrl = (defined('APP_URL') ? rtrim(APP_URL, '/') : 'https://ezkira.com') . '/pricing';
 $inviteMsg  = fn(string $who, int $n) =>
-    "Hi {$who}! 👋\n\n"
-  . "Terima kasih sebab guna Ezkira untuk rekod bisnes. Saya perasan awak dah simpan {$n} resit dalam Ezkira, memang rajin! 🙌\n\n"
+    "Hi {$who}!\n\n"
+  . "Terima kasih sebab guna Ezkira untuk rekod bisnes. Saya perasan awak dah simpan {$n} resit dalam Ezkira, memang rajin!\n\n"
   . "Pelan Free boleh simpan sampai " . Plan::FREE_RECEIPT_LIMIT . " resit sahaja. Dengan Ezkira Pro, awak boleh simpan resit sampai 1 GB (lebih kurang 4,000 resit):\n"
-  . "• " . Plan::priceLabel('monthly') . " sebulan, atau\n"
-  . "• " . Plan::priceLabel('yearly') . " setahun (jimat 2 bulan)\n\n"
+  . "- " . Plan::priceLabel('monthly') . " sebulan, atau\n"
+  . "- " . Plan::priceLabel('yearly') . " setahun (jimat 2 bulan)\n\n"
   . "Rekod jualan dan belanja tetap percuma dan unlimited.\n\n"
   . "Upgrade di sini: {$pricingUrl}\n\n"
-  . "Kalau ada soalan, reply je mesej ni ya 😊";
+  . "Kalau ada soalan, reply je mesej ni ya.";
 
 $nowKl   = Plan::now()->format('Y-m-d H:i:s');
 $isPro   = fn(array $u) => !empty($u['pro_until']) && $u['pro_until'] > $nowKl;
