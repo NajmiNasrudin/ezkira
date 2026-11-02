@@ -2,6 +2,9 @@
 use App\Core\Plan;
 
 $e   = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+// Names are stored HTML-escaped at sign-up, so decode first or "&" shows as "&amp;"
+$plain = fn($v) => html_entity_decode((string) $v, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+$name  = fn($v) => $e($plain($v));
 $rm  = fn(float $v) => 'RM' . number_format($v, 2);
 $pct = fn(int $part, int $whole) => $whole > 0 ? round($part / $whole * 100) . '%' : '0%';
 $fmtDate = fn(?string $d) => $d && $d > '1971' ? date('d M Y', strtotime($d)) : '-';
@@ -10,6 +13,18 @@ $fmtAgo  = function (?string $d): string {
     $days = (int) floor((time() - strtotime($d)) / 86400);
     return $days <= 0 ? __('adm_today') : ($days === 1 ? __('adm_yesterday') : __('adm_days_ago', ['n' => $days]));
 };
+// Personal Pro invite sent from the upsell list (always in Malay — the customers' language)
+$pricingUrl = (defined('APP_URL') ? rtrim(APP_URL, '/') : 'https://ezkira.com') . '/pricing';
+$inviteMsg  = fn(string $who, int $n) =>
+    "Hi {$who}! 👋\n\n"
+  . "Terima kasih sebab guna Ezkira untuk rekod bisnes. Saya perasan awak dah simpan {$n} resit dalam Ezkira, memang rajin! 🙌\n\n"
+  . "Pelan Free boleh simpan sampai " . Plan::FREE_RECEIPT_LIMIT . " resit sahaja. Dengan Ezkira Pro, awak boleh simpan resit sampai 1 GB (lebih kurang 4,000 resit):\n"
+  . "• " . Plan::priceLabel('monthly') . " sebulan, atau\n"
+  . "• " . Plan::priceLabel('yearly') . " setahun (jimat 2 bulan)\n\n"
+  . "Rekod jualan dan belanja tetap percuma dan unlimited.\n\n"
+  . "Upgrade di sini: {$pricingUrl}\n\n"
+  . "Kalau ada soalan, reply je mesej ni ya 😊";
+
 $nowKl   = Plan::now()->format('Y-m-d H:i:s');
 $isPro   = fn(array $u) => !empty($u['pro_until']) && $u['pro_until'] > $nowKl;
 
@@ -226,7 +241,7 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
             <?php foreach ($rows as $u): ?>
                 <tr>
                     <td class="<?= $td ?>">
-                        <p class="font-semibold text-gray-900 dark:text-white"><?= $e($u['name']) ?><?= $u['via_google'] ? ' <span class="text-[10px] font-semibold text-gray-400">G</span>' : '' ?></p>
+                        <p class="font-semibold text-gray-900 dark:text-white"><?= $name($u['name']) ?><?= $u['via_google'] ? ' <span class="text-[10px] font-semibold text-gray-400">G</span>' : '' ?></p>
                         <p class="text-xs text-gray-500"><?= $e($u['email']) ?></p>
                     </td>
                     <td class="<?= $td ?>">
@@ -274,17 +289,30 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
             <?php if (!$upsell): ?>
                 <p class="text-sm text-gray-400 py-3"><?= __('adm_none_now') ?></p>
             <?php endif; ?>
-            <?php foreach ($upsell as $u): $wa = preg_replace('/\D/', '', (string) $u['whatsapp_number']); ?>
-                <div class="flex items-center justify-between gap-3 py-2.5">
+            <?php foreach ($upsell as $u):
+                $wa = preg_replace('/\D/', '', (string) $u['whatsapp_number']);
+                if (str_starts_with($wa, '0')) { $wa = '60' . substr($wa, 1); }
+                $msg = $inviteMsg($plain($u['name']), (int) $u['n_receipts']);
+                $sent = !empty($u['invited_at']); ?>
+                <div class="flex items-center justify-between gap-3 py-2.5 <?= $sent ? 'opacity-60' : '' ?>" data-invite-row>
                     <div class="min-w-0">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate"><?= $e($u['name']) ?></p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate"><?= $name($u['name']) ?></p>
                         <p class="text-xs text-gray-500 truncate"><?= $e($u['email']) ?></p>
+                        <p class="text-[11px] font-semibold text-brand-600 dark:text-sage-300 mt-0.5 <?= $sent ? '' : 'hidden' ?>" data-invite-status>
+                            <?= $sent ? __('adm_invite_sent', ['when' => $fmtAgo($u['invited_at']), 'n' => (int) $u['invite_count']]) : '' ?>
+                        </p>
                     </div>
                     <div class="flex items-center gap-3 shrink-0">
                         <span class="ez-num text-sm font-bold text-gray-900 dark:text-white"><?= __('adm_receipts_n', ['n' => (int) $u['n_receipts']]) ?></span>
                         <?php if ($wa): ?>
-                            <a href="https://wa.me/<?= $e($wa) ?>" target="_blank" rel="noopener"
-                               class="px-3 py-1 rounded-full bg-[#25D366] text-white text-xs font-bold">WhatsApp</a>
+                            <a href="https://wa.me/<?= $e($wa) ?>?text=<?= $e(rawurlencode($msg)) ?>" target="_blank" rel="noopener"
+                               data-invite-url="<?= BASE_URI ?>/dashboard-admin/invite/<?= (int) $u['id'] ?>"
+                               data-sent-label="<?= $e(__('adm_invite_again')) ?>"
+                               class="px-3 py-1 rounded-full text-xs font-bold <?= $sent ? 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200' : 'bg-[#25D366] text-white' ?>">
+                                <?= $sent ? __('adm_invite_again') : __('adm_invite') ?>
+                            </a>
+                        <?php else: ?>
+                            <span class="text-xs text-gray-400"><?= __('adm_no_phone') ?></span>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -307,7 +335,7 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
                 }; ?>
                 <div class="flex items-center justify-between gap-3 py-2.5">
                     <div class="min-w-0">
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate"><?= $e($p['name'] ?? 'User #' . $p['user_id']) ?></p>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate"><?= $p['name'] !== null ? $name($p['name']) : $e('User #' . $p['user_id']) ?></p>
                         <p class="text-xs text-gray-500 truncate">
                             <?= $p['plan_interval'] === 'yearly' ? __('adm_yearly') : __('adm_monthly') ?> · <?= $fmtDate($p['paid_at'] ?: $p['created_at']) ?><?= $p['is_test'] ? ' · TEST' : '' ?>
                         </p>
@@ -321,3 +349,22 @@ $userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, 
         </div>
     </div>
 </div>
+
+<script>
+// Upsell list: open the WhatsApp invite, then remember it was sent
+document.querySelectorAll('[data-invite-url]').forEach(function (link) {
+    link.addEventListener('click', function () {
+        postJson(link.dataset.inviteUrl).then(function (res) {
+            if (!res.ok) return;
+            var row = link.closest('[data-invite-row]');
+            var status = row.querySelector('[data-invite-status]');
+            status.textContent = <?= json_encode(__('adm_invite_sent_now')) ?>;
+            status.classList.remove('hidden');
+            row.classList.add('opacity-60');
+            link.textContent = link.dataset.sentLabel;
+            link.classList.remove('bg-[#25D366]', 'text-white');
+            link.classList.add('bg-gray-200', 'text-gray-700');
+        }).catch(function () {});
+    });
+});
+</script>

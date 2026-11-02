@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use App\Core\Controller;
+use App\Core\CSRF;
 use App\Core\Schema;
 use Models\AdminStats;
 
@@ -11,7 +12,7 @@ class AdminController extends Controller
     // GET /dashboard-admin (admin only — RoleMiddleware on the route)
     public function index(): void
     {
-        $stats = new AdminStats(Schema::ensureBilling());
+        $stats = new AdminStats(Schema::ensureBilling(), Schema::ensureAdminInvites());
 
         $this->view('admin/index', [
             'users'          => $stats->users(),
@@ -27,5 +28,16 @@ class AdminController extends Controller
             'upsell'         => $stats->upsellCandidates(20),
             'recentPayments' => $stats->recentPayments(20),
         ], 'main', __('admin_dashboard'));
+    }
+
+    // POST /dashboard-admin/invite/{id} — marks a Pro WhatsApp invite as sent
+    public function markInvited(string $id): void
+    {
+        CSRF::check();
+        if (!Schema::ensureAdminInvites()) {
+            $this->json(['ok' => false], 500);
+        }
+        $sentAt = (new AdminStats(Schema::ensureBilling(), true))->markInvited((int) $id);
+        $this->json(['ok' => true, 'sent_at' => $sentAt]);
     }
 }

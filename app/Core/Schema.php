@@ -57,6 +57,36 @@ class Schema
         }
     }
 
+    private const INVITES_FLAG = '/storage/logs/schema_010_admin_invites.done';
+
+    private static ?bool $invitesReady = null;
+
+    /** Table that remembers which users the owner already sent a Pro invite to (admin dashboard). */
+    public static function ensureAdminInvites(): bool
+    {
+        if (self::$invitesReady !== null) {
+            return self::$invitesReady;
+        }
+        if (is_file(BASE_PATH . self::INVITES_FLAG)) {
+            return self::$invitesReady = true;
+        }
+
+        try {
+            getDB()->exec(
+                "CREATE TABLE IF NOT EXISTS `admin_invites` (
+                    `user_id`      INT UNSIGNED NOT NULL PRIMARY KEY,
+                    `sent_count`   INT UNSIGNED NOT NULL DEFAULT 1,
+                    `last_sent_at` DATETIME     NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+            );
+            @file_put_contents(BASE_PATH . self::INVITES_FLAG, date('c'));
+            return self::$invitesReady = true;
+        } catch (\Throwable $e) {
+            error_log('Admin invites schema failed: ' . $e->getMessage());
+            return self::$invitesReady = false;
+        }
+    }
+
     private static function hasColumn(\PDO $db, string $table, string $column): bool
     {
         $stmt = $db->prepare(

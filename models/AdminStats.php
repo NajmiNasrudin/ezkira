@@ -14,12 +14,14 @@ class AdminStats
 {
     private PDO $db;
     private bool $billing;
+    private bool $invites;
     private string $now;
 
-    public function __construct(bool $billingReady)
+    public function __construct(bool $billingReady, bool $invitesReady = false)
     {
         $this->db      = getDB();
         $this->billing = $billingReady;
+        $this->invites = $invitesReady;
         $this->now     = Plan::now()->format('Y-m-d H:i:s');
     }
 
@@ -217,17 +219,31 @@ class AdminStats
         $params    = $this->billing ? [$this->now] : [];
         $params[]  = Plan::FREE_RECEIPT_LIMIT;
 
+        $inviteCols = $this->invites ? 'i.last_sent_at AS invited_at, i.sent_count AS invite_count' : 'NULL AS invited_at, 0 AS invite_count';
+        $inviteJoin = $this->invites ? 'LEFT JOIN admin_invites i ON i.user_id = u.id' : '';
+
         return $this->rows(
-            "SELECT u.id, u.name, u.email, u.whatsapp_number, COUNT(r.id) AS n_receipts
+            "SELECT u.id, u.name, u.email, u.whatsapp_number, COUNT(r.id) AS n_receipts, $inviteCols
                FROM users u
                JOIN expenses e ON e.user_id = u.id
                JOIN expense_receipts r ON r.expense_id = e.id
+               $inviteJoin
               WHERE u.role = 'client' $proFilter
-              GROUP BY u.id, u.name, u.email, u.whatsapp_number
+              GROUP BY u.id, u.name, u.email, u.whatsapp_number" . ($this->invites ? ', i.last_sent_at, i.sent_count' : '') . "
              HAVING n_receipts >= ?
               ORDER BY n_receipts DESC LIMIT " . (int) $limit,
             $params
         );
+    }
+
+    /** Remember that the owner sent a Pro invite to this user (one row per user, counts resends). */
+    public function markInvited(int $userId): string
+    {
+        $this->db->prepare(
+            "INSERT INTO admin_invites (user_id, sent_count, last_sent_at) VALUES (?, 1, ?)
+             ON DUPLICATE KEY UPDATE sent_count = sent_count + 1, last_sent_at = VALUES(last_sent_at)"
+        )->execute([$userId, $this->now]);
+        return $this->now;
     }
 
     public function recentPayments(int $limit = 20): array
