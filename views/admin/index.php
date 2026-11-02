@@ -227,7 +227,7 @@ $maxMonth = max(1, ...array_values($perMonth));
 
 <?php
 /** Shared user table: name/email, plan, sign-up, last active, records. */
-$userTable = function (array $rows, string $empty) use ($e, $th, $td, $fmtDate, $fmtAgo, $isPro): void { ?>
+$userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $fmtDate, $fmtAgo, $isPro): void { ?>
     <div class="overflow-x-auto -mx-2 mt-3">
         <table class="min-w-full">
             <thead><tr>
