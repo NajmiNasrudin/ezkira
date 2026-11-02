@@ -37,7 +37,7 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 
 ## Admin dashboard
 
-- `/dashboard-admin` (admin role only, `RoleMiddleware`) — owner's numbers: sign-ups, Pro vs Free, active users, Pro revenue, app usage, recent/top users, Free users at the receipt limit, recent payments. Code: `controllers/AdminController.php`, `models/AdminStats.php` (read-only queries), `views/admin/index.php`.
+- `/dashboard-admin` (admin role only, `RoleMiddleware`) — owner's numbers: sign-ups, Pro vs Free, active users, Pro revenue, app usage, a full user list (Pro/Free filter, search, sort by newest, most active, recently active, most key-ins, most receipts; 50 per page), Free users at the receipt limit with personal WhatsApp Pro invites (sends remembered in `admin_invites`, created on first use), recent payments. Code: `controllers/AdminController.php`, `models/AdminStats.php` (read-only queries), `views/admin/index.php`.
 - Only `role = 'client'` accounts count as customers. "Active" = any `activity_logs` row or a sale/expense created in the window. Test-mode payments are excluded from revenue.
 
 ## Deploy details

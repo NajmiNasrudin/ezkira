@@ -226,17 +226,18 @@ $maxMonth = max(1, ...array_values($perMonth));
 </div>
 
 <?php
-/** Shared user table: name/email, plan, sign-up, last active, records. */
+/** User table: name/email, plan, sign-up, last active, 30-day activity, records, receipts. */
 $userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $fmtDate, $fmtAgo, $isPro): void { ?>
     <div class="overflow-x-auto -mx-2 mt-3">
         <table class="min-w-full">
             <thead><tr>
                 <th class="<?= $th ?>"><?= __('adm_col_user') ?></th><th class="<?= $th ?>"><?= __('adm_col_plan') ?></th><th class="<?= $th ?>"><?= __('adm_col_joined') ?></th>
-                <th class="<?= $th ?>"><?= __('adm_col_last_active') ?></th><th class="<?= $th ?>"><?= __('adm_col_records') ?></th><th class="<?= $th ?>">WhatsApp</th>
+                <th class="<?= $th ?>"><?= __('adm_col_last_active') ?></th><th class="<?= $th ?>"><?= __('adm_col_active30') ?></th>
+                <th class="<?= $th ?>"><?= __('adm_col_records') ?></th><th class="<?= $th ?>"><?= __('adm_col_receipts') ?></th><th class="<?= $th ?>">WhatsApp</th>
             </tr></thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <?php if (!$rows): ?>
-                <tr><td colspan="6" class="<?= $td ?> text-center text-gray-400"><?= $empty ?></td></tr>
+                <tr><td colspan="8" class="<?= $td ?> text-center text-gray-400"><?= $empty ?></td></tr>
             <?php endif; ?>
             <?php foreach ($rows as $u): ?>
                 <tr>
@@ -254,7 +255,9 @@ $userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $
                     </td>
                     <td class="<?= $td ?>"><?= $fmtDate($u['created_at']) ?></td>
                     <td class="<?= $td ?>"><?= $fmtAgo($u['last_active']) ?></td>
+                    <td class="<?= $td ?> ez-num"><?= (int) $u['act30'] ?></td>
                     <td class="<?= $td ?> ez-num"><?= (int) $u['n_revenues'] ?> / <?= (int) $u['n_expenses'] ?></td>
+                    <td class="<?= $td ?> ez-num"><?= (int) $u['n_receipts'] ?></td>
                     <td class="<?= $td ?>">
                         <?php $wa = preg_replace('/\D/', '', (string) $u['whatsapp_number']); ?>
                         <?php if ($wa): ?>
@@ -268,16 +271,56 @@ $userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $
     </div>
 <?php }; ?>
 
-<!-- Recent sign-ups -->
-<div class="<?= $card ?> mb-5">
-    <p class="<?= $label ?>"><?= __('adm_recent_signups') ?></p>
-    <?php $userTable($recentUsers, __('adm_no_signups')); ?>
-</div>
+<!-- All users: filter, search, sort, pages -->
+<?php
+$uq      = $userQuery;
+$listUrl = fn(array $change) => BASE_URI . '/dashboard-admin?' . http_build_query(array_filter(
+    array_merge(['sort' => $uq['sort'], 'plan' => $uq['plan'], 'q' => $uq['q']], $change),
+    fn($v, $k) => !($k === 'plan' && $v === 'all') && !($k === 'sort' && $v === 'newest') && $v !== '' && $v !== 1,
+    ARRAY_FILTER_USE_BOTH
+)) . '#users';
+$pill    = fn(bool $on) => 'px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap '
+    . ($on ? 'bg-brand-700 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200');
+$pages   = max(1, (int) ceil($userList['total'] / $uq['per']));
+$from    = $userList['total'] ? ($uq['page'] - 1) * $uq['per'] + 1 : 0;
+$to      = min($userList['total'], $uq['page'] * $uq['per']);
+?>
+<div id="users" class="<?= $card ?> mb-5 scroll-mt-20">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="<?= $label ?>"><?= __('adm_all_users', ['n' => $userList['total']]) ?></p>
+        <form method="get" action="<?= BASE_URI ?>/dashboard-admin#users" class="flex items-center gap-2">
+            <?php if ($uq['sort'] !== 'newest'): ?><input type="hidden" name="sort" value="<?= $e($uq['sort']) ?>"><?php endif; ?>
+            <?php if ($uq['plan'] !== 'all'): ?><input type="hidden" name="plan" value="<?= $e($uq['plan']) ?>"><?php endif; ?>
+            <input type="search" name="q" value="<?= $e($uq['q']) ?>" placeholder="<?= $e(__('adm_search_ph')) ?>"
+                   class="w-52 px-3 py-1.5 rounded-full text-sm bg-gray-100 dark:bg-gray-700 dark:text-white border-0 focus:ring-2 focus:ring-brand-600">
+        </form>
+    </div>
 
-<!-- Most active users -->
-<div class="<?= $card ?> mb-5">
-    <p class="<?= $label ?>"><?= __('adm_top_users') ?></p>
-    <?php $userTable($topUsers, __('adm_no_active_users')); ?>
+    <div class="flex flex-wrap items-center gap-2 mt-3">
+        <?php foreach (['all' => __('adm_filter_all'), 'pro' => 'Pro', 'free' => 'Free'] as $k => $txt): ?>
+            <a href="<?= $e($listUrl(['plan' => $k, 'page' => 1])) ?>" class="<?= $pill($uq['plan'] === $k) ?>"><?= $txt ?></a>
+        <?php endforeach; ?>
+        <span class="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700"></span>
+        <span class="text-xs text-gray-500"><?= __('adm_sort_by') ?></span>
+        <?php foreach (['newest', 'active', 'recent', 'records', 'receipts'] as $k): ?>
+            <a href="<?= $e($listUrl(['sort' => $k, 'page' => 1])) ?>" class="<?= $pill($uq['sort'] === $k) ?>"><?= __('adm_sort_' . $k) ?></a>
+        <?php endforeach; ?>
+    </div>
+
+    <?php $userTable($userList['rows'], $uq['q'] !== '' ? __('adm_no_match') : __('adm_no_signups')); ?>
+
+    <div class="flex items-center justify-between gap-3 mt-3 text-xs text-gray-500">
+        <span><?= __('adm_showing', ['start' => $from, 'end' => $to, 'count' => $userList['total']]) ?></span>
+        <div class="flex items-center gap-2">
+            <?php if ($uq['page'] > 1): ?>
+                <a href="<?= $e($listUrl(['page' => $uq['page'] - 1])) ?>" class="<?= $pill(false) ?>"><?= __('adm_prev') ?></a>
+            <?php endif; ?>
+            <span><?= __('adm_page_of', ['cur' => $uq['page'], 'last' => $pages]) ?></span>
+            <?php if ($uq['page'] < $pages): ?>
+                <a href="<?= $e($listUrl(['page' => $uq['page'] + 1])) ?>" class="<?= $pill(false) ?>"><?= __('adm_next') ?></a>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">

@@ -195,21 +195,56 @@ class AdminStats
                 ) AS last_active";
     }
 
-    public function recentUsers(int $limit = 20): array
-    {
-        return $this->rows(
-            "SELECT {$this->userColumns()} FROM users u WHERE u.role = 'client'
-              ORDER BY u.created_at DESC LIMIT " . (int) $limit
-        );
-    }
+    /** Sort options for the full user list: key => ORDER BY (whitelisted, never user input). */
+    public const USER_SORTS = [
+        'newest'   => 'created_at DESC',
+        'active'   => 'act30 DESC, last_active DESC',
+        'recent'   => 'last_active DESC',
+        'records'  => 'n_revenues + n_expenses DESC',
+        'receipts' => 'n_receipts DESC',
+    ];
 
-    public function topUsers(int $limit = 10): array
+    /**
+     * Every client account, filtered by plan ('all' | 'pro' | 'free') and a name/email/phone
+     * search, sorted by one of USER_SORTS, one page at a time.
+     */
+    public function allUsers(string $sort, string $plan, string $search, int $page, int $perPage = 50): array
     {
-        return $this->rows(
-            "SELECT * FROM (SELECT {$this->userColumns()} FROM users u WHERE u.role = 'client') t
-              WHERE n_revenues + n_expenses > 0
-              ORDER BY n_revenues + n_expenses DESC LIMIT " . (int) $limit
+        $where  = ["u.role = 'client'"];
+        $params = [];
+        if ($this->billing && $plan === 'pro') {
+            $where[]  = 'u.pro_until > ?';
+            $params[] = $this->now;
+        } elseif ($this->billing && $plan === 'free') {
+            $where[]  = '(u.pro_until IS NULL OR u.pro_until <= ?)';
+            $params[] = $this->now;
+        }
+        if ($search !== '') {
+            // Names are stored HTML-escaped, so match the escaped form too ("A & B" is "A &amp; B")
+            $where[] = '(u.name LIKE ? OR u.name LIKE ? OR u.email LIKE ? OR u.whatsapp_number LIKE ?)';
+            array_push($params, "%$search%", '%' . htmlspecialchars($search, ENT_QUOTES, 'UTF-8') . '%', "%$search%", "%$search%");
+        }
+        $whereSql = implode(' AND ', $where);
+
+        $total = (int) $this->value("SELECT COUNT(*) FROM users u WHERE $whereSql", $params);
+        $order = self::USER_SORTS[$sort] ?? self::USER_SORTS['newest'];
+
+        $rows = $this->rows(
+            "SELECT * FROM (
+                SELECT {$this->userColumns()},
+                       (SELECT COUNT(*) FROM expense_receipts r JOIN expenses e3 ON e3.id = r.expense_id WHERE e3.user_id = u.id) AS n_receipts,
+                       COALESCE(a.n, 0) AS act30
+                  FROM users u
+                  LEFT JOIN (SELECT uid, COUNT(*) AS n FROM (" . self::ACTIVITY_SQL . ") x
+                              WHERE x.created_at >= NOW() - INTERVAL 30 DAY GROUP BY uid) a ON a.uid = u.id
+                 WHERE $whereSql
+             ) t
+             ORDER BY $order, id DESC
+             LIMIT " . (int) $perPage . " OFFSET " . (int) (max(1, $page) - 1) * $perPage,
+            $params
         );
+
+        return ['rows' => $rows, 'total' => $total];
     }
 
     /** Free users who already store at least the free receipt limit: likely Pro buyers. */
