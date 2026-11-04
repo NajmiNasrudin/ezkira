@@ -3,7 +3,11 @@ Options -Indexes +FollowSymLinks
 RewriteEngine On
 
 # Block direct access to sensitive directories
-RewriteRule ^(app|config|controllers|models|views|lang|routes|database|storage)(/|$) - [F,L]
+RewriteRule ^(app|config|controllers|models|views|lang|routes|database|storage|tools|home)(/|$) - [F,L]
+
+# Block dot-folders (.git, .github, .claude) and docs/config files left by deploys
+RewriteRule (^|/)\.(?!well-known/) - [F,L]
+RewriteRule \.(md|sql|yml|yaml|txt|json|lock|sh|ini|log)$ - [F,L]
 
 # Allow assets and uploads to be served directly
 RewriteCond %{REQUEST_URI} ^/assets/ [OR]
