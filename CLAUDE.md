@@ -35,6 +35,14 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 - **Schema:** migration 009 (`users.pro_until`, `expense_receipts.size_bytes`, `payments`) is applied automatically on first use by `App\Core\Schema::ensureBilling()` (flag file `storage/logs/schema_009_billing.done`). If it fails, plan checks fail open (nobody gets blocked) and the error goes to the PHP error log.
 - **Receipts:** photos are shrunk in the browser (`ezShrinkImages` in `assets/js/app.js`) and again on the server (`app/Core/ReceiptImage.php`, needs GD; falls back to storing the original). Allowed types: JPG/PNG/WebP/GIF/PDF, max 10 MB. `.user.ini` limits were raised from 3M/4M because larger phone photos used to fail silently or trigger a 419 (PHP drops the whole POST above `post_max_size`).
 
+## Loans (Expenses → Pinjaman)
+
+- Card section on `/expenses` (`views/expenses/partials/loans.php`): add/edit a loan (lender, amount, % per year, `flat` or `reducing` interest, months, optional instalment override, date received, first due date, instalments already paid before ezkira, "money went into the business" → cash).
+- Maths in `app/Core/LoanMath.php` (flat = principal × rate spread evenly; reducing = annuity on the balance; rounding sen folded into the last instalment). State per loan (balance, paid n/N, next due, interest paid, months left) in `models/Loan.php`.
+- "Bayar ansuran" (`ExpenseController::loanPay`) creates **two expenses**: principal → `liability` (Balance Sheet only), interest → `opex` (counts in P&L), linked through `loan_payments`. Deleting either expense deletes the pair and the payment; editing them keeps category and amount. Deleting a loan deletes all its instalment expenses.
+- Balance Sheet: `BalanceSheet::autoCalculate()` fills Bank borrowings from loan balances (next 12 instalments = current, rest = non-current) and adds loan money received (`add_to_cash`) to Cash.
+- Tables (migration 011) are created on first use by `Schema::ensureLoans()` (flag `storage/logs/schema_011_loans.done`); if that fails the section hides itself.
+
 ## Admin dashboard
 
 - `/dashboard-admin` (admin role only, `RoleMiddleware`) — owner's numbers: sign-ups, Pro vs Free, active users, Pro revenue, app usage, a full user list (Pro/Free filter, search, sort by newest, most active, recently active, most key-ins, most receipts; 50 per page), Free users at the receipt limit with personal WhatsApp Pro invites (sends remembered in `admin_invites`, created on first use), recent payments. Code: `controllers/AdminController.php`, `models/AdminStats.php` (read-only queries), `views/admin/index.php`.
@@ -49,7 +57,7 @@ SME finance-monitoring web app (revenue, expenses, P&L, budget tracking) for Mal
 
 ## Database
 
-- `database/schema.sql` is the base schema but has historically drifted behind the migration files — when setting up a fresh DB, apply `schema.sql` **then every** `database/migration_*.sql` in numeric order. Migrations as of now: 002 (business type), 003 (Google auth / `google_id`), 004 (refunds/`entry_type`), 005 (capitals table), 006 (`payment_method`), 007 (blast tables), 008 (rename `revenue_targets.amount` → `target_amount`), 009 (billing: `pro_until`, `size_bytes`, `payments` — auto-applied, see Plans & billing).
+- `database/schema.sql` is the base schema but has historically drifted behind the migration files — when setting up a fresh DB, apply `schema.sql` **then every** `database/migration_*.sql` in numeric order. Migrations as of now: 002 (business type), 003 (Google auth / `google_id`), 004 (refunds/`entry_type`), 005 (capitals table), 006 (`payment_method`), 007 (blast tables), 008 (rename `revenue_targets.amount` → `target_amount`), 009 (billing: `pro_until`, `size_bytes`, `payments` — auto-applied, see Plans & billing), 011 (`loans`, `loan_payments` — auto-applied, see Loans).
 - **Action needed on existing production DB:** migration 008 has been committed but has NOT been confirmed run on the live `ezkira.com` database yet. Until it is, `Revenue::getTarget()`/`setTarget()` will throw a SQL error (column `target_amount` doesn't exist on old installs). Run this once via phpMyAdmin:
   ```sql
   ALTER TABLE `revenue_targets`

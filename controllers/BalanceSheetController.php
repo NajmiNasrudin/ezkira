@@ -123,6 +123,8 @@ class BalanceSheetController extends Controller
         if (($entries['non_current_asset']['ppe']    ?? 0) == 0) $entries['non_current_asset']['ppe']    = $auto['auto_ppe'];
         if (($entries['current_asset']['inventories']?? 0) == 0) $entries['current_asset']['inventories']= $auto['auto_inventory'];
         if (($entries['equity']['share_capital']     ?? 0) == 0) $entries['equity']['share_capital']     = $auto['auto_share_capital'];
+        if (($entries['current_liability']['bank_borrow']        ?? 0) == 0) $entries['current_liability']['bank_borrow']        = $auto['auto_loan_current'];
+        if (($entries['non_current_liability']['bank_borrow_nc'] ?? 0) == 0) $entries['non_current_liability']['bank_borrow_nc'] = $auto['auto_loan_non_current'];
         // Retained earnings: positive = profit (goes under share_capital area), negative = accumulated losses
         if (($entries['equity']['accum_losses']      ?? 0) == 0 && $auto['auto_retained'] < 0) {
             $entries['equity']['accum_losses'] = abs($auto['auto_retained']);

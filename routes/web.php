@@ -48,6 +48,10 @@ $router->post('/expenses/budget-pct',            'ExpenseController@saveBudgetPc
 $router->get('/expenses/receipt/{id}',           'ExpenseController@receipt',       [AuthMiddleware::class]);
 $router->get('/expenses/file/{id}',              'ExpenseController@receiptFile',   [AuthMiddleware::class]);
 $router->post('/expenses/receipt/{id}/delete',   'ExpenseController@deleteReceipt', [AuthMiddleware::class]);
+$router->post('/expenses/loans/store',            'ExpenseController@loanStore',     [AuthMiddleware::class]);
+$router->post('/expenses/loans/{id}/update',      'ExpenseController@loanUpdate',    [AuthMiddleware::class]);
+$router->post('/expenses/loans/{id}/delete',      'ExpenseController@loanDelete',    [AuthMiddleware::class]);
+$router->post('/expenses/loans/{id}/pay',         'ExpenseController@loanPay',       [AuthMiddleware::class]);
 $router->post('/expenses/{id}/update',           'ExpenseController@update',        [AuthMiddleware::class]);
 $router->post('/expenses/{id}/delete',           'ExpenseController@delete',        [AuthMiddleware::class]);
 

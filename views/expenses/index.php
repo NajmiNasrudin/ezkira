@@ -7,6 +7,8 @@
  * @var array  $allExpenses   All expenses for the month (all categories), with receipts
  * @var array  $totals        ['opex'=>float, 'marketing'=>float, 'cogs'=>float, 'ppe'=>float, 'inventory'=>float, 'liability'=>float]
  * @var array  $plan          App\Core\Plan::status() for the current user
+ * @var bool   $loansReady    loan tables exist (Expenses → Pinjaman)
+ * @var array  $loans         Models\Loan::forUser() rows
  */
 use App\Core\Plan;
 
@@ -312,6 +314,8 @@ $bsTot        = $ppeTot + $liabilityTot;
 </div>
 <?php endif; ?>
 
+<?php if ($loansReady) { include __DIR__ . '/partials/loans.php'; } ?>
+
 <!-- ===== UNIFIED EXPENSE LIST ===== -->
 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
 
@@ -391,6 +395,9 @@ $bsTot        = $ppeTot + $liabilityTot;
                     </td>
                     <td class="px-6 py-3 text-gray-900 dark:text-gray-100 max-w-xs">
                         <?= htmlspecialchars($row['description'], ENT_QUOTES) ?>
+                        <?php if (!empty($row['loan_lender'])): ?>
+                            <a href="#loans" class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"><?= __('loans') ?></a>
+                        <?php endif; ?>
                     </td>
                     <td class="px-6 py-3 text-right font-semibold text-gray-900 dark:text-white whitespace-nowrap">
                         <?= fmtMoney((float)$row['amount']) ?>

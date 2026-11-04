@@ -136,6 +136,8 @@ class BalanceSheet
      *   auto_inventory       → Inventories (sum of 'inventory' expenses)
      *   auto_share_capital   → Share capital (sum of capital injections)
      *   auto_retained        → Retained earnings / accumulated losses (P&L net profit)
+ *   auto_loan_current    → Bank borrowings due in the next 12 instalments (Pinjaman)
+ *   auto_loan_non_current→ Bank borrowings due after that
      *   _pnl                 → Sub-array with P&L breakdown (for P&L summary widget)
      */
     public function autoCalculate(int $userId, string $asOfDate): array
@@ -182,9 +184,16 @@ class BalanceSheet
         $grossProfit  = $totalRevenue - $costOfSales;
         $netProfit    = $grossProfit - $opex - $marketing;
 
+        // ── Loans (Expenses → Pinjaman) ───────────────────────────────────────
+        // Balance owed splits into the next 12 instalments (current) and the rest (non-current).
+        // Loan money received into the business counts as cash; repayments are already expenses.
+        $loans = \App\Core\Schema::ensureLoans()
+            ? (new Loan())->balanceSheet($userId, $asOfDate)
+            : ['current' => 0.0, 'non_current' => 0.0, 'cash_in' => 0.0];
+
         // ── Balance sheet derived values ──────────────────────────────────────
-        // Cash = Capital + Revenue − All cash paid out
-        $cash = max(0, $totalCapital + $totalRevenue - $totalExp);
+        // Cash = Capital + Revenue + Loans received − All cash paid out
+        $cash = max(0, $totalCapital + $totalRevenue + $loans['cash_in'] - $totalExp);
         // Inventories: manual-only BS field — no auto-calculation from expenses
         // (Purchases expense ≠ closing inventory; users enter stock value manually)
 
@@ -194,6 +203,8 @@ class BalanceSheet
             'auto_inventory'     => 0,              // manual entry on Balance Sheet
             'auto_share_capital' => $totalCapital,
             'auto_retained'      => $netProfit,     // positive = profit, negative = loss
+            'auto_loan_current'  => $loans['current'],
+            'auto_loan_non_current' => $loans['non_current'],
             '_pnl' => [
                 'revenue'      => $totalRevenue,
                 'cogs'         => $cogs,

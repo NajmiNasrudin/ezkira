@@ -18,6 +18,8 @@ $autoKeys = [
     ['non_current_asset', 'ppe',           $auto['auto_ppe']],
     ['current_asset',     'inventories',   $auto['auto_inventory']],
     ['equity',            'share_capital', $auto['auto_share_capital']],
+    ['current_liability',     'bank_borrow',    $auto['auto_loan_current']],
+    ['non_current_liability', 'bank_borrow_nc', $auto['auto_loan_non_current']],
 ];
 foreach ($autoKeys as [$sec, $key, $autoVal]) {
     if (empty($display[$sec][$key])) {
@@ -43,6 +45,8 @@ $autoFields = [
     'current_asset.inventories'     => true,
     'equity.share_capital'          => true,
     'equity.accum_losses'           => true,
+    'current_liability.bank_borrow'        => $auto['auto_loan_current'] > 0,
+    'non_current_liability.bank_borrow_nc' => $auto['auto_loan_non_current'] > 0,
 ];
 $isAuto = fn(string $sec, string $key) => !empty($autoFields["{$sec}.{$key}"]);
 
