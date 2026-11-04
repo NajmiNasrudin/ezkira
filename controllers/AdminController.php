@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Core\CSRF;
 use App\Core\Schema;
 use Models\AdminStats;
+use Models\ReceiptShrinker;
 
 class AdminController extends Controller
 {
@@ -45,5 +46,17 @@ class AdminController extends Controller
         }
         $sentAt = (new AdminStats(Schema::ensureBilling(), true))->markInvited((int) $id);
         $this->json(['ok' => true, 'sent_at' => $sentAt]);
+    }
+
+    // POST /dashboard-admin/shrink-receipts — one time-boxed batch of the old-receipt clean-up
+    public function shrinkReceipts(): void
+    {
+        CSRF::check();
+        if (!Schema::ensureBilling()) {
+            $this->json(['ok' => false], 500);
+        }
+        @set_time_limit(60);
+        $result = (new ReceiptShrinker())->run((string) ($_POST['cursor'] ?? ''));
+        $this->json(['ok' => true] + $result);
     }
 }
