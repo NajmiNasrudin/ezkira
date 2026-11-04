@@ -233,11 +233,11 @@ $userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $
             <thead><tr>
                 <th class="<?= $th ?>"><?= __('adm_col_user') ?></th><th class="<?= $th ?>"><?= __('adm_col_plan') ?></th><th class="<?= $th ?>"><?= __('adm_col_joined') ?></th>
                 <th class="<?= $th ?>"><?= __('adm_col_last_active') ?></th><th class="<?= $th ?>"><?= __('adm_col_active30') ?></th>
-                <th class="<?= $th ?>"><?= __('adm_col_records') ?></th><th class="<?= $th ?>"><?= __('adm_col_receipts') ?></th><th class="<?= $th ?>">WhatsApp</th>
+                <th class="<?= $th ?>"><?= __('adm_col_records') ?></th><th class="<?= $th ?>"><?= __('adm_col_receipts') ?></th><th class="<?= $th ?>">WhatsApp</th><th class="<?= $th ?>"></th>
             </tr></thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <?php if (!$rows): ?>
-                <tr><td colspan="8" class="<?= $td ?> text-center text-gray-400"><?= $empty ?></td></tr>
+                <tr><td colspan="9" class="<?= $td ?> text-center text-gray-400"><?= $empty ?></td></tr>
             <?php endif; ?>
             <?php foreach ($rows as $u): ?>
                 <tr>
@@ -263,6 +263,16 @@ $userTable = function (array $rows, string $empty) use ($e, $nameOf, $th, $td, $
                         <?php if ($wa): ?>
                             <a href="https://wa.me/<?= $e($wa) ?>" target="_blank" rel="noopener" class="text-brand-600 dark:text-sage-300 font-semibold hover:underline"><?= $e($u['whatsapp_number']) ?></a>
                         <?php else: ?>-<?php endif; ?>
+                    </td>
+                    <td class="<?= $td ?>">
+                        <?php if (!$isPro($u)): ?>
+                            <form method="POST" action="<?= BASE_URI ?>/dashboard-admin/users/<?= (int) $u['id'] ?>/delete"
+                                  onsubmit="return confirm(this.dataset.confirm)"
+                                  data-confirm="<?= __('adm_delete_confirm', ['email' => $u['email']]) ?>">
+                                <?= \App\Core\CSRF::field() ?>
+                                <button type="submit" class="text-xs font-semibold text-red-600 hover:underline"><?= __('adm_delete') ?></button>
+                            </form>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

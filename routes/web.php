@@ -82,6 +82,7 @@ $router->post('/profile/greeting/test',  'ProfileController@testGreeting', [Auth
 $router->get('/dashboard-admin', 'AdminController@index', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/dashboard-admin/invite/{id}', 'AdminController@markInvited', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 $router->post('/dashboard-admin/shrink-receipts', 'AdminController@shrinkReceipts', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
+$router->post('/dashboard-admin/users/{id}/delete', 'AdminController@deleteUser', [AuthMiddleware::class, new \App\Middleware\RoleMiddleware(['admin'])]);
 
 // Plans & billing (CHIP)
 $router->get('/pricing',                'BillingController@pricing',        [AuthMiddleware::class]);
